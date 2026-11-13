@@ -1,0 +1,10 @@
+{
+  "name": "team-taskflow",
+  "version": "1.0.0",
+  "description": "Team TaskFlow - Team Todo, Kanban, Calendar & Daily Summary",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Build successful: Static site with Cloudflare Pages Functions'",
+    "deploy": "echo 'Deploying to Cloudflare Pages'"
+  }
+}
