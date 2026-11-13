@@ -145,7 +145,102 @@ open /Users/techmx/Documents/team-todo-list/index.html
 
 ---
 
-## 💾 การจัดเก็บข้อมูล
-* ระบบบันทึกข้อมูลอัตโนมัติลงใน **LocalStorage** (`team_taskflow_v9`) ของเบราว์เซอร์
+## 💾 การจัดเก็บข้อมูลและระบบ Cloudflare Sync
+* **การทำงานแบบไฮบริด (Hybrid Offline-First):** ระบบบันทึกข้อมูลแบบ Optimistic Update ลงใน **LocalStorage** (`team_taskflow_v9`) ทันทีที่ทำงาน ทำให้ระบบเร็ว ลื่นไหล ใช้งานได้แม้ไม่มีอินเทอร์เน็ต
+* **Cloudflare D1 Real-Time Sync:** เมื่อเปิดผ่านโดเมนบน Cloudflare Pages ระบบจะซิงค์ข้อมูลกับฐานข้อมูล **Cloudflare D1 Serverless Database** แบบอัตโนมัติสองทาง (Two-Way Sync) พร้อมป้ายแสดงสถานะ `☁️ Cloud D1` บนแถบเมนูด้านบน
 * มีปุ่ม **Export JSON** สำรองข้อมูล และ **Import JSON** กู้คืนข้อมูล
 * มีปุ่ม **Reset ข้อมูลตัวอย่าง** เพื่อเริ่มต้นทดลองระบบใหม่ได้ทุกเมื่อ
+
+---
+
+## ☁️ คู่มือการนำขึ้น Cloudflare Pages และเชื่อมต่อ Cloudflare D1 Database
+
+โปรเจกต์นี้ได้รับการพัฒนาให้รองรับ **Cloudflare Pages + Cloudflare Pages Functions + Cloudflare D1 Serverless SQLite Database** อย่างสมบูรณ์แบบ ใช้งานฟรี 100% ไม่มีค่าบริการเซิร์ฟเวอร์ และมีความเร็วระดับ Edge Global CDN
+
+### 📁 โครงสร้างไฟล์สำหรับ Cloudflare:
+* `index.html` — หน้าเว็บหลักพร้อมระบบ Cloudflare D1 Auto-Sync & Local Fallback
+* `functions/api/tasks.js` — API Endpoint สำหรับดึงรายการงาน (GET), บันทึก/อัปเดตงาน (POST) และลบงาน (DELETE)
+* `functions/api/sync.js` — API Endpoint สำหรับ Batch Sync ข้อมูลทั้งหมดขึ้น D1 ในคำสั่งเดียว
+* `functions/api/init.js` — API Endpoint สำหรับตรวจสอบสถานะและสร้าง Table อัตโนมัติ (Zero-Config)
+* `schema.sql` — โครงสร้างฐานข้อมูล SQLite สำหรับ Cloudflare D1 พร้อม Indexes
+* `wrangler.toml` — ไฟล์คอนฟิกสำหรับ Cloudflare Pages และ D1 Binding
+* `_headers` — ไฟล์คอนฟิกความปลอดภัยและ CORS Headers
+
+---
+
+### 🚀 วิธีติดตั้งและขึ้นระบบ (Deployment Guide)
+
+สามารถทำได้ 2 วิธีง่ายๆ:
+
+#### วิธีที่ 1: Deploy ผ่าน Cloudflare Dashboard (ผ่าน GitHub/GitLab - ง่ายที่สุด ⭐ แนะนำ)
+
+1. **นำโฟลเดอร์นี้ขึ้น Git Repository ของคุณ:**
+   - โฟลเดอร์นี้ได้รับการตั้งค่า `git init` และสร้าง Commit พร้อมใช้งานไว้แล้ว
+   - สามารถสร้าง New Repository บน [GitHub](https://github.com/new) แล้วรันคำสั่ง:
+     ```bash
+     git remote add origin <URL_REPOSITORY_ของคุณ>
+     git branch -M main
+     git push -u origin main
+     ```
+
+2. **สร้าง Pages Project บน Cloudflare:**
+   - เข้าสู่แดชบอร์ด [Cloudflare Dashboard](https://dash.cloudflare.com/)
+   - เมนูด้านซ้ายเลือก **Workers & Pages** ➔ คลิกปุ่ม **Create application**
+   - เลือกแท็บ **Pages** ➔ คลิก **Connect to Git**
+   - เลือก Repository ที่คุณเพิ่งอัปโหลดไป
+   - ตั้งค่า Build settings:
+     - **Project name:** `team-taskflow`
+     - **Framework preset:** `None`
+     - **Build command:** *เว้นว่างไว้*
+     - **Build output directory:** `.` (เครื่องหมายจุด หรือเว้นว่าง)
+   - คลิก **Save and Deploy** (หน้าเว็บจะพร้อมใช้งานที่ `team-taskflow.pages.dev` ภายในไม่กี่วินาที)
+
+3. **สร้าง Cloudflare D1 Database:**
+   - ใน Cloudflare Dashboard เมนูด้านซ้ายคลิก **Storage & Databases** ➔ **D1 SQL Database**
+   - คลิกปุ่ม **Create database**
+   - ตั้งชื่อ Database เช่น `team-taskflow-db`
+   - คลิก **Create**
+
+4. **ผูก D1 Database เข้ากับ Cloudflare Pages (Binding):**
+   - กลับไปที่เมนู **Workers & Pages** ➔ คลิกเข้าไปที่โปรเจกต์ `team-taskflow` ของเรา
+   - ไปที่แท็บ **Settings** ➔ เมนูด้านซ้ายเลือก **Functions**
+   - เลื่อนลงมาที่หัวข้อ **D1 Database Bindings** ➔ คลิก **Add binding**
+   - กรอกข้อมูลดังนี้:
+     - **Variable name:** `DB` *(ต้องเป็นตัวพิมพ์ใหญ่ DB เท่านั้น)*
+     - **D1 database:** เลือก `team-taskflow-db` ที่สร้างไว้
+   - คลิก **Save**
+   - ไปที่แท็บ **Deployments** ➔ คลิกเมนู 3 จุดที่การ Deploy ล่าสุด แล้วเลือก **Retry deployment** (เพื่อให้ระบบโหลดการเชื่อมต่อฐานข้อมูลใหม่)
+
+5. **ระบบสร้างตารางและซิงค์ข้อมูลให้อัตโนมัติ (Zero-Config Database Init):**
+   - เมื่อเปิดเข้าเว็บ `https://team-taskflow.pages.dev` ตัว API มีระบบ Auto Ensure Table ตรวจสอบและสร้างตาราง `tasks` พร้อม Indexes ให้อัตโนมัติทันที
+   - หากฐานข้อมูลยังว่างเปล่า ระบบหน้าเว็บจะอัปโหลดข้อมูลงานเริ่มต้น (Initial Tasks) ขึ้นไปเก็บไว้ใน Cloudflare D1 ให้อัตโนมัติ
+   - แถบเมนูด้านบนจะแสดงสถานะ `☁️ Cloud D1` สีเขียว พร้อมใช้งานทันทีสำหรับทุกคนในทีม!
+
+---
+
+#### วิธีที่ 2: Deploy ผ่าน Wrangler CLI (สำหรับผู้ที่มี Node.js / Wrangler)
+
+หากคุณติดตั้ง Node.js และ Wrangler CLI ไว้ในเครื่อง สามารถสั่งงานผ่าน Terminal ได้โดยตรง:
+
+1. **สร้าง Cloudflare D1 Database:**
+   ```bash
+   npx wrangler d1 create team-taskflow-db
+   ```
+   ระบบจะแสดงผล `database_id` ออกมา ให้นำค่านั้นไปใส่แทนที่ `database_id` ในไฟล์ [wrangler.toml](file:///Users/techmx/Documents/team-todo-list/wrangler.toml)
+
+2. **สั่งสร้างตารางในฐานข้อมูล Cloudflare D1:**
+   ```bash
+   npx wrangler d1 execute team-taskflow-db --file=./schema.sql --remote
+   ```
+
+3. **Deploy ขึ้น Cloudflare Pages:**
+   ```bash
+   npx wrangler pages deploy . --project-name team-taskflow
+   ```
+
+---
+
+### 🛡️ คุณสมบัติด้านความปลอดภัยและความเสถียร (Reliability & Performance)
+* **Zero-Cold-Start Serverless:** Cloudflare Pages Functions ทำงานบนโครงข่าย V8 Isolates ของ Cloudflare ทั่วโลก รวดเร็วระดับเสี้ยววินาที
+* **Offline Resilience:** หากผู้ใช้งานไม่มีอินเทอร์เน็ต สามารถเพิ่ม ลบ แก้ไขงานได้ตามปกติ ระบบจะบันทึกลงในเครื่อง และเมื่อเชื่อมต่ออินเทอร์เน็ตอีกครั้ง ข้อมูลจะพร้อมซิงค์ขึ้น Cloud ทันที
+* **Edge Backup:** ข้อมูลจัดเก็บอยู่บน Cloudflare D1 พร้อมระบบสำรองและสำรองไฟล์ JSON ที่ดาวน์โหลดเก็บไว้ในเครื่องได้ตลอดเวลา
