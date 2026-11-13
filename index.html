@@ -1,0 +1,3075 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบจัดการงานทีม (Team TaskFlow)</title>
+  <!-- Google Fonts: Prompt & Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Prompt', 'Sarabun', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    };
+    // Initialize dark/light mode preference before DOM renders to prevent flicker
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('team_taskflow_theme');
+        var theme = savedTheme || 'dark'; // Default to dark mode as requested
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  <style>
+    body {
+      font-family: 'Prompt', 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .kanban-col {
+      min-height: 480px;
+    }
+    .calendar-cell {
+      min-height: 120px;
+    }
+
+    /* ================= DARK MODE THEME STYLES ================= */
+    html.dark body {
+      background-color: #0b1120 !important;
+      color: #f1f5f9 !important;
+    }
+    html.dark .custom-scrollbar::-webkit-scrollbar-track {
+      background: #111a2e;
+    }
+    html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334460;
+    }
+    html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #4a6187;
+    }
+
+    /* Card & Panel Overrides in Dark Mode */
+    html.dark .bg-white {
+      background-color: #111827 !important;
+      color: #f1f5f9;
+    }
+    html.dark .bg-slate-50 {
+      background-color: #0c1322 !important;
+    }
+    html.dark .bg-slate-100 {
+      background-color: #182236 !important;
+    }
+    html.dark .bg-slate-100\/70 {
+      background-color: #131c2d !important;
+    }
+    html.dark .bg-slate-50\/70,
+    html.dark .bg-slate-50\/60,
+    html.dark .bg-slate-50\/50,
+    html.dark .bg-slate-50\/40,
+    html.dark .bg-slate-50\/30 {
+      background-color: #0f172a !important;
+    }
+
+    /* Dark Mode Borders & Dividers */
+    html.dark .border-slate-200,
+    html.dark .border-slate-100,
+    html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+    html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+      border-color: #243149 !important;
+    }
+
+    /* Dark Mode Text Colors */
+    html.dark .text-slate-800 {
+      color: #f8fafc !important;
+    }
+    html.dark .text-slate-700 {
+      color: #e2e8f0 !important;
+    }
+    html.dark .text-slate-600 {
+      color: #cbd5e1 !important;
+    }
+    html.dark .text-slate-500 {
+      color: #94a3b8 !important;
+    }
+    html.dark .text-slate-400 {
+      color: #64748b !important;
+    }
+
+    /* Inputs, Selects, and Dropdowns in Dark Mode */
+    html.dark input[type="text"],
+    html.dark input[type="date"],
+    html.dark select,
+    html.dark textarea {
+      background-color: #162035 !important;
+      color: #f8fafc !important;
+      border-color: #2c3a54 !important;
+    }
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+      color: #64748b !important;
+    }
+    html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.85);
+      cursor: pointer;
+    }
+
+    /* Hover States in Dark Mode */
+    html.dark .hover\:bg-slate-100:hover,
+    html.dark .hover\:bg-slate-50:hover,
+    html.dark .hover\:bg-slate-50\/70:hover {
+      background-color: #1a273f !important;
+    }
+    html.dark table tbody tr:hover {
+      background-color: #16233b !important;
+    }
+    html.dark thead.bg-slate-50 {
+      background-color: #0c1322 !important;
+    }
+
+    /* Calendar inactive month cell in Dark Mode */
+    html.dark .calendar-cell.bg-slate-50\/60 {
+      background-color: #070c18 !important;
+      color: #475569 !important;
+    }
+
+    /* Daily Agenda item categories in Dark Mode */
+    html.dark .border-slate-200.bg-slate-50\/70 {
+      background-color: #131c2d !important;
+      border-color: #243149 !important;
+    }
+    html.dark .border-amber-200.bg-amber-50\/50 {
+      background-color: rgba(180, 83, 9, 0.2) !important;
+      border-color: rgba(245, 158, 11, 0.4) !important;
+    }
+    html.dark .border-rose-200.bg-rose-50\/50 {
+      background-color: rgba(225, 29, 72, 0.2) !important;
+      border-color: rgba(244, 63, 94, 0.4) !important;
+    }
+    html.dark .border-emerald-200.bg-emerald-50\/40 {
+      background-color: rgba(16, 185, 129, 0.2) !important;
+      border-color: rgba(16, 185, 129, 0.4) !important;
+    }
+
+    /* Modal dialog styling in Dark Mode */
+    html.dark #taskModal > div,
+    html.dark #taskDetailModal > div {
+      background-color: #111827 !important;
+      border-color: #243149 !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+
+  <!-- Header Navigation -->
+  <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-500/20">
+            📋
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-slate-800 leading-tight">Team TaskFlow</h1>
+            <p class="text-xs text-slate-500">ระบบติดตามและจัดการงานทีม</p>
+          </div>
+        </div>
+
+        <!-- Role / User Switcher & Tools -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <!-- Cloudflare D1 Sync Status Badge -->
+          <button type="button" id="btnCloudSync" title="สถานะ Cloudflare D1 (คลิกเพื่อเชื่อมต่อหรือซิงค์ข้อมูล)" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer">
+            <span id="cloudSyncDot" class="inline-block w-2 h-2 rounded-full bg-slate-400"></span>
+            <span id="cloudSyncText">Local Mode</span>
+          </button>
+
+          <!-- Dark / Light Mode Toggle Button -->
+          <button type="button" id="btnThemeToggle" title="สลับโหมดมืด / สว่าง (Toggle Dark/Light Mode)" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer">
+            <span id="themeToggleIcon" class="text-sm">🌙</span>
+            <span id="themeToggleText" class="hidden sm:inline">โหมดมืด</span>
+          </button>
+
+          <div class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-medium pl-1 hidden sm:inline">สลับมุมมอง:</span>
+            <select id="userSelector" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-semibold py-1.5 pl-2.5 pr-8 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+              <option value="manager">👑 เห็นภาพรวมทุกคน</option>
+              <optgroup label="── บอร์ดของทีมงาน ──">
+                <option value="non">👨‍💻 นนท์ (ทีมงาน)</option>
+                <option value="aun">🧑‍💻 อั๋น (ทีมงาน)</option>
+                <option value="eyeta">👩‍💼 อายตา (ทีมงาน)</option>
+                <option value="rang">🧔 หรั่ง (ทีมงาน)</option>
+                <option value="tanya">👩‍💻 ธัญญ่า (ทีมงาน)</option>
+                <option value="france">🧑‍🎨 ฟร้องซ์ (ทีมงาน)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Backup / Tools Buttons -->
+          <div class="hidden sm:flex items-center space-x-1 border-l border-slate-200 dark:border-slate-700 pl-2">
+            <button id="btnExport" title="สำรองข้อมูล (Export JSON)" class="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+            <label title="นำเข้าข้อมูล (Import JSON)" class="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <input type="file" id="importFileInput" accept=".json" class="hidden">
+            </label>
+            <button id="btnReset" title="รีเซ็ตเป็นข้อมูลตัวอย่าง" class="p-2 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Area -->
+  <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-4 px-4 sm:px-6 lg:px-8 shadow-inner">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <span id="bannerAvatar" class="text-3xl p-2 bg-white/10 rounded-2xl backdrop-blur-sm">👑</span>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 id="bannerName" class="text-lg font-bold">เห็นภาพรวมทุกคน</h2>
+            <span id="bannerRoleBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-white/20 text-white font-medium">ผู้จัดการภาพรวมทีม</span>
+          </div>
+          <p id="bannerDesc" class="text-xs text-slate-300">ตรวจสอบภาพรวมงานของทุกคน มอบหมายงาน และติดตามความคืบหน้า</p>
+        </div>
+      </div>
+
+      <!-- Main Action Button -->
+      <button id="btnOpenCreateModal" class="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02]">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span id="btnCreateTaskText">มอบหมายงานใหม่</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Dynamic Content will be rendered here -->
+    <div id="appRoot" class="space-y-6"></div>
+  </main>
+
+  <!-- Task Modal (Create / Edit) -->
+  <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 id="modalTitle" class="font-bold text-slate-800 text-lg">มอบหมายงานใหม่ให้ทีม</h3>
+        <button id="btnCloseModal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="taskForm" class="mt-4 space-y-4">
+        <input type="hidden" id="formTaskId" value="">
+
+        <!-- Title -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">
+            ชื่องาน <span class="text-rose-500">*</span>
+          </label>
+          <input type="text" id="formTitle" required placeholder="เช่น ออกแบบหน้าเว็บ, ถ่ายทำคลิปรีวิว..." class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <!-- Description / Task Options (Multi-select) -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-slate-700">
+              รายละเอียดงาน <span class="text-indigo-600 font-medium">(เลือกได้หลายตัวเลือก: <span id="optionsCountBadge">0</span> รายการ)</span>
+            </label>
+            <div class="text-[11px] space-x-2 text-indigo-600">
+              <button type="button" id="btnSelectAllOptions" class="hover:underline">เลือกทั้งหมด</button>
+              <span>•</span>
+              <button type="button" id="btnClearOptions" class="hover:underline text-slate-500">ล้างค่า</button>
+            </div>
+          </div>
+          <div id="optionsPillGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <!-- Rendered dynamically -->
+          </div>
+          <div class="mt-2">
+            <label class="block text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1">หมายเหตุเพิ่มเติม หรือ แปะลิงก์ส่งงาน (เช่น Google Drive, YouTube, Frame.io, Figma):</label>
+            <input type="text" id="formNote" placeholder="เช่น สตูดิโอ A หรือแปะลิงก์ https://drive.google.com/..." class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <!-- Multi-Assignees Selector -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-slate-700">
+              ผู้รับผิดชอบงาน <span class="text-rose-500">* (เลือกได้หลายคน: <span id="assigneeCountBadge">1</span> คน)</span>
+            </label>
+            <div class="text-[11px] space-x-2 text-indigo-600">
+              <button type="button" id="btnSelectAllAssignees" class="hover:underline">เลือกทุกคน</button>
+              <span>•</span>
+              <button type="button" id="btnSelectOnlyMe" class="hover:underline text-slate-500">เลือกเฉพาะฉัน</button>
+            </div>
+          </div>
+          <div id="assigneesPillGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <!-- Will be rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Priority & Status -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">ความสำคัญ</label>
+            <select id="formPriority" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+              <option value="normal">ปกติ</option>
+              <option value="high">ด่วนมาก 🔥</option>
+              <option value="low">ไม่ด่วน</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">สถานะ</label>
+            <select id="formStatus" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+              <option value="todo">รอดำเนินการ (To Do)</option>
+              <option value="in-progress">กำลังทำ (In Progress)</option>
+              <option value="done">เสร็จสิ้น (Done)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Task Color for Calendar (10 Distinct Colors) -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-slate-700">
+              🎨 สีกำกับงานในปฏิทิน <span class="text-slate-400 font-normal">(เลือกสีที่ต้องการได้ 15 สี แยกกันง่าย)</span>
+            </label>
+            <span id="selectedColorLabel" class="text-xs font-bold text-sky-600">สีฟ้าคราม</span>
+          </div>
+          <div id="colorPickerGrid" class="grid grid-cols-5 gap-2">
+            <!-- Will be rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Date & Deadline -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              วันที่เริ่มงาน <span class="text-rose-500">*</span>
+            </label>
+            <input type="date" id="formDate" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              กำหนดส่ง (Deadline) <span class="text-rose-500">*</span>
+            </label>
+            <input type="date" id="formDeadline" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
+          <button type="button" id="btnCancelModal" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">
+            ยกเลิก
+          </button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-500/20 transition">
+            บันทึกข้อมูล
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Task Detail Modal (View Details First) -->
+  <div id="taskDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
+        <div class="flex items-center space-x-2">
+          <span class="p-1.5 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-base">📋</span>
+          <div>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base leading-snug">รายละเอียดข้อมูลงาน</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500">ข้อมูลกำหนดการ ผู้รับผิดชอบ และลิงก์ส่งงาน</p>
+          </div>
+        </div>
+        <button id="btnCloseDetailModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-lg cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="taskDetailContent" class="mt-4 space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+    <p>ระบบจัดการงานทีมแบบ Kanban, Timeline Calendar & Daily Summary • นนท์, อั๋น, อายตา, หรั่ง, ธัญญ่า, ฟร้องซ์</p>
+  </footer>
+
+  <!-- Pure Native Application Script (Zero Babel, Instant Run) -->
+  <script>
+    (function() {
+      // 1. Data Definitions
+      const TEAM_MEMBERS = [
+        { id: 'non', name: 'นนท์', role: 'ทีมงาน', avatar: '👨‍💻' },
+        { id: 'aun', name: 'อั๋น', role: 'ทีมงาน', avatar: '🧑‍💻' },
+        { id: 'eyeta', name: 'อายตา', role: 'ทีมงาน', avatar: '👩‍💼' },
+        { id: 'rang', name: 'หรั่ง', role: 'ทีมงาน', avatar: '🧔' },
+        { id: 'tanya', name: 'ธัญญ่า', role: 'ทีมงาน', avatar: '👩‍💻' },
+        { id: 'france', name: 'ฟร้องซ์', role: 'ทีมงาน', avatar: '🧑‍🎨' }
+      ];
+
+      const MANAGER_PROFILE = {
+        id: 'manager',
+        name: 'เห็นภาพรวมทุกคน',
+        role: 'ผู้จัดการทีม',
+        avatar: '👑'
+      };
+
+      const STATUS_CONFIG = {
+        'todo': { label: 'รอดำเนินการ', badge: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800', dot: 'bg-blue-500' },
+        'in-progress': { label: 'กำลังทำ', badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800', dot: 'bg-amber-500' },
+        'done': { label: 'เสร็จสิ้น', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800', dot: 'bg-emerald-500' }
+      };
+
+      // 15 Distinct Task Colors for Calendar & System (สีทึบชัดเจน สบายตา มองเห็นง่าย)
+      const TASK_COLORS = {
+        'blue': {
+          id: 'blue',
+          name: 'ฟ้าคราม',
+          dot: 'bg-sky-500',
+          ring: 'ring-sky-500',
+          border: 'border-sky-500',
+          borderL: 'border-l-sky-500',
+          borderR: 'border-r-sky-500',
+          bar: 'bg-sky-500 hover:bg-sky-600 text-white border border-sky-600 dark:bg-sky-600 dark:hover:bg-sky-500 dark:border-sky-500 shadow-2xs',
+          bgLight: 'bg-sky-50 dark:bg-sky-950/50',
+          textAccent: 'text-sky-600 dark:text-sky-400',
+          badge: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800'
+        },
+        'green': {
+          id: 'green',
+          name: 'เขียวมรกต',
+          dot: 'bg-emerald-500',
+          ring: 'ring-emerald-500',
+          border: 'border-emerald-500',
+          borderL: 'border-l-emerald-500',
+          borderR: 'border-r-emerald-500',
+          bar: 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 dark:border-emerald-500 shadow-2xs',
+          bgLight: 'bg-emerald-50 dark:bg-emerald-950/50',
+          textAccent: 'text-emerald-600 dark:text-emerald-400',
+          badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+        },
+        'purple': {
+          id: 'purple',
+          name: 'ม่วงไวโอเล็ต',
+          dot: 'bg-purple-500',
+          ring: 'ring-purple-500',
+          border: 'border-purple-500',
+          borderL: 'border-l-purple-500',
+          borderR: 'border-r-purple-500',
+          bar: 'bg-purple-600 hover:bg-purple-700 text-white border border-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 dark:border-purple-500 shadow-2xs',
+          bgLight: 'bg-purple-50 dark:bg-purple-950/50',
+          textAccent: 'text-purple-600 dark:text-purple-400',
+          badge: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800'
+        },
+        'orange': {
+          id: 'orange',
+          name: 'ส้มอำพัน',
+          dot: 'bg-amber-500',
+          ring: 'ring-amber-500',
+          border: 'border-amber-500',
+          borderL: 'border-l-amber-500',
+          borderR: 'border-r-amber-500',
+          bar: 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold border border-amber-600 dark:bg-amber-500 dark:hover:bg-amber-400 dark:border-amber-400 shadow-2xs',
+          bgLight: 'bg-amber-50 dark:bg-amber-950/50',
+          textAccent: 'text-amber-600 dark:text-amber-400',
+          badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+        },
+        'rose': {
+          id: 'rose',
+          name: 'ชมพูกุหลาบ',
+          dot: 'bg-rose-500',
+          ring: 'ring-rose-500',
+          border: 'border-rose-500',
+          borderL: 'border-l-rose-500',
+          borderR: 'border-r-rose-500',
+          bar: 'bg-rose-500 hover:bg-rose-600 text-white border border-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 dark:border-rose-500 shadow-2xs',
+          bgLight: 'bg-rose-50 dark:bg-rose-950/50',
+          textAccent: 'text-rose-600 dark:text-rose-400',
+          badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+        },
+        'teal': {
+          id: 'teal',
+          name: 'เขียวทะเล',
+          dot: 'bg-teal-500',
+          ring: 'ring-teal-500',
+          border: 'border-teal-500',
+          borderL: 'border-l-teal-500',
+          borderR: 'border-r-teal-500',
+          bar: 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-700 dark:bg-teal-600 dark:hover:bg-teal-500 dark:border-teal-500 shadow-2xs',
+          bgLight: 'bg-teal-50 dark:bg-teal-950/50',
+          textAccent: 'text-teal-600 dark:text-teal-400',
+          badge: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800'
+        },
+        'indigo': {
+          id: 'indigo',
+          name: 'น้ำเงินคราม',
+          dot: 'bg-indigo-600',
+          ring: 'ring-indigo-600',
+          border: 'border-indigo-600',
+          borderL: 'border-l-indigo-600',
+          borderR: 'border-r-indigo-600',
+          bar: 'bg-indigo-600 hover:bg-indigo-700 text-white border border-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:border-indigo-500 shadow-2xs',
+          bgLight: 'bg-indigo-50 dark:bg-indigo-950/50',
+          textAccent: 'text-indigo-600 dark:text-indigo-400',
+          badge: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800'
+        },
+        'yellow': {
+          id: 'yellow',
+          name: 'เหลืองทอง',
+          dot: 'bg-yellow-500',
+          ring: 'ring-yellow-500',
+          border: 'border-yellow-500',
+          borderL: 'border-l-yellow-500',
+          borderR: 'border-r-yellow-500',
+          bar: 'bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-bold border border-yellow-500 dark:bg-yellow-400 dark:hover:bg-yellow-300 dark:border-yellow-300 shadow-2xs',
+          bgLight: 'bg-yellow-50 dark:bg-yellow-950/50',
+          textAccent: 'text-yellow-600 dark:text-yellow-400',
+          badge: 'bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-950/60 dark:text-yellow-300 dark:border-yellow-800'
+        },
+        'red': {
+          id: 'red',
+          name: 'แดงทับทิม',
+          dot: 'bg-red-500',
+          ring: 'ring-red-500',
+          border: 'border-red-500',
+          borderL: 'border-l-red-500',
+          borderR: 'border-r-red-500',
+          bar: 'bg-red-600 hover:bg-red-700 text-white border border-red-700 dark:bg-red-600 dark:hover:bg-red-500 dark:border-red-500 shadow-2xs',
+          bgLight: 'bg-red-50 dark:bg-red-950/50',
+          textAccent: 'text-red-600 dark:text-red-400',
+          badge: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800'
+        },
+        'slate': {
+          id: 'slate',
+          name: 'เทาชาร์โคล',
+          dot: 'bg-slate-600',
+          ring: 'ring-slate-600',
+          border: 'border-slate-600',
+          borderL: 'border-l-slate-600',
+          borderR: 'border-r-slate-600',
+          bar: 'bg-slate-600 hover:bg-slate-700 text-white border border-slate-700 dark:bg-slate-600 dark:hover:bg-slate-500 dark:border-slate-500 shadow-2xs',
+          bgLight: 'bg-slate-50 dark:bg-slate-800/50',
+          textAccent: 'text-slate-600 dark:text-slate-400',
+          badge: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+        },
+        'lime': {
+          id: 'lime',
+          name: 'เขียวมะนาว',
+          dot: 'bg-lime-500',
+          ring: 'ring-lime-500',
+          border: 'border-lime-500',
+          borderL: 'border-l-lime-500',
+          borderR: 'border-r-lime-500',
+          bar: 'bg-lime-500 hover:bg-lime-600 text-slate-950 font-bold border border-lime-600 dark:bg-lime-500 dark:hover:bg-lime-400 dark:border-lime-400 shadow-2xs',
+          bgLight: 'bg-lime-50 dark:bg-lime-950/50',
+          textAccent: 'text-lime-600 dark:text-lime-400',
+          badge: 'bg-lime-50 text-lime-800 border-lime-300 dark:bg-lime-950/60 dark:text-lime-300 dark:border-lime-800'
+        },
+        'cyan': {
+          id: 'cyan',
+          name: 'ฟ้าไซแอน',
+          dot: 'bg-cyan-500',
+          ring: 'ring-cyan-500',
+          border: 'border-cyan-500',
+          borderL: 'border-l-cyan-500',
+          borderR: 'border-r-cyan-500',
+          bar: 'bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold border border-cyan-600 dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:border-cyan-400 shadow-2xs',
+          bgLight: 'bg-cyan-50 dark:bg-cyan-950/50',
+          textAccent: 'text-cyan-600 dark:text-cyan-400',
+          badge: 'bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800'
+        },
+        'fuchsia': {
+          id: 'fuchsia',
+          name: 'ชมพูบานเย็น',
+          dot: 'bg-fuchsia-500',
+          ring: 'ring-fuchsia-500',
+          border: 'border-fuchsia-500',
+          borderL: 'border-l-fuchsia-500',
+          borderR: 'border-r-fuchsia-500',
+          bar: 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white border border-fuchsia-700 dark:bg-fuchsia-600 dark:hover:bg-fuchsia-500 dark:border-fuchsia-500 shadow-2xs',
+          bgLight: 'bg-fuchsia-50 dark:bg-fuchsia-950/50',
+          textAccent: 'text-fuchsia-600 dark:text-fuchsia-400',
+          badge: 'bg-fuchsia-50 text-fuchsia-800 border-fuchsia-300 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800'
+        },
+        'coral': {
+          id: 'coral',
+          name: 'ส้มเพลิง',
+          dot: 'bg-orange-600',
+          ring: 'ring-orange-600',
+          border: 'border-orange-600',
+          borderL: 'border-l-orange-600',
+          borderR: 'border-r-orange-600',
+          bar: 'bg-orange-500 hover:bg-orange-600 text-white border border-orange-600 dark:bg-orange-500 dark:hover:bg-orange-400 dark:border-orange-400 shadow-2xs',
+          bgLight: 'bg-orange-50 dark:bg-orange-950/50',
+          textAccent: 'text-orange-600 dark:text-orange-400',
+          badge: 'bg-orange-50 text-orange-800 border-orange-300 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800'
+        },
+        'brown': {
+          id: 'brown',
+          name: 'น้ำตาลคาราเมล',
+          dot: 'bg-[#8b4513]',
+          ring: 'ring-[#8b4513]',
+          border: 'border-[#8b4513]',
+          borderL: 'border-l-[#8b4513]',
+          borderR: 'border-r-[#8b4513]',
+          bar: 'bg-[#854d0e] hover:bg-[#713f12] text-white border border-[#713f12] dark:bg-[#854d0e] dark:hover:bg-[#a16207] dark:border-[#a16207] shadow-2xs',
+          bgLight: 'bg-[#fbf7f2] dark:bg-[#3d2414]/50',
+          textAccent: 'text-[#8b4513] dark:text-[#d2a679]',
+          badge: 'bg-[#f6eee3] text-[#542d13] border-[#d4b59d] dark:bg-[#3d2414] dark:text-[#f8ece2] dark:border-[#87532e]'
+        }
+      };
+
+      const COLOR_KEYS = [
+        'blue', 'green', 'purple', 'orange', 'rose',
+        'teal', 'indigo', 'yellow', 'red', 'slate',
+        'lime', 'cyan', 'fuchsia', 'coral', 'brown'
+      ];
+
+      // 8 Task Options (Roll A, ins, ตัดต่อ, Short, เขียนสคริปต์, กราฟฟิก, ปล่อยงาน, แก้งาน)
+      const TASK_OPTIONS_CONFIG = {
+        'Roll A': { name: 'Roll A', icon: '🎬', bg: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800' },
+        'ins': { name: 'ins', icon: '📹', bg: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800' },
+        'ตัดต่อ': { name: 'ตัดต่อ', icon: '✂️', bg: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' },
+        'Short': { name: 'Short', icon: '📱', bg: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800' },
+        'เขียนสคริปต์': { name: 'เขียนสคริปต์', icon: '📝', bg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' },
+        'กราฟฟิก': { name: 'กราฟฟิก', icon: '🎨', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800' },
+        'ปล่อยงาน': { name: 'ปล่อยงาน', icon: '🚀', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800' },
+        'แก้งาน': { name: 'แก้งาน', icon: '🛠️', bg: 'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800' }
+      };
+      const TASK_OPTIONS_LIST = ['Roll A', 'ins', 'ตัดต่อ', 'Short', 'เขียนสคริปต์', 'กราฟฟิก', 'ปล่อยงาน', 'แก้งาน'];
+
+      // Priority ordering (ด่วน -> ปกติ -> ไม่รีบ)
+      const PRIORITY_ORDER = {
+        'high': 1,
+        'normal': 2,
+        'low': 3
+      };
+
+      const sortByPriority = (arr) => {
+        if (!Array.isArray(arr)) return [];
+        return [...arr].sort((a, b) => {
+          const rankA = PRIORITY_ORDER[a.priority] || 2;
+          const rankB = PRIORITY_ORDER[b.priority] || 2;
+          if (rankA !== rankB) return rankA - rankB;
+          const dlA = a.deadline || a.date || '9999-99-99';
+          const dlB = b.deadline || b.date || '9999-99-99';
+          return dlA.localeCompare(dlB);
+        });
+      };
+
+      // Sort tasks by Deadline ascending (กำหนดส่งใกล้สุดขึ้นก่อน)
+      const sortByDeadline = (arr) => {
+        if (!Array.isArray(arr)) return [];
+        return [...arr].sort((a, b) => {
+          const dlA = a.deadline || a.date || '9999-99-99';
+          const dlB = b.deadline || b.date || '9999-99-99';
+          if (dlA !== dlB) return dlA.localeCompare(dlB);
+          // If same deadline, sort by priority (high -> normal -> low)
+          const rankA = PRIORITY_ORDER[a.priority] || 2;
+          const rankB = PRIORITY_ORDER[b.priority] || 2;
+          if (rankA !== rankB) return rankA - rankB;
+          const dateA = a.date || '9999-99-99';
+          const dateB = b.date || '9999-99-99';
+          return dateA.localeCompare(dateB);
+        });
+      };
+
+      const escapeHtml = (str) => {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, function(m) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+        });
+      };
+
+      // Branded Clickable Work & Delivery Links Service Detector
+      const LINK_SERVICES = [
+        { match: /drive\.google\.com/i, name: 'Google Drive', icon: '📁', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900' },
+        { match: /(youtube\.com|youtu\.be)/i, name: 'YouTube', icon: '▶️', bg: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900' },
+        { match: /frame\.io/i, name: 'Frame.io', icon: '🎞️', bg: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900' },
+        { match: /figma\.com/i, name: 'Figma', icon: '🎨', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900' },
+        { match: /canva\.com/i, name: 'Canva', icon: '✨', bg: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900' },
+        { match: /docs\.google\.com/i, name: 'Google Docs', icon: '📄', bg: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900' },
+        { match: /dropbox\.com/i, name: 'Dropbox', icon: '📦', bg: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900' },
+        { match: /./, name: 'เปิดลิงก์', icon: '🔗', bg: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700' }
+      ];
+
+      const extractLinksAndText = (text) => {
+        if (!text || typeof text !== 'string') return { cleanText: '', links: [] };
+        const urlRegex = /(https?:\/\/[^\s<>"']+)/gi;
+        const matches = text.match(urlRegex) || [];
+        const links = [];
+        const seen = new Set();
+        matches.forEach(rawUrl => {
+          let cleanUrl = rawUrl.replace(/[.,;:)\]]+$/, '');
+          if (!seen.has(cleanUrl)) {
+            seen.add(cleanUrl);
+            const service = LINK_SERVICES.find(s => s.match.test(cleanUrl)) || LINK_SERVICES[LINK_SERVICES.length - 1];
+            let displayLabel = service.name;
+            if (service.name === 'เปิดลิงก์') {
+              try {
+                const u = new URL(cleanUrl);
+                displayLabel = u.hostname.replace(/^www\./, '');
+              } catch(e) {}
+            }
+            links.push({
+              url: cleanUrl,
+              name: displayLabel,
+              icon: service.icon,
+              bg: service.bg
+            });
+          }
+        });
+
+        let cleanText = text.replace(urlRegex, '').replace(/\s{2,}/g, ' ').replace(/^[\s•\-|]+|[\s•\-|]+$/g, '').trim();
+
+        return { cleanText, links };
+      };
+
+      const renderNoteWithLinks = (noteText, context = 'kanban') => {
+        if (!noteText) {
+          return context === 'kanban' ? '<div class="mb-2"></div>' : '';
+        }
+
+        const { cleanText, links } = extractLinksAndText(noteText);
+
+        if (links.length === 0) {
+          if (context === 'kanban') {
+            return `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 mb-2.5 line-clamp-2 bg-slate-50 dark:bg-slate-800/60 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700/60">${escapeHtml(cleanText)}</p>`;
+          } else if (context === 'table') {
+            return `<div class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1">${escapeHtml(cleanText)}</div>`;
+          } else {
+            return `<div class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">${escapeHtml(cleanText)}</div>`;
+          }
+        }
+
+        if (context === 'kanban') {
+          return `
+            <div class="mt-1.5 mb-2 space-y-1.5">
+              ${cleanText ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 bg-slate-50 dark:bg-slate-800/60 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700/60">${escapeHtml(cleanText)}</p>` : ''}
+              <div class="flex flex-wrap gap-1 items-center">
+                ${links.map(l => `
+                  <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="คลิกเพื่อเปิด: ${escapeHtml(l.url)}" class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border ${l.bg} shadow-2xs transition hover:scale-[1.02] cursor-pointer">
+                    <span>${l.icon}</span>
+                    <span>${escapeHtml(l.name)}</span>
+                    <span class="text-[9px] opacity-70">↗</span>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        } else if (context === 'table') {
+          return `
+            <div class="mt-1 space-y-1">
+              ${cleanText ? `<div class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${escapeHtml(cleanText)}</div>` : ''}
+              <div class="flex flex-wrap gap-1 items-center">
+                ${links.map(l => `
+                  <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="คลิกเพื่อเปิด: ${escapeHtml(l.url)}" class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ${l.bg} shadow-2xs transition hover:scale-[1.02] cursor-pointer">
+                    <span>${l.icon}</span>
+                    <span>${escapeHtml(l.name)}</span>
+                    <span class="text-[8px] opacity-70">↗</span>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="mt-0.5 space-y-1">
+              ${cleanText ? `<div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">${escapeHtml(cleanText)}</div>` : ''}
+              <div class="flex flex-wrap gap-1 items-center">
+                ${links.map(l => `
+                  <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="คลิกเพื่อเปิด: ${escapeHtml(l.url)}" class="inline-flex items-center space-x-1 px-1.5 py-0.2 rounded-md text-[9px] font-semibold border ${l.bg} shadow-2xs transition hover:scale-[1.02] cursor-pointer">
+                    <span>${l.icon}</span>
+                    <span>${escapeHtml(l.name)}</span>
+                    <span class="text-[8px] opacity-70">↗</span>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+      };
+
+      const renderTaskOptionBadges = (options, isSmall = false) => {
+        if (!Array.isArray(options) || options.length === 0) return '';
+        return `
+          <div class="flex flex-wrap gap-1 items-center mt-1">
+            ${options.map(opt => {
+              const conf = TASK_OPTIONS_CONFIG[opt] || { name: opt, icon: '🏷️', bg: 'bg-slate-100 text-slate-700 border-slate-200' };
+              if (isSmall) {
+                return `
+                  <span class="inline-flex items-center space-x-1 px-1.5 py-0.2 rounded text-[10px] font-semibold border ${conf.bg}">
+                    <span class="text-[9px]">${conf.icon}</span>
+                    <span>${conf.name}</span>
+                  </span>
+                `;
+              }
+              return `
+                <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold border ${conf.bg} shadow-2xs">
+                  <span class="text-xs">${conf.icon}</span>
+                  <span>${conf.name}</span>
+                </span>
+              `;
+            }).join('')}
+          </div>
+        `;
+      };
+
+      const THAI_MONTHS = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      ];
+      const WEEKDAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+
+      const formatDateLocal = (dateObj) => {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+
+      const parseDateLocal = (dateStr) => {
+        if (!dateStr) return null;
+        const [y, m, d] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d, 0, 0, 0, 0);
+      };
+
+      const getTodayStr = (offsetDays = 0) => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        if (offsetDays !== 0) {
+          d.setDate(d.getDate() + offsetDays);
+        }
+        return formatDateLocal(d);
+      };
+
+      const formatThaiDate = (dateStr) => {
+        if (!dateStr) return '';
+        const dateObj = parseDateLocal(dateStr);
+        if (!dateObj) return '';
+        const d = dateObj.getDate();
+        const m = dateObj.getMonth();
+        const y = dateObj.getFullYear();
+        return `วัน${WEEKDAYS[dateObj.getDay()]}ที่ ${d} ${THAI_MONTHS[m]} ${y + 543}`;
+      };
+
+      const changeDateByDays = (dateStr, delta) => {
+        const dateObj = parseDateLocal(dateStr) || new Date();
+        dateObj.setDate(dateObj.getDate() + delta);
+        return formatDateLocal(dateObj);
+      };
+
+      const normalizeTask = (t, idx = 0) => {
+        let ids = t.assigneeIds;
+        if (!ids && t.assigneeId) ids = [t.assigneeId];
+        if (!Array.isArray(ids) || ids.length === 0) ids = ['non'];
+        
+        let color = t.color;
+        if (!color || !TASK_COLORS[color]) {
+          color = COLOR_KEYS[idx % COLOR_KEYS.length] || 'blue';
+        }
+
+        // Handle options (Roll A, ins, ตัดต่อ, Short, เขียนสคริปต์, กราฟฟิก, ปล่อยงาน, แก้งาน)
+        let options = [];
+        if (Array.isArray(t.options)) {
+          options = t.options.filter(o => TASK_OPTIONS_LIST.includes(o));
+        } else if (Array.isArray(t.description)) {
+          options = t.description.filter(o => TASK_OPTIONS_LIST.includes(o));
+        } else if (typeof t.description === 'string' && t.description) {
+          TASK_OPTIONS_LIST.forEach(opt => {
+            if (t.description.includes(opt)) options.push(opt);
+          });
+        }
+        if (typeof t.title === 'string' && t.title.includes('ตัดต่อ') && !options.includes('ตัดต่อ')) {
+          options.push('ตัดต่อ');
+        }
+        if (typeof t.title === 'string' && t.title.includes('แก้งาน') && !options.includes('แก้งาน')) {
+          options.push('แก้งาน');
+        }
+        if (options.length === 0) {
+          const defaultCombos = [
+            ['Roll A', 'ins'],
+            ['เขียนสคริปต์'],
+            ['ตัดต่อ', 'Short'],
+            ['Short', 'กราฟฟิก'],
+            ['Roll A', 'เขียนสคริปต์'],
+            ['ตัดต่อ', 'กราฟฟิก'],
+            ['ins', 'ตัดต่อ'],
+            ['ตัดต่อ', 'ปล่อยงาน']
+          ];
+          options = defaultCombos[idx % defaultCombos.length];
+        }
+
+        const note = (typeof t.note === 'string') 
+          ? t.note 
+          : ((typeof t.description === 'string' && !TASK_OPTIONS_LIST.some(opt => t.description.includes(opt))) ? t.description : '');
+
+        return {
+          id: t.id || 'task-' + Date.now(),
+          title: t.title || 'ไม่มีชื่องาน',
+          options: options,
+          note: note,
+          description: options.join(', ') + (note ? ` (${note})` : ''),
+          color: color,
+          date: t.date || getTodayStr(0),
+          deadline: t.deadline || getTodayStr(2),
+          status: t.status || 'todo',
+          priority: t.priority || 'normal',
+          assigneeIds: ids
+        };
+      };
+
+      const INITIAL_TASKS = [
+        { id: 'task-1', title: 'ถ่ายทำคลิปรีวิว iPhone 16 Pro Max', options: ['Roll A', 'ins'], note: 'สตูดิโอ A • https://drive.google.com/drive/folders/sample-iphone16', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['non', 'france'], priority: 'high', color: 'blue' },
+        { id: 'task-2', title: 'เขียนสคริปต์คลิปท่องเที่ยวเชียงใหม่ EP.12', options: ['เขียนสคริปต์'], note: 'ส่งดราฟต์แรกให้รีวิว https://docs.google.com/document/d/sample-script', date: getTodayStr(-1), deadline: getTodayStr(0), status: 'todo', assigneeIds: ['non', 'tanya'], priority: 'normal', color: 'purple' },
+        { id: 'task-3', title: 'ตัดต่อคลิปสั้นไฮไลต์ TikTok & Reels', options: ['ตัดต่อ', 'Short', 'กราฟฟิก'], note: 'เน้นช่วงต้นคลิป 3 วิแรก https://app.frame.io/projects/sample-tiktok', date: getTodayStr(-4), deadline: getTodayStr(-1), status: 'in-progress', assigneeIds: ['aun', 'rang'], priority: 'high', color: 'coral' },
+        { id: 'task-4', title: 'ออกแบบภาพ Thumbnail และ Motion Graphics', options: ['กราฟฟิก'], note: 'ขนาด 1920x1080 https://www.figma.com/file/sample-thumbnail', date: getTodayStr(-2), deadline: getTodayStr(1), status: 'done', assigneeIds: ['aun'], priority: 'high', color: 'green' },
+        { id: 'task-5', title: 'ถ่าย Ins บรรยากาศงานแถลงข่าวเปิดตัว', options: ['ins', 'Roll A'], note: 'เก็บบรรยากาศผู้ร่วมงาน', date: getTodayStr(-2), deadline: getTodayStr(3), status: 'in-progress', assigneeIds: ['eyeta', 'france'], priority: 'normal', color: 'rose' },
+        { id: 'task-6', title: 'ตรวจเช็กความเรียบร้อยและปล่อยงานคลิปสัมภาษณ์', options: ['ปล่อยงาน', 'ตัดต่อ'], note: 'อัปโหลดขึ้น YouTube แล้ว https://youtu.be/sample-interview', date: getTodayStr(0), deadline: getTodayStr(0), status: 'done', assigneeIds: ['eyeta'], priority: 'normal', color: 'teal' },
+        { id: 'task-7', title: 'เขียนสคริปต์ Tie-in สปอนเซอร์แคมเปญ 11.11', options: ['เขียนสคริปต์'], note: 'สคริปต์ผ่านแล้ว พร้อมถ่าย https://docs.google.com/document/d/sample-sponsor', date: getTodayStr(-5), deadline: getTodayStr(-2), status: 'done', assigneeIds: ['rang', 'aun'], priority: 'high', color: 'red' },
+        { id: 'task-8', title: 'บันทึกภาพ Roll A ช่วงคุยประเด็นข่าวไอที', options: ['Roll A', 'Short'], note: 'กล้องหลัก 4K 60fps', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'done', assigneeIds: ['rang'], priority: 'normal', color: 'indigo' },
+        { id: 'task-9', title: 'ทำกราฟฟิก Intro และ Transition รายการ', options: ['กราฟฟิก', 'Short'], note: 'ธีมสีใหม่ https://www.canva.com/design/sample-intro', date: getTodayStr(-2), deadline: getTodayStr(4), status: 'todo', assigneeIds: ['tanya'], priority: 'normal', color: 'yellow' },
+        { id: 'task-10', title: 'ถ่ายทำ Footage Ins ประกอบบทวิเคราะห์', options: ['ins'], note: 'ภาพ B-Roll สินค้า https://www.dropbox.com/sh/sample-broll', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['tanya', 'non'], priority: 'low', color: 'cyan' },
+        { id: 'task-11', title: 'ตัดต่อและปล่อยงานคลิป Short รายวัน', options: ['ตัดต่อ', 'Short', 'ปล่อยงาน'], note: 'ความยาวไม่เกิน 60 วิ https://drive.google.com/drive/folders/sample-shorts', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'in-progress', assigneeIds: ['france'], priority: 'high', color: 'fuchsia' },
+        { id: 'task-12', title: 'ตรวจสีเกรดดิ้งและตัดต่อคลิปยาวฉบับเต็ม', options: ['Roll A', 'ตัดต่อ', 'ปล่อยงาน'], note: 'Export ProRes 422 https://drive.google.com/drive/folders/sample-master', date: getTodayStr(-4), deadline: getTodayStr(5), status: 'todo', assigneeIds: ['france', 'non'], priority: 'low', color: 'lime' },
+        { id: 'task-13', title: 'แก้งานตัดต่อคลิปและเสียงรอบที่ 1 ตามฟีดแบ็กลูกค้า', options: ['แก้งาน', 'ตัดต่อ'], note: 'แก้เสียงบรรยายและปรับคัลเลอร์เกรด https://app.frame.io/projects/sample-revision', date: getTodayStr(-1), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['aun', 'france'], priority: 'high', color: 'brown' }
+      ];
+
+      // 2. Application State
+      let tasks = (function() {
+        try {
+          const saved9 = localStorage.getItem('team_taskflow_v9');
+          if (saved9) {
+            const parsed = JSON.parse(saved9);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
+          }
+          const saved8 = localStorage.getItem('team_taskflow_v8');
+          if (saved8) {
+            const parsed = JSON.parse(saved8);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              return parsed.map((t, i) => {
+                const norm = normalizeTask(t, i);
+                const initMatch = INITIAL_TASKS.find(it => it.id === norm.id);
+                if (initMatch && initMatch.note && (!norm.note || norm.note === 'สตูดิโอ A' || norm.note === 'ส่งดราฟต์แรกให้รีวิว' || norm.note === 'เน้นช่วงต้นคลิป 3 วิแรก' || norm.note === 'ขนาด 1920x1080' || norm.note === 'อัปโหลดขึ้น YouTube และเพจ')) {
+                  norm.note = initMatch.note;
+                }
+                return norm;
+              });
+            }
+          }
+          const saved7 = localStorage.getItem('team_taskflow_v7');
+          if (saved7) {
+            const parsed = JSON.parse(saved7);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
+          }
+          const saved6 = localStorage.getItem('team_taskflow_v6');
+          if (saved6) {
+            const parsed = JSON.parse(saved6);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
+          }
+          const saved5 = localStorage.getItem('team_taskflow_v5');
+          if (saved5) {
+            const parsed = JSON.parse(saved5);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
+          }
+          const saved4 = localStorage.getItem('team_taskflow_v4');
+          if (saved4) {
+            const parsed = JSON.parse(saved4);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
+          }
+          const oldV3 = localStorage.getItem('team_todo_tasks_v3');
+          if (oldV3) {
+            const parsedOld = JSON.parse(oldV3);
+            if (Array.isArray(parsedOld)) return parsedOld.map((t, i) => normalizeTask(t, i));
+          }
+        } catch(e) {}
+        return INITIAL_TASKS.map((t, i) => normalizeTask(t, i));
+      })();
+
+      let currentUserId = 'manager';
+      let managerTaskView = 'list';   // 'list' | 'kanban' (ค่าเริ่มต้น: ตารางงาน)
+      let isCalendarCollapsed = false;
+      let isDailyCollapsed = false;
+      let isMonthlyCollapsed = false;
+      let calendarMode = 'range';     // 'range' | 'deadline'
+      let calendarColorFilter = 'all';// 'all' | 'blue' | 'green' | 'purple' | 'orange' | 'rose' | 'teal' | 'indigo' | 'yellow' | 'red' | 'slate'
+      const DEFAULT_MANAGER_CALENDAR_TYPES = ['Roll A', 'ปล่อยงาน'];
+      let managerCalendarSelectedTypes = [...DEFAULT_MANAGER_CALENDAR_TYPES]; // ภาพรวมทีม เริ่มต้น: Roll A + ปล่อยงาน
+      let memberCalendarSelectedTypes = {}; // ปฏิทินของแต่ละคน เริ่มต้นแสดงทั้งหมด (ทุกประเภทงาน)
+      let calendarCurrentDate = new Date();
+      let dailySelectedDate = getTodayStr(0);
+      let dailyMemberFilter = 'all';
+
+      let searchQuery = '';
+      let filterAssignee = 'all';
+      let filterStatus = 'all';
+
+      // Theme State (Dark / Light)
+      let currentTheme = localStorage.getItem('team_taskflow_theme') || 'dark';
+
+      const applyTheme = (theme) => {
+        currentTheme = theme;
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        try {
+          localStorage.setItem('team_taskflow_theme', theme);
+        } catch (e) {}
+        updateThemeToggleButton();
+      };
+
+      const updateThemeToggleButton = () => {
+        const icon = document.getElementById('themeToggleIcon');
+        const text = document.getElementById('themeToggleText');
+        const btn = document.getElementById('btnThemeToggle');
+        if (!icon || !text || !btn) return;
+        const isDark = currentTheme === 'dark';
+        icon.textContent = isDark ? '☀️' : '🌙';
+        text.textContent = isDark ? 'โหมดสว่าง' : 'โหมดมืด';
+        btn.setAttribute('title', isDark ? 'สลับเป็นโหมดสว่าง (Light Mode)' : 'สลับเป็นโหมดมืด (Dark Mode)');
+      };
+
+      // Modal state
+      let modalSelectedAssignees = ['non'];
+      let modalSelectedColor = 'blue';
+      let modalSelectedOptions = ['Roll A'];
+
+      // Local storage persistence
+      const saveTasksLocalOnly = () => {
+        try {
+          localStorage.setItem('team_taskflow_v9', JSON.stringify(tasks));
+          localStorage.setItem('team_taskflow_v8', JSON.stringify(tasks));
+          localStorage.setItem('team_taskflow_v7', JSON.stringify(tasks));
+          localStorage.setItem('team_taskflow_v6', JSON.stringify(tasks));
+          localStorage.setItem('team_taskflow_v5', JSON.stringify(tasks));
+          localStorage.setItem('team_taskflow_v4', JSON.stringify(tasks));
+        } catch (e) {}
+      };
+
+      // =====================================================================
+      // Cloudflare D1 Sync Engine
+      // =====================================================================
+      let cloudSyncStatus = 'offline'; // 'connected' | 'syncing' | 'offline' | 'error'
+
+      const updateCloudStatusUI = (status, label = null, tooltip = null) => {
+        cloudSyncStatus = status;
+        const dot = document.getElementById('cloudSyncDot');
+        const text = document.getElementById('cloudSyncText');
+        const btn = document.getElementById('btnCloudSync');
+        if (!dot || !text) return;
+
+        dot.className = 'inline-block w-2 h-2 rounded-full transition-all duration-300';
+        if (status === 'connected') {
+          dot.classList.add('bg-emerald-500', 'shadow-xs', 'shadow-emerald-400');
+          text.innerHTML = '<span class="hidden sm:inline">☁️ </span>Cloud D1';
+          if (btn) btn.setAttribute('title', tooltip || 'เชื่อมต่อ Cloudflare D1 แล้ว ข้อมูลจะซิงค์อัตโนมัติ (คลิกเพื่อรีเฟรช)');
+        } else if (status === 'syncing') {
+          dot.classList.add('bg-amber-400', 'animate-pulse');
+          text.innerHTML = '<span class="hidden sm:inline">⏳ </span>กำลังซิงค์...';
+          if (btn) btn.setAttribute('title', tooltip || 'กำลังซิงค์ข้อมูลกับ Cloudflare D1...');
+        } else if (status === 'error') {
+          dot.classList.add('bg-rose-500');
+          text.innerHTML = '<span class="hidden sm:inline">⚠️ </span>Sync Error';
+          if (btn) btn.setAttribute('title', tooltip || 'เกิดข้อผิดพลาดในการซิงค์ (คลิกเพื่อลองใหม่)');
+        } else {
+          // Local / Offline fallback
+          dot.classList.add('bg-slate-400');
+          text.innerHTML = '<span class="hidden sm:inline">💾 </span>Local Mode';
+          if (btn) btn.setAttribute('title', tooltip || 'ทำงานในเครื่อง (Local Mode) - ข้อมูลบันทึกลงในบราวเซอร์');
+        }
+      };
+
+      const syncTaskToCloud = async (task, action = 'save') => {
+        if (!window.location.protocol.startsWith('http')) return;
+        try {
+          updateCloudStatusUI('syncing');
+          if (action === 'delete') {
+            const taskId = typeof task === 'string' ? task : (task ? task.id : '');
+            if (taskId) {
+              await fetch(`/api/tasks?id=${encodeURIComponent(taskId)}`, { method: 'DELETE' });
+            }
+          } else if (task) {
+            await fetch('/api/tasks', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(task)
+            });
+          }
+          updateCloudStatusUI('connected');
+        } catch (err) {
+          console.warn('Cloud sync error:', err);
+          updateCloudStatusUI('connected');
+        }
+      };
+
+      const syncAllTasksToCloud = async (taskList) => {
+        if (!window.location.protocol.startsWith('http')) return;
+        try {
+          updateCloudStatusUI('syncing');
+          const res = await fetch('/api/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tasks: taskList, replace: true })
+          });
+          if (res.ok) {
+            updateCloudStatusUI('connected');
+          } else {
+            updateCloudStatusUI('offline');
+          }
+        } catch (err) {
+          console.warn('Batch sync error:', err);
+          updateCloudStatusUI('offline');
+        }
+      };
+
+      const saveTasks = (taskTarget = null, action = 'save') => {
+        saveTasksLocalOnly();
+        if (window.location.protocol.startsWith('http')) {
+          if (action === 'bulk') {
+            syncAllTasksToCloud(tasks);
+          } else if (taskTarget) {
+            syncTaskToCloud(taskTarget, action);
+          }
+        }
+      };
+
+      const initCloudSync = async (isManual = false) => {
+        if (!window.location.protocol.startsWith('http')) {
+          updateCloudStatusUI('offline', null, 'เปิดผ่าน local file:// ข้อมูลจะบันทึกลงใน Local Storage');
+          return;
+        }
+
+        updateCloudStatusUI('syncing');
+        try {
+          const res = await fetch('/api/tasks');
+          if (!res.ok) {
+            updateCloudStatusUI('offline', null, 'ไม่พบ Cloudflare D1 endpoint หรือยังไม่ได้ผูก Database');
+            return;
+          }
+          const data = await res.json();
+          if (data && data.success) {
+            if (Array.isArray(data.tasks) && data.tasks.length > 0) {
+              tasks = data.tasks.map((t, idx) => normalizeTask(t, idx));
+              saveTasksLocalOnly();
+              renderApp();
+              updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
+              if (isManual) alert(`ซิงค์ข้อมูลจาก Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน)`);
+            } else {
+              // D1 is empty; push our local tasks into D1
+              updateCloudStatusUI('syncing');
+              await syncAllTasksToCloud(tasks);
+              updateCloudStatusUI('connected', null, 'เชื่อมต่อ Cloudflare D1 และอัปโหลดข้อมูลเริ่มต้นเรียบร้อยแล้ว');
+              if (isManual) alert('ซิงค์ข้อมูลเริ่มต้นขึ้น Cloudflare D1 สำเร็จแล้ว!');
+            }
+          } else {
+            updateCloudStatusUI('offline', null, data && data.error ? data.error : 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ');
+          }
+        } catch (e) {
+          console.warn('Cloudflare D1 init error:', e);
+          updateCloudStatusUI('offline', null, 'ไม่สามารถเชื่อมต่อ Cloudflare API ได้');
+        }
+      };
+
+      const getDeadlineInfo = (deadlineStr, taskStatus) => {
+        if (taskStatus === 'done') return { label: 'เสร็จสิ้นแล้ว', type: 'done', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800' };
+        if (!deadlineStr) return { label: 'ไม่มีกำหนด', type: 'none', badgeClass: 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' };
+        
+        const today = new Date(); today.setHours(0,0,0,0);
+        const deadline = parseDateLocal(deadlineStr) || new Date(deadlineStr);
+        deadline.setHours(0,0,0,0);
+        const diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) return { label: `เกินกำหนด ${Math.abs(diffDays)} วัน`, type: 'overdue', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 font-bold dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800' };
+        if (diffDays === 0) return { label: 'กำหนดส่งวันนี้!', type: 'today', badgeClass: 'bg-amber-50 text-amber-800 border-amber-300 font-bold dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' };
+        if (diffDays <= 2) return { label: `เหลืออีก ${diffDays} วัน`, type: 'urgent', badgeClass: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800' };
+        return { label: `ครบกำหนด ${deadlineStr}`, type: 'normal', badgeClass: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700' };
+      };
+
+      // 3. Render Helpers
+      const renderApp = () => {
+        const isManager = currentUserId === 'manager';
+        const currentUser = isManager ? MANAGER_PROFILE : (TEAM_MEMBERS.find(m => m.id === currentUserId) || MANAGER_PROFILE);
+
+        // Update banner
+        document.getElementById('bannerAvatar').textContent = currentUser.avatar;
+        document.getElementById('bannerName').textContent = currentUser.name;
+        document.getElementById('bannerRoleBadge').textContent = isManager ? 'ผู้จัดการภาพรวมทีม' : 'ทีมงาน';
+        document.getElementById('bannerDesc').textContent = isManager
+          ? 'ตรวจสอบปฏิทินไทม์ไลน์และสรุปงานรายวันด้านบน พร้อมจัดการงานผ่านกระดาน Kanban และระบบคัดกรองงาน'
+          : `ตรวจสอบปฏิทินไทม์ไลน์และสรุปงานรายวันของ ${currentUser.name} ด้านบน พร้อมจัดการงานผ่านกระดาน Kanban`;
+        document.getElementById('btnCreateTaskText').textContent = isManager ? 'มอบหมายงานใหม่' : 'เพิ่มงานใหม่';
+
+        // Filter tasks
+        let displayedTasks = tasks;
+        if (!isManager) {
+          displayedTasks = displayedTasks.filter(t => t.assigneeIds && t.assigneeIds.includes(currentUserId));
+        } else {
+          if (filterAssignee !== 'all') {
+            displayedTasks = displayedTasks.filter(t => t.assigneeIds && t.assigneeIds.includes(filterAssignee));
+          }
+          if (filterStatus !== 'all') {
+            displayedTasks = displayedTasks.filter(t => t.status === filterStatus);
+          }
+        }
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          displayedTasks = displayedTasks.filter(t => 
+            t.title.toLowerCase().includes(q) || 
+            (t.note && t.note.toLowerCase().includes(q)) ||
+            (Array.isArray(t.options) && t.options.some(o => o.toLowerCase().includes(q))) ||
+            (typeof t.description === 'string' && t.description.toLowerCase().includes(q))
+          );
+        }
+
+        // Sort displayed tasks by Deadline (ใกล้กำหนดส่งขึ้นก่อน)
+        displayedTasks = sortByDeadline(displayedTasks);
+
+        // Stats calculation
+        const total = tasks.length;
+        const todoCount = tasks.filter(t => t.status === 'todo').length;
+        const inProgressCount = tasks.filter(t => t.status === 'in-progress').length;
+        const doneCount = tasks.filter(t => t.status === 'done').length;
+        const todayObj = new Date(); todayObj.setHours(0,0,0,0);
+        const overdueCount = tasks.filter(t => {
+          if (t.status === 'done' || !t.deadline) return false;
+          const d = parseDateLocal(t.deadline);
+          if (!d) return false;
+          return d < todayObj;
+        }).length;
+
+        const root = document.getElementById('appRoot');
+        let html = '';
+
+        if (isManager) {
+          /* ================= MANAGER VIEW ================= */
+          // 1. Stats Summary
+          html += `
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                  <span>งานทั้งหมดของทีม</span><span class="p-1.5 bg-slate-100 rounded-lg">📁</span>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                  <span class="text-2xl font-bold text-slate-800">${total}</span>
+                  <span class="text-xs text-slate-400">รายการ</span>
+                </div>
+              </div>
+              <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                  <span>รอดำเนินการ</span><span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">⏳</span>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                  <span class="text-2xl font-bold text-blue-600">${todoCount}</span>
+                  <span class="text-xs text-slate-400">รายการ</span>
+                </div>
+              </div>
+              <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                  <span>กำลังดำเนินการ</span><span class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">⚡</span>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                  <span class="text-2xl font-bold text-amber-600">${inProgressCount}</span>
+                  <span class="text-xs text-slate-400">รายการ</span>
+                </div>
+              </div>
+              <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                  <span>เสร็จสิ้นแล้ว</span><span class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">✅</span>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                  <span class="text-2xl font-bold text-emerald-600">${doneCount}</span>
+                  <span class="text-xs text-slate-400">${total > 0 ? Math.round((doneCount / total) * 100) : 0}%</span>
+                </div>
+              </div>
+              <div class="p-4 rounded-2xl border shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1 ${overdueCount > 0 ? 'bg-rose-50/70 border-rose-200 text-rose-900' : 'bg-white border-slate-200'}">
+                <div class="flex items-center justify-between text-xs font-medium">
+                  <span class="${overdueCount > 0 ? 'text-rose-700 font-bold' : 'text-slate-500'}">เกินกำหนดส่ง (Overdue)</span>
+                  <span class="p-1.5 bg-rose-100 rounded-lg">🚨</span>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                  <span class="text-2xl font-bold ${overdueCount > 0 ? 'text-rose-600' : 'text-slate-400'}">${overdueCount}</span>
+                  <span class="text-xs text-slate-400">รายการ</span>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // 1.5 Monthly Content Output Counter (Team Overview)
+          html += `
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">🏆</span>
+                  <div>
+                    <h3 class="font-bold text-slate-800 text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} (ภาพรวมทั้งทีม)</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">ติดตามยอดส่งมอบคอนเทนต์หลักประจำเดือน: Long Form 🎬, คลิปสั้น (Short) 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
+                  </div>
+                </div>
+                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
+                  <span>${isMonthlyCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
+                </button>
+              </div>
+              ${!isMonthlyCollapsed ? renderMonthlyOutput(tasks, true) : ''}
+            </div>
+          `;
+
+          // 2. Separated Timeline Calendar (Top Section)
+          html += `
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">📅</span>
+                  <div>
+                    <h3 class="font-bold text-slate-800 text-base">ปฏิทินไทม์ไลน์ภาพรวมทีม (Team Timeline Calendar)</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">แสดงแผนงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁) • กรองดูตามประเภทงาน & ปรับสีกำกับงานได้ 15 สี (แยกกันชัดเจน)</p>
+                  </div>
+                </div>
+                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                  <span>${isCalendarCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
+                </button>
+              </div>
+              ${!isCalendarCollapsed ? renderCalendar(displayedTasks, true) : ''}
+            </div>
+          `;
+
+          // 3. Separated Daily Summary (Top Section)
+          html += `
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                  <span class="p-2 bg-amber-50 text-amber-600 rounded-xl text-lg">☀️</span>
+                  <div>
+                    <h3 class="font-bold text-slate-800 text-base">สรุปงานประจำวันของแต่ละคน (Daily Summary & Agenda)</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                  </div>
+                </div>
+                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                  <span>${isDailyCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
+                </button>
+              </div>
+              ${!isDailyCollapsed ? renderDailySummary(tasks, true) : ''}
+            </div>
+          `;
+
+          // 4. Team Workload
+          html += `
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-base">ภาระงานรายบุคคล (Team Workload)</h3>
+                  <p class="text-xs text-slate-500">นับรวมทั้งงานเดี่ยวและงานกลุ่ม • คลิกเพื่อสลับไปดูบอร์ดของคนนั้น</p>
+                </div>
+                <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full">สมาชิก ${TEAM_MEMBERS.length} คน</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                ${TEAM_MEMBERS.map(m => {
+                  const mTasks = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(m.id));
+                  const mTotal = mTasks.length;
+                  const mDone = mTasks.filter(t => t.status === 'done').length;
+                  const mProg = mTasks.filter(t => t.status === 'in-progress').length;
+                  const mTodo = mTasks.filter(t => t.status === 'todo').length;
+                  const mOverdue = mTasks.filter(t => {
+                    if (t.status === 'done' || !t.deadline) return false;
+                    const d = parseDateLocal(t.deadline);
+                    if (!d) return false;
+                    return d < todayObj;
+                  }).length;
+                  const rate = mTotal > 0 ? Math.round((mDone / mTotal) * 100) : 0;
+
+                  return `
+                    <div onclick="window.appActions.switchUser('${m.id}')" class="p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer bg-slate-50/50 hover:bg-white group">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                          <span class="text-2xl p-1 bg-white rounded-lg border border-slate-200">${m.avatar}</span>
+                          <div>
+                            <div class="flex items-center space-x-1.5">
+                              <span class="font-semibold text-slate-800 text-sm group-hover:text-indigo-600 transition">${m.name}</span>
+                              ${mOverdue > 0 ? `<span class="text-[10px] px-1.5 py-0.2 bg-rose-100 text-rose-700 font-bold rounded-full">เกิน ${mOverdue}</span>` : ''}
+                            </div>
+                            <span class="text-xs text-slate-400">งานที่รับผิดชอบ: ${mTotal} งาน</span>
+                          </div>
+                        </div>
+                        <span class="text-xs font-bold text-slate-600">${rate}%</span>
+                      </div>
+                      <div class="mt-3 w-full bg-slate-200 rounded-full h-2 overflow-hidden flex">
+                        <div class="bg-emerald-500 h-full" style="width: ${mTotal ? (mDone / mTotal) * 100 : 0}%"></div>
+                        <div class="bg-amber-400 h-full" style="width: ${mTotal ? (mProg / mTotal) * 100 : 0}%"></div>
+                        <div class="bg-blue-300 h-full" style="width: ${mTotal ? (mTodo / mTotal) * 100 : 0}%"></div>
+                      </div>
+                      <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>รอ: <strong class="text-slate-700">${mTodo}</strong></span>
+                        <span>กำลังทำ: <strong class="text-amber-600">${mProg}</strong></span>
+                        <span>เสร็จ: <strong class="text-emerald-600">${mDone}</strong></span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+
+          // 5. Task Management & Filters Card (Kanban & Table)
+          html += `
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                  <h3 class="font-bold text-slate-800 text-base">รายการงานทั้งหมดในทีม</h3>
+                  <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">${displayedTasks.length} รายการ</span>
+                  <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center space-x-1">
+                    <span>📅 เรียงตามกำหนดส่ง (Deadline)</span>
+                  </span>
+                </div>
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl space-x-1 self-start sm:self-auto">
+                  <button onclick="window.appActions.setManagerTaskView('kanban')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+                    📊 Kanban รวม
+                  </button>
+                  <button onclick="window.appActions.setManagerTaskView('list')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+                    📋 ตารางงาน
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="relative">
+                  <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ค้นหาชื่องาน หรือรายละเอียด..." class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs">
+                </div>
+                <div>
+                  <select id="filterAssigneeSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                    <option value="all" ${filterAssignee === 'all' ? 'selected' : ''}>👥 กรองตามผู้รับผิดชอบ: ทุกคน</option>
+                    ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${filterAssignee === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
+                  </select>
+                </div>
+                <div>
+                  <select id="filterStatusSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                    <option value="all" ${filterStatus === 'all' ? 'selected' : ''}>📌 กรองตามสถานะ: ทั้งหมด</option>
+                    <option value="todo" ${filterStatus === 'todo' ? 'selected' : ''}>รอดำเนินการ (To Do)</option>
+                    <option value="in-progress" ${filterStatus === 'in-progress' ? 'selected' : ''}>กำลังทำ (In Progress)</option>
+                    <option value="done" ${filterStatus === 'done' ? 'selected' : ''}>เสร็จสิ้น (Done)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Content: Kanban or Table -->
+              <div id="taskBoardContainer">
+                ${managerTaskView === 'kanban' ? renderKanban(displayedTasks, true) : renderTable(displayedTasks)}
+              </div>
+            </div>
+          `;
+
+        } else {
+          /* ================= TEAM MEMBER VIEW ================= */
+          // 1. Member Header & Quick Stats
+          html += `
+            <div class="space-y-4">
+              <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                  <span class="text-3xl">${currentUser.avatar}</span>
+                  <div>
+                    <h3 class="font-bold text-slate-800 text-lg">พื้นที่จัดการงานของ: ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500">ตรวจสอบปฏิทิน เช็กลิสต์รายวัน และจัดการสถานะงานผ่าน Kanban ด้านล่าง</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2 text-xs">
+                  <span class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-medium">งานทั้งหมด: <strong>${displayedTasks.length}</strong></span>
+                  <span class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 font-medium">รอ: <strong>${displayedTasks.filter(t => t.status === 'todo').length}</strong></span>
+                  <span class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-medium">กำลังทำ: <strong>${displayedTasks.filter(t => t.status === 'in-progress').length}</strong></span>
+                  <span class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-medium">เสร็จแล้ว: <strong>${displayedTasks.filter(t => t.status === 'done').length}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1.5 Monthly Content Output Counter for Member -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">🏆</span>
+                  <div>
+                    <h3 class="font-bold text-slate-800 text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} ของ ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">ยอดส่งมอบผลงานคอนเทนต์และงานสำเร็จของคุณในเดือนนี้: Long Form 🎬, Short 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
+                  </div>
+                </div>
+                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
+                  <span>${isMonthlyCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
+                </button>
+              </div>
+              ${!isMonthlyCollapsed ? renderMonthlyOutput(displayedTasks, false) : ''}
+            </div>
+
+            <!-- 2. Separated Timeline Calendar for Member (Top) -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">📅</span>
+                  <div>
+                    <h3 class="font-bold text-slate-800 text-base">ปฏิทินไทม์ไลน์ของ ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">ตรวจสอบกำหนดการงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁)</p>
+                  </div>
+                </div>
+                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                  <span>${isCalendarCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
+                </button>
+              </div>
+              ${!isCalendarCollapsed ? renderCalendar(displayedTasks, false) : ''}
+            </div>
+
+            <!-- 3. Separated Daily Summary for Member (Top) -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2.5">
+                  <span class="p-2 bg-amber-50 text-amber-600 rounded-xl text-lg">☀️</span>
+                  <div>
+                    <h3 class="font-bold text-slate-800 text-base">สรุปงานประจำวันของ ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">เช็กลิสต์งานที่ต้องทำในแต่ละวัน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                  </div>
+                </div>
+                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                  <span>${isDailyCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
+                </button>
+              </div>
+              ${!isDailyCollapsed ? renderDailySummary(tasks, false) : ''}
+            </div>
+
+            <!-- 4. Member Kanban Board -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                  <h3 class="font-bold text-slate-800 text-base">กระดานงาน Kanban ของ: ${currentUser.name}</h3>
+                  <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold">${displayedTasks.length} งาน</span>
+                </div>
+                <span class="text-xs text-slate-400">ลากการ์ดเพื่อย้ายสถานะ หรือกดปุ่มย้ายสถานะในการ์ด</span>
+              </div>
+              ${renderKanban(displayedTasks, false)}
+            </div>
+          `;
+        }
+
+        root.innerHTML = html;
+        bindEventListeners();
+      };
+
+      // Monthly Content Output Counter (Item 4: สรุปยอดผลงานประจำเดือน)
+      const renderMonthlyOutput = (taskList, isManager) => {
+        const currentYearMonth = getTodayStr(0).slice(0, 7);
+        const monthTasks = (taskList || []).filter(t => 
+          (t.deadline && t.deadline.startsWith(currentYearMonth)) || 
+          (t.date && t.date.startsWith(currentYearMonth))
+        );
+        const doneTasks = monthTasks.filter(t => t.status === 'done');
+
+        const calcMetric = (optKey) => {
+          const total = monthTasks.filter(t => Array.isArray(t.options) && t.options.includes(optKey)).length;
+          const done = doneTasks.filter(t => Array.isArray(t.options) && t.options.includes(optKey)).length;
+          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+          return { total, done, pct };
+        };
+
+        const longForm = calcMetric('ปล่อยงาน');
+        const shorts = calcMetric('Short');
+        const edits = calcMetric('ตัดต่อ');
+        const scripts = calcMetric('เขียนสคริปต์');
+        const graphics = calcMetric('กราฟฟิก');
+
+        const totalPlanned = monthTasks.length;
+        const totalDone = doneTasks.length;
+        const totalPct = totalPlanned > 0 ? Math.round((totalDone / totalPlanned) * 100) : 0;
+
+        return `
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+            <!-- 1. Long Form (เดิมคือ ปล่อยงานสำเร็จ) -->
+            <div class="bg-gradient-to-br from-indigo-50/70 to-white dark:from-indigo-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold text-indigo-900 dark:text-indigo-300">
+                  <span>🎬 Long Form</span>
+                  <span class="p-1 bg-indigo-100/70 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 rounded-lg text-[10px] font-bold">Long Form</span>
+                </div>
+                <div class="mt-2.5 flex items-baseline justify-between">
+                  <span class="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400">${longForm.done}</span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">/ แผน ${longForm.total} คลิป</span>
+                </div>
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-indigo-100/60 dark:border-indigo-900/40">
+                <div class="w-full bg-indigo-100 dark:bg-indigo-950 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-indigo-600 dark:bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: ${longForm.pct}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                  <span>อัตราสำเร็จ</span>
+                  <span class="font-bold text-indigo-700 dark:text-indigo-300">${longForm.pct}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. คลิปสั้น / Short -->
+            <div class="bg-gradient-to-br from-rose-50/70 to-white dark:from-rose-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-rose-100 dark:border-rose-900/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold text-rose-900 dark:text-rose-300">
+                  <span>📱 คลิปสั้น / Short</span>
+                  <span class="p-1 bg-rose-100/70 dark:bg-rose-900/60 text-rose-600 dark:text-rose-300 rounded-lg text-[10px] font-bold">Short</span>
+                </div>
+                <div class="mt-2.5 flex items-baseline justify-between">
+                  <span class="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400">${shorts.done}</span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">/ แผน ${shorts.total} คลิป</span>
+                </div>
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-rose-100/60 dark:border-rose-900/40">
+                <div class="w-full bg-rose-100 dark:bg-rose-950 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-rose-600 dark:bg-rose-500 h-1.5 rounded-full transition-all duration-500" style="width: ${shorts.pct}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                  <span>อัตราสำเร็จ</span>
+                  <span class="font-bold text-rose-700 dark:text-rose-300">${shorts.pct}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. ตัดต่อสำเร็จ (Video Edits) -->
+            <div class="bg-gradient-to-br from-teal-50/70 to-white dark:from-teal-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-teal-100 dark:border-teal-900/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold text-teal-900 dark:text-teal-300">
+                  <span>✂️ ตัดต่อสำเร็จ</span>
+                  <span class="p-1 bg-teal-100/70 dark:bg-teal-900/60 text-teal-600 dark:text-teal-300 rounded-lg text-[10px] font-bold">Edit</span>
+                </div>
+                <div class="mt-2.5 flex items-baseline justify-between">
+                  <span class="text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-400">${edits.done}</span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">/ แผน ${edits.total} งาน</span>
+                </div>
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-teal-100/60 dark:border-teal-900/40">
+                <div class="w-full bg-teal-100 dark:bg-teal-950 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-teal-600 dark:bg-teal-500 h-1.5 rounded-full transition-all duration-500" style="width: ${edits.pct}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                  <span>อัตราสำเร็จ</span>
+                  <span class="font-bold text-teal-700 dark:text-teal-300">${edits.pct}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. เขียนสคริปต์ (Scriptwriting) -->
+            <div class="bg-gradient-to-br from-amber-50/70 to-white dark:from-amber-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-amber-200 dark:border-amber-900/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold text-amber-900 dark:text-amber-300">
+                  <span>📝 เขียนสคริปต์</span>
+                  <span class="p-1 bg-amber-100/70 dark:bg-amber-900/60 text-amber-600 dark:text-amber-300 rounded-lg text-[10px] font-bold">Script</span>
+                </div>
+                <div class="mt-2.5 flex items-baseline justify-between">
+                  <span class="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">${scripts.done}</span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">/ แผน ${scripts.total} บท</span>
+                </div>
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
+                <div class="w-full bg-amber-100 dark:bg-amber-950 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-amber-500 dark:bg-amber-400 h-1.5 rounded-full transition-all duration-500" style="width: ${scripts.pct}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                  <span>อัตราสำเร็จ</span>
+                  <span class="font-bold text-amber-700 dark:text-amber-300">${scripts.pct}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. กราฟฟิก & ภาพปก (Graphics) -->
+            <div class="bg-gradient-to-br from-emerald-50/70 to-white dark:from-emerald-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-900/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold text-emerald-900 dark:text-emerald-300">
+                  <span>🎨 กราฟฟิก & ภาพปก</span>
+                  <span class="p-1 bg-emerald-100/70 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 rounded-lg text-[10px] font-bold">Art</span>
+                </div>
+                <div class="mt-2.5 flex items-baseline justify-between">
+                  <span class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">${graphics.done}</span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">/ แผน ${graphics.total} ชิ้น</span>
+                </div>
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-emerald-100/60 dark:border-emerald-900/40">
+                <div class="w-full bg-emerald-100 dark:bg-emerald-950 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-emerald-600 dark:bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style="width: ${graphics.pct}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                  <span>อัตราสำเร็จ</span>
+                  <span class="font-bold text-emerald-700 dark:text-emerald-300">${graphics.pct}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. ความสำเร็จรวมประจำเดือน (Total Monthly KPI) -->
+            <div class="bg-gradient-to-br from-violet-50/80 to-white dark:from-violet-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-violet-200 dark:border-violet-900/70 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between text-xs font-semibold text-violet-900 dark:text-violet-300">
+                  <span>🏆 รวมทั้งหมดเดือนนี้</span>
+                  <span class="p-1 bg-violet-100/70 dark:bg-violet-900/60 text-violet-600 dark:text-violet-300 rounded-lg text-[10px] font-bold">Total KPI</span>
+                </div>
+                <div class="mt-2.5 flex items-baseline justify-between">
+                  <span class="text-2xl sm:text-3xl font-black text-violet-600 dark:text-violet-400">${totalDone}</span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">/ ทั้งหมด ${totalPlanned} งาน</span>
+                </div>
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-violet-200/60 dark:border-violet-900/40">
+                <div class="w-full bg-violet-100 dark:bg-violet-950 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-violet-500 dark:bg-violet-400 h-1.5 rounded-full transition-all duration-500" style="width: ${totalPct}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                  <span>ความคืบหน้ารวม</span>
+                  <span class="font-bold text-violet-700 dark:text-violet-300">${totalPct}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      // 4. Render Components (Kanban, Table, Calendar, Daily)
+      const renderKanban = (taskList, isManager) => {
+        const columns = [
+          { id: 'todo', title: 'To Do (รอดำเนินการ)', icon: '📋', bg: 'bg-slate-100/70', border: 'border-slate-300' },
+          { id: 'in-progress', title: 'In Progress (กำลังทำ)', icon: '⚡', bg: 'bg-amber-50/70', border: 'border-amber-300' },
+          { id: 'done', title: 'Done (เสร็จสิ้น)', icon: '✅', bg: 'bg-emerald-50/70', border: 'border-emerald-300' }
+        ];
+
+        return `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            ${columns.map(col => {
+              const colTasks = taskList.filter(t => t.status === col.id);
+              return `
+                <div ondragover="window.appActions.onDragOver(event)" ondrop="window.appActions.onDrop(event, '${col.id}')" class="rounded-2xl p-4 border ${col.border} ${col.bg} kanban-col flex flex-col">
+                  <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-base">${col.icon}</span>
+                      <h4 class="font-bold text-slate-800 text-sm">${col.title}</h4>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white text-slate-700 shadow-xs border border-slate-200">${colTasks.length}</span>
+                  </div>
+
+                  <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1">
+                    ${colTasks.length === 0 ? `
+                      <div class="h-32 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400 text-xs">
+                        <span>ไม่มีงานในสถานะนี้</span>
+                        <span class="text-[11px] text-slate-400 mt-1">ลากการ์ดมาวางที่นี่ได้</span>
+                      </div>
+                    ` : colTasks.map(t => renderTaskCard(t, isManager)).join('')}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      };
+
+      const renderTaskCard = (task, isManager) => {
+        const deadlineInfo = getDeadlineInfo(task.deadline, task.status);
+        const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+        const otherAssignees = isManager ? [] : assignees.filter(m => m.id !== currentUserId);
+        const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
+
+        return `
+          <div draggable="true" ondragstart="window.appActions.onDragStart(event, '${task.id}')" class="bg-white rounded-xl p-4 border border-slate-200 border-l-4 ${colConf.borderL} shadow-xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing group relative">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                <span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full border ${colConf.badge}" title="สีกำกับในปฏิทิน: ${colConf.name}">
+                  <span class="w-1.5 h-1.5 rounded-full ${colConf.dot}"></span>
+                  <span>${colConf.name}</span>
+                </span>
+                ${task.priority === 'high' ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700">ด่วนมาก 🔥</span>` : ''}
+                ${task.priority === 'low' ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">ไม่ด่วน</span>` : ''}
+
+                ${isManager ? `
+                  <div class="flex items-center -space-x-1 overflow-hidden" title="${escapeHtml(assignees.map(a => a.name).join(', '))}">
+                    ${assignees.map(m => `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 border-2 border-white text-xs shadow-xs">${m.avatar}</span>`).join('')}
+                    ${assignees.length > 0 ? `<span class="text-[11px] text-slate-600 ml-1.5 font-medium">${escapeHtml(assignees.map(a => a.name).join(', '))}</span>` : ''}
+                  </div>
+                ` : (otherAssignees.length > 0 ? `
+                  <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    👥 ร่วมกับ: ${escapeHtml(otherAssignees.map(a => a.name).join(', '))}
+                  </span>
+                ` : '')}
+              </div>
+
+              <!-- Quick action buttons -->
+              <div class="opacity-70 group-hover:opacity-100 transition flex items-center space-x-1">
+                <button onclick="window.appActions.openEditModal('${task.id}')" title="แก้ไขงาน" class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded">
+                  ✏️
+                </button>
+                <button onclick="window.appActions.deleteTask('${task.id}')" title="ลบงาน" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <h5 onclick="window.appActions.openTaskDetails('${task.id}')" title="คลิกเพื่อดูรายละเอียดข้อมูลงาน" class="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-snug mb-1 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">${escapeHtml(task.title)}</h5>
+            ${renderTaskOptionBadges(task.options, false)}
+            ${renderNoteWithLinks(task.note, 'kanban')}
+
+            <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+              <div class="flex items-center space-x-1 text-slate-400" title="วันที่เริ่ม: ${task.date}">
+                <span>📅 ${task.date}</span>
+              </div>
+              <div class="flex items-center space-x-1 px-2 py-0.5 rounded-full border text-[11px] ${deadlineInfo.badgeClass}">
+                <span>${deadlineInfo.label}</span>
+              </div>
+            </div>
+
+            <!-- Quick status stepper -->
+            <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-end space-x-1.5 text-[11px]">
+              ${task.status !== 'todo' ? `
+                <button onclick="window.appActions.quickStatus('${task.id}', '${task.status === 'done' ? 'in-progress' : 'todo'}')" class="text-slate-400 hover:text-slate-700 px-2 py-0.5 rounded hover:bg-slate-100 transition">
+                  ← ย้อนสถานะ
+                </button>
+              ` : ''}
+              ${task.status !== 'done' ? `
+                <button onclick="window.appActions.quickStatus('${task.id}', '${task.status === 'todo' ? 'in-progress' : 'done'}')" class="text-indigo-600 font-semibold hover:text-indigo-700 px-2 py-0.5 rounded hover:bg-indigo-50 transition">
+                  ถัดไป →
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      };
+
+      const renderTable = (taskList) => {
+        const sortedList = sortByDeadline(taskList);
+        if (sortedList.length === 0) {
+          return `<div class="py-12 text-center text-slate-400 text-sm">ไม่พบรายการงานที่ตรงกับเงื่อนไขการค้นหา</div>`;
+        }
+
+        return `
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="min-w-full divide-y divide-slate-200 text-left text-xs sm:text-sm">
+              <thead class="bg-slate-50 text-slate-600 font-semibold">
+                <tr>
+                  <th class="py-3 px-4">ชื่องานและรายละเอียด</th>
+                  <th class="py-3 px-4">ผู้รับผิดชอบ</th>
+                  <th class="py-3 px-4">วันที่เริ่มงาน</th>
+                  <th class="py-3 px-4 text-indigo-700 dark:text-indigo-400">
+                    <span class="flex items-center space-x-1">
+                      <span>กำหนดส่ง (Deadline)</span>
+                      <span class="text-xs font-bold" title="เรียงลำดับจากกำหนดส่งใกล้สุดก่อน">▲</span>
+                    </span>
+                  </th>
+                  <th class="py-3 px-4">สถานะ</th>
+                  <th class="py-3 px-4 text-right">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 bg-white">
+                ${sortedList.map(task => {
+                  const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+                  const deadlineInfo = getDeadlineInfo(task.deadline, task.status);
+                  const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
+
+                  return `
+                    <tr class="hover:bg-slate-50/70 transition">
+                      <td class="py-3 px-4 max-w-xs sm:max-w-md">
+                        <div class="flex items-center space-x-1.5">
+                          <span class="inline-flex items-center space-x-1 text-[10px] px-1.5 py-0.2 rounded-full border ${colConf.badge}">
+                            <span class="w-1.5 h-1.5 rounded-full ${colConf.dot}"></span>
+                            <span>${colConf.name}</span>
+                          </span>
+                          <span onclick="window.appActions.openTaskDetails('${task.id}')" title="คลิกเพื่อดูรายละเอียดข้อมูลงาน" class="font-semibold text-slate-800 dark:text-slate-100 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">${escapeHtml(task.title)}</span>
+                        </div>
+                        ${renderTaskOptionBadges(task.options, true)}
+                        ${renderNoteWithLinks(task.note, 'table')}
+                      </td>
+                      <td class="py-3 px-4">
+                        <div class="flex flex-wrap gap-1.5 items-center">
+                          ${assignees.map(m => `
+                            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs border border-slate-200">
+                              <span>${m.avatar}</span>
+                              <span class="font-medium">${m.name}</span>
+                            </span>
+                          `).join('')}
+                        </div>
+                      </td>
+                      <td class="py-3 px-4 whitespace-nowrap text-slate-500">${task.date}</td>
+                      <td class="py-3 px-4 whitespace-nowrap">
+                        <div class="font-bold text-slate-800 dark:text-slate-100 text-xs">${task.deadline || '-'}</div>
+                        <div class="mt-0.5">
+                          <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full border text-[11px] ${deadlineInfo.badgeClass}">
+                            <span>${deadlineInfo.label}</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="py-3 px-4 whitespace-nowrap">
+                        <select onchange="window.appActions.quickStatus('${task.id}', this.value)" class="text-xs font-semibold py-1 px-2 rounded-lg border focus:outline-none cursor-pointer bg-slate-50 border-slate-300 text-slate-700">
+                          <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>รอดำเนินการ</option>
+                          <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>กำลังทำ</option>
+                          <option value="done" ${task.status === 'done' ? 'selected' : ''}>เสร็จสิ้น</option>
+                        </select>
+                      </td>
+                      <td class="py-3 px-4 whitespace-nowrap text-right space-x-1">
+                        <button onclick="window.appActions.openEditModal('${task.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded">✏️</button>
+                        <button onclick="window.appActions.deleteTask('${task.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded">🗑️</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      };
+
+      const renderCalendar = (taskList, isManager) => {
+        const year = calendarCurrentDate.getFullYear();
+        const month = calendarCurrentDate.getMonth();
+        const firstDayOfWeek = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+        const todayStr = getTodayStr(0);
+
+        const days = [];
+        for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+          const d = daysInPrevMonth - i;
+          const prevMonthIdx = month === 0 ? 11 : month - 1;
+          const prevYear = month === 0 ? year - 1 : year;
+          days.push({ dayNumber: d, dateStr: `${prevYear}-${String(prevMonthIdx + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, isCurrentMonth: false });
+        }
+        for (let d = 1; d <= daysInMonth; d++) {
+          days.push({ dayNumber: d, dateStr: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, isCurrentMonth: true });
+        }
+        const remaining = (7 - (days.length % 7)) % 7;
+        for (let d = 1; d <= remaining; d++) {
+          const nextMonthIdx = month === 11 ? 0 : month + 1;
+          const nextYear = month === 11 ? year + 1 : year;
+          days.push({ dayNumber: d, dateStr: `${nextYear}-${String(nextMonthIdx + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, isCurrentMonth: false });
+        }
+
+        const currentSelectedTypes = isManager
+          ? managerCalendarSelectedTypes
+          : (memberCalendarSelectedTypes[currentUserId] || []);
+
+        let filteredCalendarTasks = taskList;
+        if (currentSelectedTypes.length > 0) {
+          filteredCalendarTasks = filteredCalendarTasks.filter(t => 
+            Array.isArray(t.options) && t.options.some(opt => currentSelectedTypes.includes(opt))
+          );
+        }
+
+        // Group days into 7-day calendar weeks for row-aligned timeline packing
+        const weeks = [];
+        for (let i = 0; i < days.length; i += 7) {
+          weeks.push(days.slice(i, i + 7));
+        }
+
+        // Pack tasks into stable horizontal tracks (slots) per week so multi-day tasks stay on the exact same row
+        const weekPackedDays = weeks.map(weekDays => {
+          const weekStartStr = weekDays[0].dateStr;
+          const weekEndStr = weekDays[6].dateStr;
+
+          const weekTasks = [];
+          filteredCalendarTasks.forEach(task => {
+            const startDate = task.date || task.deadline;
+            const endDate = task.deadline || task.date;
+            if (!startDate && !endDate) return;
+            const minDate = startDate <= endDate ? startDate : endDate;
+            const maxDate = startDate <= endDate ? endDate : startDate;
+
+            if (minDate <= weekEndStr && maxDate >= weekStartStr) {
+              const rawStart = minDate < weekStartStr ? 0 : weekDays.findIndex(c => c.dateStr === minDate);
+              const rawEnd = maxDate > weekEndStr ? 6 : weekDays.findIndex(c => c.dateStr === maxDate);
+              const startIdx = rawStart === -1 ? 0 : rawStart;
+              const endIdx = rawEnd === -1 ? 6 : rawEnd;
+
+              const d1 = new Date(minDate);
+              const d2 = new Date(maxDate);
+              const totalSpan = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+
+              weekTasks.push({
+                task,
+                minDate,
+                maxDate,
+                startIdx,
+                endIdx,
+                totalSpan
+              });
+            }
+          });
+
+          // Sort tasks: continuing/earlier tasks first, then longer span, then priority
+          weekTasks.sort((a, b) => {
+            if (a.minDate !== b.minDate) return a.minDate.localeCompare(b.minDate);
+            if (b.totalSpan !== a.totalSpan) return b.totalSpan - a.totalSpan;
+            const pA = PRIORITY_ORDER[a.task.priority] || 2;
+            const pB = PRIORITY_ORDER[b.task.priority] || 2;
+            if (pA !== pB) return pA - pB;
+            return a.task.id.localeCompare(b.task.id);
+          });
+
+          // Slot assignment: slots[slotIndex][dayIndex]
+          const slots = [];
+          weekTasks.forEach(item => {
+            let slotIdx = 0;
+            while (true) {
+              if (!slots[slotIdx]) {
+                slots[slotIdx] = [null, null, null, null, null, null, null];
+              }
+              let canFit = true;
+              for (let d = item.startIdx; d <= item.endIdx; d++) {
+                if (slots[slotIdx][d] !== null) {
+                  canFit = false;
+                  break;
+                }
+              }
+              if (canFit) {
+                for (let d = item.startIdx; d <= item.endIdx; d++) {
+                  let pos = 'single';
+                  if (item.minDate !== item.maxDate) {
+                    if (weekDays[d].dateStr === item.minDate) pos = 'start';
+                    else if (weekDays[d].dateStr === item.maxDate) pos = 'end';
+                    else pos = 'middle';
+                  }
+                  slots[slotIdx][d] = {
+                    task: item.task,
+                    position: pos,
+                    minDate: item.minDate,
+                    maxDate: item.maxDate
+                  };
+                }
+                break;
+              }
+              slotIdx++;
+            }
+          });
+
+          // Map each day in the week with its aligned slots (and spacers for empty slots)
+          return weekDays.map((cell, dayIdx) => {
+            let maxSlotOnDay = -1;
+            for (let s = slots.length - 1; s >= 0; s--) {
+              if (slots[s] && slots[s][dayIdx] !== null) {
+                maxSlotOnDay = s;
+                break;
+              }
+            }
+            const dayItems = [];
+            for (let s = 0; s <= maxSlotOnDay; s++) {
+              dayItems.push(slots[s] ? slots[s][dayIdx] : null);
+            }
+            return { cell, dayItems };
+          });
+        }).flat();
+
+        return `
+          <div class="space-y-4">
+            <div class="space-y-3 pb-3 border-b border-slate-100">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                  <h4 class="text-xl font-bold text-slate-800">${THAI_MONTHS[month]} ${year + 543} (${year})</h4>
+                  <button onclick="window.appActions.calendarToday()" class="text-xs px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition cursor-pointer">วันนี้</button>
+                </div>
+
+                <div class="flex items-center space-x-1.5 text-xs">
+                  <button onclick="window.appActions.calendarPrevMonth()" class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition cursor-pointer" title="เดือนก่อนหน้า">◀</button>
+                  <button onclick="window.appActions.calendarNextMonth()" class="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition cursor-pointer" title="เดือนถัดไป">▶</button>
+                </div>
+              </div>
+
+              <!-- Task Type Multi-Select Filter Bar (เลือกดูได้มากกว่า 1 ประเภท) -->
+              <div class="flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-slate-100 text-xs">
+                <span class="text-slate-500 font-semibold flex items-center space-x-1 mr-1">
+                  <span>🏷️</span>
+                  <span>ตัวกรองประเภทงาน:</span>
+                </span>
+                <button type="button" onclick="window.appActions.resetCalendarTypeFilter()" class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${currentSelectedTypes.length === 0 ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                  ${currentSelectedTypes.length === 0 ? `ทุกประเภทงาน (${taskList.length})` : `🔄 แสดงทุกประเภท (${taskList.length})`}
+                </button>
+                ${TASK_OPTIONS_LIST.map(opt => {
+                  const conf = TASK_OPTIONS_CONFIG[opt] || { name: opt, icon: '🏷️' };
+                  const count = taskList.filter(t => Array.isArray(t.options) && t.options.includes(opt)).length;
+                  const isSelected = currentSelectedTypes.includes(opt);
+                  return `
+                    <button type="button" onclick="window.appActions.toggleCalendarTypeFilter('${opt}')" class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center space-x-1.5 transition cursor-pointer select-none ${isSelected ? 'bg-indigo-50 text-indigo-900 border-indigo-500 ring-2 ring-indigo-500/25 shadow-xs font-bold dark:bg-indigo-950/70 dark:text-indigo-200 dark:border-indigo-500' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                      <span class="text-xs">${conf.icon}</span>
+                      <span>${conf.name}</span>
+                      <span class="text-[10px] opacity-75 font-normal">(${count})</span>
+                      ${isSelected ? `<span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold bg-indigo-600 text-white ml-0.5">✓</span>` : ''}
+                    </button>
+                  `;
+                }).join('')}
+                ${currentSelectedTypes.length > 0 ? `
+                  <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 ml-auto sm:ml-1 flex items-center space-x-1">
+                    <span>เลือกดู <strong>${currentSelectedTypes.length}</strong> ประเภท</span>
+                    <span>(${filteredCalendarTasks.length} งาน)</span>
+                    <button type="button" onclick="window.appActions.resetCalendarTypeFilter()" class="ml-1 text-slate-400 hover:text-rose-600 font-bold cursor-pointer" title="ล้างตัวกรอง">✕</button>
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Weekday Headers -->
+            <div class="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-xs">
+              <div class="grid grid-cols-7 bg-slate-50 border-b border-slate-200 text-center text-xs font-semibold text-slate-600">
+                ${WEEKDAYS.map((w, idx) => `<div class="py-2.5 ${idx === 0 || idx === 6 ? 'text-rose-500 bg-rose-50/30' : ''}">${w}</div>`).join('')}
+              </div>
+
+              <div class="grid grid-cols-7 divide-x divide-y divide-slate-100 dark:divide-slate-800">
+                ${weekPackedDays.map(({ cell, dayItems }) => {
+                  const isToday = cell.dateStr === todayStr;
+
+                  return `
+                    <div class="calendar-cell p-1 sm:p-1.5 transition flex flex-col justify-start group ${!cell.isCurrentMonth ? 'bg-slate-50/60 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600' : 'bg-white dark:bg-slate-900/40 hover:bg-slate-50/30 dark:hover:bg-slate-800/30'}">
+                      <div class="flex items-center justify-between mb-1 px-1 h-6 shrink-0">
+                        <span class="text-xs font-semibold inline-flex items-center justify-center ${isToday ? 'w-6 h-6 rounded-full bg-indigo-600 text-white font-bold shadow-xs' : 'w-6 h-6 text-slate-700 dark:text-slate-300'}">
+                          ${cell.dayNumber}
+                        </span>
+                        <button onclick="window.appActions.openCreateModalForDate('${cell.dateStr}')" title="เพิ่มงานวันที่ ${cell.dateStr}" class="opacity-0 group-hover:opacity-100 text-[10px] text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 px-1 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/70 dark:hover:bg-indigo-900/70 transition cursor-pointer shrink-0">
+                          + งาน
+                        </button>
+                      </div>
+
+                      <div class="space-y-1 flex-1">
+                        ${dayItems.map(item => {
+                          if (!item) {
+                            return `<div class="h-[22px] mx-0.5 pointer-events-none" aria-hidden="true"></div>`;
+                          }
+                          const { task, position, minDate, maxDate } = item;
+                          const isOverdue = task.status !== 'done' && maxDate < todayStr;
+                          const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
+
+                          let shapeClass = 'rounded-md mx-0.5';
+                          let prefix = '📌';
+                          if (position === 'start') {
+                            shapeClass = 'rounded-l-md rounded-r-none mr-0 ml-0.5 border-r-0';
+                            prefix = '🚩';
+                          } else if (position === 'middle') {
+                            shapeClass = 'rounded-none mx-0 border-x-0';
+                            prefix = '↔️';
+                          } else if (position === 'end') {
+                            shapeClass = 'rounded-r-md rounded-l-none ml-0 mr-0.5 border-l-0';
+                            prefix = '🏁';
+                          }
+
+                          let colorClass = colConf.bar;
+                          if (task.status === 'done') {
+                            colorClass += ' opacity-55 line-through';
+                          } else if (isOverdue) {
+                            colorClass += ' ring-2 ring-rose-500 font-bold';
+                          }
+
+                          const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+                          const optIcons = Array.isArray(task.options) ? task.options.map(o => (TASK_OPTIONS_CONFIG[o] ? TASK_OPTIONS_CONFIG[o].icon : '')).join('') : '';
+                          const assigneeNames = assignees.map(a => a.name).join(', ');
+
+                          return `
+                            <div onclick="window.appActions.openTaskDetails('${task.id}')" 
+                                 class="h-[22px] px-1.5 flex items-center space-x-1 cursor-pointer select-none shadow-xs hover:brightness-110 active:scale-[0.99] transition ${shapeClass} ${colorClass}" 
+                                 title="${escapeHtml(task.title)}${assigneeNames ? ` (${escapeHtml(assigneeNames)})` : ''} - คลิกเพื่อดูรายละเอียดข้อมูลงาน">
+                              <span class="text-[9px] shrink-0 leading-none opacity-90">${prefix}</span>
+                              <span class="font-semibold truncate flex-1 leading-none text-[10.5px]">${escapeHtml(task.title)}</span>
+                              ${optIcons ? `<span class="text-[9.5px] shrink-0 leading-none ml-0.5 tracking-tight" title="ลักษณะงาน: ${(task.options || []).join(', ')}">${optIcons}</span>` : ''}
+                              ${task.status === 'done' ? '<span class="text-[9px] text-white bg-black/35 px-1 rounded font-bold shrink-0 leading-none">✓</span>' : ''}
+                              ${isOverdue ? '<span class="text-[8.5px] shrink-0 leading-none" title="เลยกำหนดส่ง">⚠️</span>' : ''}
+                            </div>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      const renderDailySummary = (taskList, isManager) => {
+        const todayStr = getTodayStr(0);
+        const isToday = dailySelectedDate === todayStr;
+
+        const targetMembers = (!isManager)
+          ? TEAM_MEMBERS.filter(m => m.id === currentUserId)
+          : (dailyMemberFilter !== 'all' ? TEAM_MEMBERS.filter(m => m.id === dailyMemberFilter) : TEAM_MEMBERS);
+
+        return `
+          <div class="space-y-6">
+            <!-- Date Navigator -->
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="flex items-center space-x-2 flex-wrap">
+                <button type="button" onclick="window.appActions.changeDailyDate(-1)" title="วันก่อนหน้า (Previous Day)" class="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold transition shadow-xs cursor-pointer flex items-center justify-center space-x-1">
+                  <span>◀</span>
+                  <span class="text-xs font-normal text-slate-500 hidden sm:inline">ก่อนหน้า</span>
+                </button>
+                <div class="flex items-center space-x-2 bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-xs">
+                  <span class="text-base">📅</span>
+                  <div>
+                    <div class="text-xs text-slate-400 font-medium">วันที่เลือกดูงาน:</div>
+                    <div class="text-sm font-bold text-slate-800">
+                      ${formatThaiDate(dailySelectedDate)}
+                      ${isToday ? `<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-bold">วันนี้</span>` : ''}
+                    </div>
+                  </div>
+                </div>
+                <button type="button" onclick="window.appActions.changeDailyDate(1)" title="วันถัดไป (Next Day)" class="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold transition shadow-xs cursor-pointer flex items-center justify-center space-x-1">
+                  <span class="text-xs font-normal text-slate-500 hidden sm:inline">ถัดไป</span>
+                  <span>▶</span>
+                </button>
+                ${!isToday ? `<button type="button" onclick="window.appActions.setDailyDate('${todayStr}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition shadow-xs cursor-pointer">กลับมาวันนี้</button>` : ''}
+                <input type="date" value="${dailySelectedDate}" onchange="window.appActions.setDailyDate(this.value)" class="px-2.5 py-2 text-xs bg-white border border-slate-200 rounded-xl text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs">
+              </div>
+
+              ${isManager ? `
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs text-slate-500 font-medium">เลือกดูสมาชิก:</span>
+                  <select onchange="window.appActions.setDailyMemberFilter(this.value)" class="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs">
+                    <option value="all" ${dailyMemberFilter === 'all' ? 'selected' : ''}>👥 สรุปงานของทุกคนในทีม (${TEAM_MEMBERS.length} คน)</option>
+                    ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${dailyMemberFilter === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
+                  </select>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Members Daily Agenda Cards -->
+            <div class="grid gap-5 ${targetMembers.length > 1 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 max-w-3xl mx-auto'}">
+              ${targetMembers.map(member => {
+                const mTasks = taskList.filter(t => t.assigneeIds && t.assigneeIds.includes(member.id));
+                const dueToday = sortByPriority(mTasks.filter(t => t.deadline === dailySelectedDate && t.status !== 'done'));
+                const inProg = sortByPriority(mTasks.filter(t => {
+                  const s = t.date || t.deadline; const e = t.deadline || t.date;
+                  return s <= dailySelectedDate && dailySelectedDate <= e && t.deadline !== dailySelectedDate && t.status !== 'done';
+                }));
+                const overdue = sortByPriority(mTasks.filter(t => t.deadline < dailySelectedDate && t.status !== 'done'));
+                const completed = sortByPriority(mTasks.filter(t => {
+                  if (t.status !== 'done') return false;
+                  const s = t.date || t.deadline; const e = t.deadline || t.date;
+                  return (s <= dailySelectedDate && dailySelectedDate <= e) || t.deadline === dailySelectedDate;
+                }));
+
+                const activeTotal = dueToday.length + inProg.length + overdue.length;
+                const grandTotal = activeTotal + completed.length;
+                const rate = grandTotal > 0 ? Math.round((completed.length / grandTotal) * 100) : 0;
+
+                return `
+                  <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
+                    <div>
+                      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div class="flex items-center space-x-2.5">
+                          <span class="text-2xl p-1 bg-slate-50 rounded-xl border border-slate-200">${member.avatar}</span>
+                          <div>
+                            <h4 class="font-bold text-slate-800 text-sm">${member.name}</h4>
+                            <span class="text-[11px] text-slate-400">ภาระงานวันนี้: <strong>${activeTotal}</strong> งาน</span>
+                          </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${rate === 100 && grandTotal > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}">
+                          เสร็จ ${completed.length}/${grandTotal}
+                        </span>
+                      </div>
+                      ${grandTotal > 0 ? `
+                        <div class="mt-3 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                          <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${rate}%"></div>
+                        </div>
+                      ` : ''}
+                    </div>
+
+                    <div class="space-y-4 flex-1">
+                      ${dueToday.length > 0 ? `
+                        <div>
+                          <div class="text-xs font-bold text-amber-700 mb-2">🚨 ต้องส่งวันนี้ (${dueToday.length})</div>
+                          <div class="space-y-1.5">${dueToday.map(t => renderDailyItem(t, 'due-today')).join('')}</div>
+                        </div>
+                      ` : ''}
+
+                      ${inProg.length > 0 ? `
+                        <div>
+                          <div class="text-xs font-bold text-blue-700 mb-2">⚡ กำลังทำอยู่ (${inProg.length})</div>
+                          <div class="space-y-1.5">${inProg.map(t => renderDailyItem(t, 'in-progress')).join('')}</div>
+                        </div>
+                      ` : ''}
+
+                      ${overdue.length > 0 ? `
+                        <div>
+                          <div class="text-xs font-bold text-rose-700 mb-2">⚠️ งานค้างเกินกำหนด (${overdue.length})</div>
+                          <div class="space-y-1.5">${overdue.map(t => renderDailyItem(t, 'overdue')).join('')}</div>
+                        </div>
+                      ` : ''}
+
+                      ${completed.length > 0 ? `
+                        <div>
+                          <div class="text-xs font-semibold text-emerald-700 mb-2">✅ ทำเสร็จแล้ว (${completed.length})</div>
+                          <div class="space-y-1.5 opacity-80">${completed.map(t => renderDailyItem(t, 'completed')).join('')}</div>
+                        </div>
+                      ` : ''}
+
+                      ${grandTotal === 0 ? `
+                        <div class="py-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center space-y-1">
+                          <span class="text-2xl">🎉</span>
+                          <span class="font-medium text-slate-600">ไม่มีงานที่ต้องทำในวันนี้</span>
+                        </div>
+                      ` : ''}
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span class="text-[11px] text-slate-400">แผนงานวันที่ ${dailySelectedDate}</span>
+                      <button onclick="window.appActions.openCreateModalForDate('${dailySelectedDate}')" class="text-xs text-indigo-600 font-semibold hover:underline">+ เพิ่มงานวันนี้</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      };
+
+      const renderDailyItem = (task, type) => {
+        const isDone = task.status === 'done';
+        const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
+        const statusConf = STATUS_CONFIG[task.status] || STATUS_CONFIG['todo'];
+
+        let borderClass = 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60';
+        if (type === 'due-today') borderClass = 'border-amber-200 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/30';
+        if (type === 'overdue') borderClass = 'border-rose-200 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/30';
+        if (type === 'completed') borderClass = 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/30 opacity-90';
+
+        let priorityBadge = '';
+        if (task.priority === 'high') {
+          priorityBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 font-bold shrink-0 border border-rose-200 dark:border-rose-800" title="ความสำคัญ: ด่วนมาก">🔥 ด่วน</span>`;
+        } else if (task.priority === 'low') {
+          priorityBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 font-medium shrink-0 border border-slate-200 dark:border-slate-700" title="ความสำคัญ: ไม่รีบ">ไม่รีบ</span>`;
+        } else {
+          priorityBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 font-medium shrink-0 border border-blue-200 dark:border-blue-800" title="ความสำคัญ: ปกติ">ปกติ</span>`;
+        }
+
+        // Left Status Icon & Style (Click to cycle status)
+        let statusIcon = '<span class="text-[11px]">📋</span>';
+        let statusIconClass = 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900';
+        if (task.status === 'in-progress') {
+          statusIcon = '<span class="text-[11px] font-bold">⚡</span>';
+          statusIconClass = 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900';
+        } else if (task.status === 'done') {
+          statusIcon = '<span class="text-[11px] font-bold">✓</span>';
+          statusIconClass = 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:border-emerald-600 shadow-2xs';
+        }
+
+        return `
+          <div class="p-2.5 rounded-xl border flex items-start space-x-2.5 group hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition ${borderClass}">
+            <!-- Left Cycle Status Button -->
+            <button type="button" onclick="event.stopPropagation(); window.appActions.cycleDailyStatus('${task.id}')" title="สถานะปัจจุบัน: ${statusConf.label} (คลิกเพื่อเปลี่ยนเป็นสถานะถัดไป)" class="mt-0.5 w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition cursor-pointer ${statusIconClass}">
+              ${statusIcon}
+            </button>
+
+            <!-- Task Main Content -->
+            <div class="flex-1 min-w-0" onclick="window.appActions.openTaskDetails('${task.id}')" role="button" title="คลิกเพื่อดูรายละเอียดข้อมูลงาน">
+              <div class="flex items-center justify-between gap-1">
+                <div class="flex items-center space-x-1.5 truncate">
+                  <span class="w-2 h-2 rounded-full ${colConf.dot} shrink-0" title="สีปฏิทิน: ${colConf.name}"></span>
+                  <span class="text-xs font-semibold leading-snug truncate ${isDone ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}">${escapeHtml(task.title)}</span>
+                </div>
+                ${priorityBadge}
+              </div>
+
+              ${renderTaskOptionBadges(task.options, true)}
+              ${renderNoteWithLinks(task.note, 'daily')}
+
+              <!-- Status Switcher Controls & Info Bar -->
+              <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-1.5 text-[10px]">
+                <!-- Status Switcher Pills (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓) -->
+                <div class="flex items-center space-x-1" onclick="event.stopPropagation()">
+                  <button type="button" onclick="event.stopPropagation(); window.appActions.quickStatus('${task.id}', 'todo')" title="ปรับสถานะเป็น: รอดำเนินการ" class="px-2 py-0.5 rounded-md text-[9px] font-semibold border transition cursor-pointer ${task.status === 'todo' ? 'bg-blue-600 text-white border-blue-600 shadow-2xs font-bold' : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
+                    รอ
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); window.appActions.quickStatus('${task.id}', 'in-progress')" title="ปรับสถานะเป็น: กำลังทำ" class="px-2 py-0.5 rounded-md text-[9px] font-semibold border transition cursor-pointer ${task.status === 'in-progress' ? 'bg-amber-600 text-white border-amber-600 shadow-2xs font-bold' : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
+                    กำลังทำ ⚡
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); window.appActions.quickStatus('${task.id}', 'done')" title="ปรับสถานะเป็น: เสร็จสิ้น" class="px-2 py-0.5 rounded-md text-[9px] font-semibold border transition cursor-pointer ${task.status === 'done' ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs font-bold' : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
+                    เสร็จ ✓
+                  </button>
+                </div>
+
+                <!-- Deadline & Color Tag -->
+                <div class="flex items-center space-x-2 text-slate-400 dark:text-slate-500 text-[10px]">
+                  <span>กำหนดส่ง: ${task.deadline}</span>
+                  <span class="text-[9px] ${colConf.textAccent}">สี${colConf.name}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Action Button -->
+            <button onclick="window.appActions.openEditModal('${task.id}')" title="แก้ไขงาน" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-indigo-600 rounded cursor-pointer transition">✏️</button>
+          </div>
+        `;
+      };
+
+      // 5. Modal and Event Handlers
+      const renderModalOptions = () => {
+        const grid = document.getElementById('optionsPillGrid');
+        if (!grid) return;
+        grid.innerHTML = TASK_OPTIONS_LIST.map(opt => {
+          const conf = TASK_OPTIONS_CONFIG[opt] || { name: opt, icon: '🏷️' };
+          const isSelected = modalSelectedOptions.includes(opt);
+          return `
+            <button type="button" onclick="window.appActions.toggleModalOption('${opt}')" class="flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold transition cursor-pointer select-none ${isSelected ? 'bg-indigo-50 border-indigo-500 text-indigo-900 ring-2 ring-indigo-500/20 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}">
+              <span class="text-base">${conf.icon}</span>
+              <span class="flex-1 text-left truncate">${conf.name}</span>
+              <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold border transition ${isSelected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-transparent border-slate-300'}">✓</span>
+            </button>
+          `;
+        }).join('');
+        const badge = document.getElementById('optionsCountBadge');
+        if (badge) badge.textContent = modalSelectedOptions.length;
+      };
+
+      const renderModalAssignees = () => {
+        const grid = document.getElementById('assigneesPillGrid');
+        grid.innerHTML = TEAM_MEMBERS.map(m => {
+          const isSelected = modalSelectedAssignees.includes(m.id);
+          return `
+            <button type="button" onclick="window.appActions.toggleModalAssignee('${m.id}')" class="flex items-center space-x-2 p-2 rounded-xl border text-xs font-medium transition cursor-pointer ${isSelected ? 'bg-indigo-50 border-indigo-500 text-indigo-800 ring-1 ring-indigo-500 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}">
+              <span class="text-base">${m.avatar}</span>
+              <span class="flex-1 text-left truncate">${m.name}</span>
+              ${isSelected ? `<span class="text-indigo-600 font-bold text-xs bg-white rounded-full w-4 h-4 flex items-center justify-center border border-indigo-300">✓</span>` : ''}
+            </button>
+          `;
+        }).join('');
+        document.getElementById('assigneeCountBadge').textContent = modalSelectedAssignees.length;
+      };
+
+      const renderColorPicker = () => {
+        const grid = document.getElementById('colorPickerGrid');
+        if (!grid) return;
+        grid.innerHTML = Object.values(TASK_COLORS).map(c => {
+          const isSelected = modalSelectedColor === c.id;
+          return `
+            <button type="button" onclick="window.appActions.selectModalColor('${c.id}')" class="flex flex-col items-center justify-center p-2 rounded-xl border-2 transition cursor-pointer ${isSelected ? c.border + ' ' + c.bgLight + ' shadow-sm ring-2 ' + c.ring : 'border-slate-200 hover:border-slate-300 bg-white'}">
+              <span class="w-6 h-6 rounded-full ${c.dot} shadow-xs flex items-center justify-center text-white text-xs font-bold mb-1">
+                ${isSelected ? '✓' : ''}
+              </span>
+              <span class="text-[11px] font-medium leading-tight ${isSelected ? 'text-slate-900 font-bold' : 'text-slate-600'}">
+                ${c.name}
+              </span>
+            </button>
+          `;
+        }).join('');
+
+        const labelElem = document.getElementById('selectedColorLabel');
+        if (labelElem && TASK_COLORS[modalSelectedColor]) {
+          labelElem.textContent = 'สี' + TASK_COLORS[modalSelectedColor].name;
+          labelElem.className = `text-xs font-bold ${TASK_COLORS[modalSelectedColor].textAccent}`;
+        }
+      };
+
+      const openModal = (task = null, defaultDate = null, defaultDeadline = null) => {
+        const isManager = currentUserId === 'manager';
+        document.getElementById('modalTitle').textContent = task ? 'แก้ไขข้อมูลงาน' : (isManager ? 'มอบหมายงานใหม่ให้ทีม' : 'เพิ่มงานใหม่');
+        document.getElementById('formTaskId').value = task ? task.id : '';
+        document.getElementById('formTitle').value = task ? task.title : '';
+        const noteInput = document.getElementById('formNote');
+        if (noteInput) noteInput.value = task ? (task.note || '') : '';
+        document.getElementById('formDate').value = task ? task.date : (defaultDate || getTodayStr(0));
+        document.getElementById('formDeadline').value = task ? task.deadline : (defaultDeadline || getTodayStr(2));
+        document.getElementById('formStatus').value = task ? task.status : 'todo';
+        document.getElementById('formPriority').value = task ? task.priority : 'normal';
+
+        if (task && Array.isArray(task.options)) {
+          modalSelectedOptions = [...task.options];
+        } else {
+          modalSelectedOptions = ['Roll A'];
+        }
+
+        if (task && task.assigneeIds && task.assigneeIds.length > 0) {
+          modalSelectedAssignees = [...task.assigneeIds];
+        } else {
+          modalSelectedAssignees = [isManager ? 'non' : currentUserId];
+        }
+
+        modalSelectedColor = (task && task.color && TASK_COLORS[task.color]) ? task.color : 'blue';
+
+        renderModalOptions();
+        renderModalAssignees();
+        renderColorPicker();
+        document.getElementById('taskModal').classList.remove('hidden');
+      };
+
+      const closeModal = () => {
+        document.getElementById('taskModal').classList.add('hidden');
+      };
+
+      const closeTaskDetails = () => {
+        const modal = document.getElementById('taskDetailModal');
+        if (modal) modal.classList.add('hidden');
+      };
+
+      const openTaskDetails = (taskId) => {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const content = document.getElementById('taskDetailContent');
+        if (!content) return;
+
+        const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
+        const deadlineInfo = getDeadlineInfo(task.deadline, task.status);
+        const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+        const statusConf = STATUS_CONFIG[task.status] || STATUS_CONFIG['todo'];
+
+        let priorityBadge = '';
+        if (task.priority === 'high') {
+          priorityBadge = `<span class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 font-bold text-xs border border-rose-200 dark:border-rose-800">🔥 ด่วนมาก</span>`;
+        } else if (task.priority === 'low') {
+          priorityBadge = `<span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 font-medium text-xs border border-slate-200 dark:border-slate-700">ไม่ด่วน</span>`;
+        } else {
+          priorityBadge = `<span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 font-medium text-xs border border-blue-200 dark:border-blue-800">ปกติ</span>`;
+        }
+
+        let durationText = '';
+        if (task.date && task.deadline) {
+          const dStart = parseDateLocal(task.date);
+          const dEnd = parseDateLocal(task.deadline);
+          if (dStart && dEnd) {
+            const diffDays = Math.round((dEnd - dStart) / (1000 * 60 * 60 * 24)) + 1;
+            durationText = diffDays > 0 ? `(ระยะเวลา ${diffDays} วัน)` : '';
+          }
+        }
+
+        content.innerHTML = `
+          <!-- 1. Color tag, Status & Priority -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+              <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${colConf.badge}">
+                <span class="w-2 h-2 rounded-full ${colConf.dot}"></span>
+                <span>สีกำกับ: ${colConf.name}</span>
+              </span>
+              <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${statusConf.badge}">
+                <span class="w-1.5 h-1.5 rounded-full ${statusConf.dot}"></span>
+                <span>สถานะ: ${statusConf.label}</span>
+              </span>
+            </div>
+            <div>
+              ${priorityBadge}
+            </div>
+          </div>
+
+          <!-- 2. Task Title -->
+          <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200/80 dark:border-slate-700/80 border-l-4 ${colConf.borderL}">
+            <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-1">ชื่องาน</div>
+            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base leading-snug">${escapeHtml(task.title)}</h4>
+          </div>
+
+          <!-- 3. Task Options / Types -->
+          <div>
+            <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5 flex items-center space-x-1">
+              <span>🎬 ลักษณะ / ประเภทงาน:</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              ${(task.options || []).map(opt => {
+                const conf = TASK_OPTIONS_CONFIG[opt] || { name: opt, icon: '🏷️', bg: 'bg-slate-100 text-slate-700 border-slate-200' };
+                return `
+                  <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold border ${conf.bg} shadow-2xs">
+                    <span>${conf.icon}</span>
+                    <span>${conf.name}</span>
+                  </span>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- 4. Schedule / Dates -->
+          <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200/70 dark:border-slate-700/70">
+            <div>
+              <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-0.5">🚩 วันที่เริ่มงาน</div>
+              <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${formatThaiDate(task.date) || task.date}</div>
+            </div>
+            <div>
+              <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-0.5">🏁 กำหนดส่ง (Deadline)</div>
+              <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${formatThaiDate(task.deadline) || task.deadline}</div>
+              <div class="mt-1">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${deadlineInfo.badgeClass}">
+                  ${deadlineInfo.label} ${durationText}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Assignees -->
+          <div>
+            <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+              👥 ผู้รับผิดชอบ (${assignees.length} คน):
+            </div>
+            <div class="flex flex-wrap gap-2">
+              ${assignees.map(m => `
+                <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                  <span class="text-lg">${m.avatar}</span>
+                  <div>
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-100">${m.name}</div>
+                    <div class="text-[10px] text-slate-400 dark:text-slate-500">${m.role}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- 6. Note & Delivery Links -->
+          <div>
+            <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+              📝 หมายเหตุเพิ่มเติม & ลิงก์ส่งงาน:
+            </div>
+            ${task.note ? `
+              <div class="bg-white dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                ${renderNoteWithLinks(task.note, 'kanban')}
+              </div>
+            ` : `
+              <div class="text-xs text-slate-400 dark:text-slate-500 italic bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                ไม่มีหมายเหตุหรือลิงก์ส่งงานที่ระบุไว้
+              </div>
+            `}
+          </div>
+
+          <!-- 7. Action Footer -->
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <!-- Quick Status Toggle -->
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[11px] text-slate-400 dark:text-slate-500">ปรับสถานะ:</span>
+              <button type="button" onclick="window.appActions.detailSetStatus('${task.id}', 'todo')" class="px-2.5 py-1 text-xs rounded-lg border ${task.status === 'todo' ? 'bg-blue-600 text-white border-blue-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'} transition cursor-pointer">
+                รอ
+              </button>
+              <button type="button" onclick="window.appActions.detailSetStatus('${task.id}', 'in-progress')" class="px-2.5 py-1 text-xs rounded-lg border ${task.status === 'in-progress' ? 'bg-amber-600 text-white border-amber-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'} transition cursor-pointer">
+                กำลังทำ
+              </button>
+              <button type="button" onclick="window.appActions.detailSetStatus('${task.id}', 'done')" class="px-2.5 py-1 text-xs rounded-lg border ${task.status === 'done' ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'} transition cursor-pointer">
+                เสร็จสิ้น ✓
+              </button>
+            </div>
+
+            <!-- Main Action Buttons: Edit & Close -->
+            <div class="flex items-center space-x-2 ml-auto">
+              <button type="button" onclick="window.appActions.closeTaskDetails()" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+                ปิด
+              </button>
+              <button type="button" onclick="window.appActions.editFromDetails('${task.id}')" class="inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-md shadow-indigo-500/20 transition cursor-pointer">
+                <span>✏️</span>
+                <span>แก้ไขงานนี้</span>
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('taskDetailModal').classList.remove('hidden');
+      };
+
+      // 6. Global Action Dispatcher
+      window.appActions = {
+        selectModalColor: (colId) => {
+          if (TASK_COLORS[colId]) {
+            modalSelectedColor = colId;
+            renderColorPicker();
+          }
+        },
+        setCalendarColorFilter: (col) => {
+          calendarColorFilter = col;
+          renderApp();
+        },
+        toggleCalendarTypeFilter: (optType) => {
+          const isManager = currentUserId === 'manager';
+          let cur = isManager ? [...managerCalendarSelectedTypes] : [...(memberCalendarSelectedTypes[currentUserId] || [])];
+          if (cur.includes(optType)) {
+            cur = cur.filter(o => o !== optType);
+          } else {
+            cur.push(optType);
+          }
+          if (cur.length === TASK_OPTIONS_LIST.length) {
+            cur = [];
+          }
+          if (isManager) {
+            managerCalendarSelectedTypes = cur;
+          } else {
+            memberCalendarSelectedTypes[currentUserId] = cur;
+          }
+          renderApp();
+        },
+        resetCalendarTypeFilter: () => {
+          if (currentUserId === 'manager') {
+            managerCalendarSelectedTypes = [];
+          } else {
+            memberCalendarSelectedTypes[currentUserId] = [];
+          }
+          renderApp();
+        },
+        setCalendarTypeFilter: (optType) => {
+          const isManager = currentUserId === 'manager';
+          if (optType === 'all') {
+            if (isManager) managerCalendarSelectedTypes = [];
+            else memberCalendarSelectedTypes[currentUserId] = [];
+          } else {
+            let cur = isManager ? [...managerCalendarSelectedTypes] : [...(memberCalendarSelectedTypes[currentUserId] || [])];
+            if (cur.includes(optType)) {
+              cur = cur.filter(o => o !== optType);
+            } else {
+              cur.push(optType);
+            }
+            if (isManager) managerCalendarSelectedTypes = cur;
+            else memberCalendarSelectedTypes[currentUserId] = cur;
+          }
+          renderApp();
+        },
+        toggleMonthlyCollapse: () => {
+          isMonthlyCollapsed = !isMonthlyCollapsed;
+          renderApp();
+        },
+        toggleCalendarCollapse: () => {
+          isCalendarCollapsed = !isCalendarCollapsed;
+          renderApp();
+        },
+        toggleDailyCollapse: () => {
+          isDailyCollapsed = !isDailyCollapsed;
+          renderApp();
+        },
+        switchUser: (newUserId) => {
+          currentUserId = newUserId;
+          if (newUserId !== 'manager') {
+            memberCalendarSelectedTypes[newUserId] = []; // ปฏิทินของแต่ละคน ให้แสดงค่าทั้งหมดเป็นค่าแรก
+          }
+          document.getElementById('userSelector').value = newUserId;
+          renderApp();
+        },
+        setManagerTaskView: (v) => { managerTaskView = v; renderApp(); },
+        setCalendarMode: (mode) => { calendarMode = mode; renderApp(); },
+        calendarPrevMonth: () => {
+          calendarCurrentDate = new Date(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth() - 1, 1);
+          renderApp();
+        },
+        calendarNextMonth: () => {
+          calendarCurrentDate = new Date(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth() + 1, 1);
+          renderApp();
+        },
+        calendarToday: () => {
+          calendarCurrentDate = new Date();
+          renderApp();
+        },
+        changeDailyDate: (delta) => {
+          dailySelectedDate = changeDateByDays(dailySelectedDate, delta);
+          renderApp();
+        },
+        setDailyDate: (d) => {
+          if (d) {
+            dailySelectedDate = d;
+            renderApp();
+          }
+        },
+        getDailySelectedDate: () => dailySelectedDate,
+        setDailyMemberFilter: (m) => { dailyMemberFilter = m; renderApp(); },
+        openTaskDetails: (taskId) => {
+          openTaskDetails(taskId);
+        },
+        closeTaskDetails: () => {
+          closeTaskDetails();
+        },
+        editFromDetails: (taskId) => {
+          closeTaskDetails();
+          const t = tasks.find(item => item.id === taskId);
+          if (t) openModal(t);
+        },
+        detailSetStatus: (taskId, newStatus) => {
+          let updated = null;
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              updated = { ...t, status: newStatus };
+              return updated;
+            }
+            return t;
+          });
+          saveTasks(updated, 'save');
+          renderApp();
+          openTaskDetails(taskId);
+        },
+        openEditModal: (taskId) => {
+          const t = tasks.find(item => item.id === taskId);
+          if (t) openModal(t);
+        },
+        openCreateModalForDate: (dateStr) => {
+          openModal(null, dateStr, dateStr);
+        },
+        deleteTask: (taskId) => {
+          if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบงานนี้?')) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            saveTasks(taskId, 'delete');
+            renderApp();
+          }
+        },
+        quickStatus: (taskId, newStatus) => {
+          let updated = null;
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              updated = { ...t, status: newStatus };
+              return updated;
+            }
+            return t;
+          });
+          saveTasks(updated, 'save');
+          renderApp();
+        },
+        cycleDailyStatus: (taskId) => {
+          const task = tasks.find(t => t.id === taskId);
+          if (!task) return;
+          const nextStatus = task.status === 'todo' ? 'in-progress' : (task.status === 'in-progress' ? 'done' : 'todo');
+          let updated = null;
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              updated = { ...t, status: nextStatus };
+              return updated;
+            }
+            return t;
+          });
+          saveTasks(updated, 'save');
+          renderApp();
+        },
+        toggleModalAssignee: (memberId) => {
+          if (modalSelectedAssignees.includes(memberId)) {
+            if (modalSelectedAssignees.length === 1) {
+              alert('ต้องมีผู้รับผิดชอบงานอย่างน้อย 1 คน');
+              return;
+            }
+            modalSelectedAssignees = modalSelectedAssignees.filter(id => id !== memberId);
+          } else {
+            modalSelectedAssignees.push(memberId);
+          }
+          renderModalAssignees();
+        },
+        toggleModalOption: (optName) => {
+          if (modalSelectedOptions.includes(optName)) {
+            modalSelectedOptions = modalSelectedOptions.filter(o => o !== optName);
+          } else {
+            modalSelectedOptions.push(optName);
+          }
+          renderModalOptions();
+        },
+        onDragStart: (e, taskId) => {
+          e.dataTransfer.setData('text/plain', taskId);
+        },
+        onDragOver: (e) => {
+          e.preventDefault();
+        },
+        onDrop: (e, targetStatus) => {
+          e.preventDefault();
+          const taskId = e.dataTransfer.getData('text/plain');
+          if (taskId) {
+            let updated = null;
+            tasks = tasks.map(t => {
+              if (t.id === taskId) {
+                updated = { ...t, status: targetStatus };
+                return updated;
+              }
+              return t;
+            });
+            saveTasks(updated, 'save');
+            renderApp();
+          }
+        },
+        toggleTheme: () => {
+          applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        }
+      };
+
+      const bindEventListeners = () => {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.oninput = (e) => { searchQuery = e.target.value; renderApp(); };
+        }
+        const filterAssigneeSelect = document.getElementById('filterAssigneeSelect');
+        if (filterAssigneeSelect) {
+          filterAssigneeSelect.onchange = (e) => { filterAssignee = e.target.value; renderApp(); };
+        }
+        const filterStatusSelect = document.getElementById('filterStatusSelect');
+        if (filterStatusSelect) {
+          filterStatusSelect.onchange = (e) => { filterStatus = e.target.value; renderApp(); };
+        }
+      };
+
+      // Header Events
+      const btnThemeToggle = document.getElementById('btnThemeToggle');
+      if (btnThemeToggle) {
+        btnThemeToggle.onclick = () => window.appActions.toggleTheme();
+      }
+
+      document.getElementById('userSelector').onchange = (e) => {
+        window.appActions.switchUser(e.target.value);
+      };
+
+      document.getElementById('btnOpenCreateModal').onclick = () => {
+        openModal();
+      };
+      document.getElementById('btnCloseModal').onclick = closeModal;
+      document.getElementById('btnCancelModal').onclick = closeModal;
+
+      const btnCloseDetailModal = document.getElementById('btnCloseDetailModal');
+      if (btnCloseDetailModal) {
+        btnCloseDetailModal.onclick = closeTaskDetails;
+      }
+      const taskDetailModal = document.getElementById('taskDetailModal');
+      if (taskDetailModal) {
+        taskDetailModal.onclick = (e) => {
+          if (e.target === taskDetailModal) closeTaskDetails();
+        };
+      }
+      const taskModal = document.getElementById('taskModal');
+      if (taskModal) {
+        taskModal.onclick = (e) => {
+          if (e.target === taskModal) closeModal();
+        };
+      }
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeModal();
+          closeTaskDetails();
+        }
+      });
+
+      document.getElementById('btnSelectAllAssignees').onclick = () => {
+        modalSelectedAssignees = TEAM_MEMBERS.map(m => m.id);
+        renderModalAssignees();
+      };
+      document.getElementById('btnSelectOnlyMe').onclick = () => {
+        modalSelectedAssignees = [currentUserId === 'manager' ? 'non' : currentUserId];
+        renderModalAssignees();
+      };
+
+      const btnSelectAllOptions = document.getElementById('btnSelectAllOptions');
+      if (btnSelectAllOptions) {
+        btnSelectAllOptions.onclick = () => {
+          modalSelectedOptions = [...TASK_OPTIONS_LIST];
+          renderModalOptions();
+        };
+      }
+      const btnClearOptions = document.getElementById('btnClearOptions');
+      if (btnClearOptions) {
+        btnClearOptions.onclick = () => {
+          modalSelectedOptions = [];
+          renderModalOptions();
+        };
+      }
+
+      document.getElementById('taskForm').onsubmit = (e) => {
+        e.preventDefault();
+        const title = document.getElementById('formTitle').value.trim();
+        if (!title) { alert('กรุณากรอกชื่องาน'); return; }
+        if (modalSelectedAssignees.length === 0) { alert('กรุณาเลือกผู้รับผิดชอบงานอย่างน้อย 1 คน'); return; }
+
+        const taskId = document.getElementById('formTaskId').value;
+        const note = (document.getElementById('formNote') ? document.getElementById('formNote').value.trim() : '');
+        const selectedOpts = [...modalSelectedOptions];
+        const descText = selectedOpts.join(', ') + (note ? (selectedOpts.length > 0 ? ` (${note})` : note) : '');
+
+        const taskData = {
+          title,
+          options: selectedOpts,
+          note: note,
+          description: descText,
+          assigneeIds: [...modalSelectedAssignees],
+          color: modalSelectedColor || 'blue',
+          date: document.getElementById('formDate').value,
+          deadline: document.getElementById('formDeadline').value,
+          status: document.getElementById('formStatus').value,
+          priority: document.getElementById('formPriority').value
+        };
+
+        let savedTask = null;
+        if (taskId) {
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              savedTask = { ...t, ...taskData };
+              return savedTask;
+            }
+            return t;
+          });
+        } else {
+          savedTask = { ...taskData, id: 'task-' + Date.now() };
+          tasks.unshift(savedTask);
+        }
+        saveTasks(savedTask, 'save');
+        closeModal();
+        renderApp();
+      };
+
+      // Export / Import / Reset
+      document.getElementById('btnExport').onclick = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = `team_tasks_backup_${getTodayStr(0)}.json`;
+        a.click();
+      };
+
+      document.getElementById('importFileInput').onchange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              const imported = JSON.parse(evt.target.result);
+              if (Array.isArray(imported)) {
+                tasks = imported.map((t, idx) => normalizeTask(t, idx));
+                saveTasks(null, 'bulk');
+                renderApp();
+                alert('นำเข้าข้อมูลสำเร็จแล้ว!');
+              }
+            } catch (err) { alert('ไฟล์ไม่ถูกต้อง'); }
+          };
+          reader.readAsText(e.target.files[0], "UTF-8");
+        }
+      };
+
+      document.getElementById('btnReset').onclick = () => {
+        if (confirm('ต้องการรีเซ็ตเป็นข้อมูลตัวอย่างเริ่มต้นหรือไม่?')) {
+          tasks = INITIAL_TASKS.map((t, idx) => normalizeTask(t, idx));
+          managerCalendarSelectedTypes = [...DEFAULT_MANAGER_CALENDAR_TYPES];
+          memberCalendarSelectedTypes = {};
+          managerTaskView = 'list';
+          isMonthlyCollapsed = false;
+          saveTasks(null, 'bulk');
+          renderApp();
+        }
+      };
+
+      // Cloudflare D1 Manual Sync Button
+      const btnCloudSync = document.getElementById('btnCloudSync');
+      if (btnCloudSync) {
+        btnCloudSync.onclick = () => initCloudSync(true);
+      }
+
+      // Initial Render & Theme & Cloud Sync
+      applyTheme(currentTheme);
+      renderApp();
+      initCloudSync(false);
+    })();
+  </script>
+</body>
+</html>

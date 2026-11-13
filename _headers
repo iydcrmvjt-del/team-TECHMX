@@ -1,0 +1,14 @@
+# ==============================================================================
+# Cloudflare Pages Custom Headers
+# ==============================================================================
+
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Access-Control-Allow-Origin: *
+
+/api/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS
+  Access-Control-Allow-Headers: Content-Type

@@ -1,0 +1,14 @@
+# ==============================================================================
+# Cloudflare Pages & D1 Database Configuration - Team TaskFlow
+# ==============================================================================
+
+name = "team-taskflow"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "."
+
+# Cloudflare D1 Serverless SQLite Database Binding
+# Binding name "DB" is accessible in functions/api/*.js via context.env.DB
+[[d1_databases]]
+binding = "DB"
+database_name = "team-taskflow-db"
+database_id = "YOUR_D1_DATABASE_ID_HERE"
