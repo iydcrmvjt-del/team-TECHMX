@@ -212,7 +212,10 @@
 
     /* Modal dialog styling in Dark Mode */
     html.dark #taskModal > div,
-    html.dark #taskDetailModal > div {
+    html.dark #taskDetailModal > div,
+    html.dark #larkSettingsModal > div,
+    html.dark #pwaInstallModal > div,
+    html.dark #syncDiagnosticModal > div {
       background-color: #111827 !important;
       border-color: #243149 !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
@@ -322,6 +325,9 @@
 
   <!-- Main Container -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-3.5 sm:py-6 space-y-3.5 sm:space-y-6 overflow-x-hidden">
+    <!-- Cloud Sync Alert Banner (shown when running locally on file:// or D1 not bound) -->
+    <div id="cloudSyncAlertBanner" class="hidden"></div>
+
     <!-- Dynamic Content will be rendered here -->
     <div id="appRoot" class="space-y-4 sm:space-y-6 w-full"></div>
   </main>
@@ -589,6 +595,44 @@
           <span>💾</span>
           <span>บันทึกการตั้งค่า</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloud Sync Diagnostic & Setup Modal -->
+  <div id="syncDiagnosticModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center space-x-2.5">
+          <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🔄</span>
+          <div>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ศูนย์ตรวจสอบและแก้ปัญหาการซิงค์ข้อมูล (Cloud Sync Diagnostics)</h3>
+            <p class="text-[11px] text-slate-400">ตรวจสอบสาเหตุที่งานในคอมพิวเตอร์และมือถือไม่ซิงค์กัน พร้อมวิธีแก้ไขทีละขั้นตอน</p>
+          </div>
+        </div>
+        <button onclick="window.appActions.closeSyncDiagnosticModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-lg cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Diagnostic Body Container (populated dynamically) -->
+      <div id="syncDiagnosticBody" class="space-y-4 text-xs"></div>
+
+      <!-- Modal Footer -->
+      <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <button type="button" onclick="window.appActions.copyCurrentURL()" class="w-full sm:w-auto px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-xs transition cursor-pointer flex items-center justify-center space-x-1.5">
+          <span>📋</span>
+          <span id="copyUrlBtnText">คัดลอกลิงก์หน้าเว็บนี้</span>
+        </button>
+        <div class="flex items-center space-x-2 w-full sm:w-auto">
+          <button type="button" onclick="window.appActions.closeSyncDiagnosticModal()" class="w-full sm:w-auto px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-semibold text-xs transition cursor-pointer">
+            ปิด
+          </button>
+          <button type="button" id="btnSyncModalRetry" onclick="window.appActions.retryCloudSyncFromModal()" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-semibold text-xs shadow-xs transition cursor-pointer flex items-center justify-center space-x-1.5">
+            <span>🔄</span>
+            <span>ตรวจสอบและซิงค์ใหม่</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1231,35 +1275,237 @@
       };
 
       // =====================================================================
-      // Cloudflare D1 Sync Engine
+      // Cloudflare D1 Sync Engine & Diagnostics
       // =====================================================================
       let cloudSyncStatus = 'offline'; // 'connected' | 'syncing' | 'offline' | 'error'
+      let lastSyncError = '';
 
-      const updateCloudStatusUI = (status, label = null, tooltip = null) => {
+      const renderSyncDiagnosticModalContent = () => {
+        const container = document.getElementById('syncDiagnosticBody');
+        if (!container) return;
+
+        const isFileProto = !window.location.protocol.startsWith('http');
+        const isMobile = window.innerWidth < 768 || (typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+        const curHref = typeof window !== 'undefined' ? window.location.href : '';
+
+        let statusCard = '';
+        if (isFileProto) {
+          statusCard = `
+            <div class="p-3.5 sm:p-4 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 space-y-2">
+              <div class="flex items-center space-x-2 text-amber-900 dark:text-amber-200 font-bold text-sm">
+                <span>❌</span>
+                <span>คุณกำลังเปิดผ่านไฟล์ในเครื่องคอมพิวเตอร์ (Local File: file://)</span>
+              </div>
+              <p class="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                <strong>นี่คือสาเหตุที่งานในคอมพิวเตอร์และมือถือไม่ซิงค์กัน!</strong> เมื่อเปิดไฟล์ตรงจากเครื่อง เว็บเบราว์เซอร์จะทำงานแบบออฟไลน์ ไม่สามารถส่งหรือรับข้อมูลผ่านระบบคลาวด์ได้ งานที่คุณเพิ่มหรือแก้ไขในคอมพิวเตอร์จึงถูกบันทึกไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น
+              </p>
+              <div class="mt-2 p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200 dark:border-amber-800 text-[11.5px] text-amber-900 dark:text-amber-200 font-semibold">
+                👉 <strong>วิธีแก้ทันที:</strong> บนคอมพิวเตอร์ ให้เปิด Google Chrome หรือ Safari แล้วพิมพ์หรือวาง URL ของ Cloudflare Pages (เช่น <code class="bg-amber-100 dark:bg-amber-900 px-1 py-0.5 rounded">https://....pages.dev</code>) เดียวกันกับที่คุณเปิดในมือถือครับ
+              </div>
+            </div>
+          `;
+        } else if (cloudSyncStatus !== 'connected') {
+          statusCard = `
+            <div class="p-3.5 sm:p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 space-y-2">
+              <div class="flex items-center space-x-2 text-rose-900 dark:text-rose-200 font-bold text-sm">
+                <span>⚠️</span>
+                <span>เปิดผ่านเว็บคลาวด์แล้ว แต่ยังไม่ได้ผูกฐานข้อมูล Cloudflare D1</span>
+              </div>
+              <p class="text-xs text-rose-800 dark:text-rose-300 leading-relaxed">
+                หน้าเว็บของคุณเปิดผ่านอินเทอร์เน็ตแล้ว แต่ในหน้าตั้งค่า Cloudflare ยังไม่ได้ทำการผูกฐานข้อมูลเข้ากับระบบ ทำให้ระบบยังต้องบันทึกงานแยกกันใน LocalStorage ของแต่ละเครื่อง (จึงยังไม่ซิงค์ข้ามเครื่อง)
+              </p>
+              ${lastSyncError ? `<div class="text-[11px] font-mono bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 p-2 rounded-lg break-all">รายละเอียดข้อความระบบ: ${escapeHtml(lastSyncError)}</div>` : ''}
+              <div class="mt-2 p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-rose-200 dark:border-rose-800 text-[11.5px] text-rose-900 dark:text-rose-200 font-semibold">
+                👉 <strong>วิธีแก้:</strong> ทำการผูก D1 Database ตามขั้นตอน 6 ข้อด้านล่างนี้ได้เลยครับ
+              </div>
+            </div>
+          `;
+        } else {
+          statusCard = `
+            <div class="p-3.5 sm:p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 space-y-2">
+              <div class="flex items-center space-x-2 text-emerald-900 dark:text-emerald-200 font-bold text-sm">
+                <span>🟢</span>
+                <span>เชื่อมต่อ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งานในระบบ)</span>
+              </div>
+              <p class="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                ระบบเชื่อมต่อฐานข้อมูลคลาวด์เรียบร้อยแล้ว ทุกการเพิ่ม ลบ และแก้ไขงาน จะซิงค์ตรงกันระหว่างคอมพิวเตอร์และโทรศัพท์มือถือแบบเรียลไทม์อัตโนมัติ
+              </p>
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <!-- Device and URL Details -->
+          <div class="bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-slate-400">อุปกรณ์ปัจจุบัน:</span>
+                <span class="font-semibold text-slate-800 dark:text-slate-200 ml-1">
+                  ${isMobile ? '📱 สมาร์ทโฟน / แท็บเล็ต (Mobile)' : '💻 คอมพิวเตอร์ (Desktop / Laptop)'}
+                </span>
+              </div>
+              <div>
+                <span class="text-slate-400">โหมดการทำงาน:</span>
+                <span class="font-semibold ml-1 ${cloudSyncStatus === 'connected' ? 'text-emerald-600' : (isFileProto ? 'text-amber-600' : 'text-rose-600')}">
+                  ${cloudSyncStatus === 'connected' ? '☁️ Cloud D1 Sync' : (isFileProto ? '💾 Local File (ออฟไลน์)' : '💾 LocalStorage Only')}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[11px] mb-0.5">ที่อยู่ URL ปัจจุบัน:</span>
+              <div class="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-[11px] break-all text-slate-700 dark:text-slate-300 select-all">
+                ${escapeHtml(curHref)}
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Status Card -->
+          ${statusCard}
+
+          <!-- 2 Steps Solution Guide -->
+          <div class="space-y-3 pt-1">
+            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm flex items-center space-x-1.5">
+              <span>🛠️</span>
+              <span>2 ขั้นตอนแก้ปัญหาให้คอมและมือถือซิงค์กัน 100%:</span>
+            </h4>
+
+            <!-- Step 1 -->
+            <div class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 space-y-2">
+              <div class="font-bold text-indigo-600 dark:text-indigo-400 text-xs flex items-center space-x-1.5">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-[11px]">1</span>
+                <span>ตรวจสอบ URL: ต้องเปิดหน้าเว็บเดียวกันทั้งคอมและมือถือ</span>
+              </div>
+              <div class="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed pl-6">
+                <p>• ในมือถือที่คุณเปิดใช้งานอยู่ ให้ดูแถบที่อยู่ด้านบนว่าใช้ลิงก์อะไร (เช่น <code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-mono">https://xxxx.pages.dev</code>)</p>
+                <p>• นำลิงก์ <code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-mono">https://....pages.dev</code> นั้นมาเปิดใน <strong>Google Chrome</strong> หรือ <strong>Safari</strong> บนคอมพิวเตอร์</p>
+                <p class="text-rose-600 dark:text-rose-400 font-medium">⚠️ ข้อห้าม: อย่าดับเบิลคลิกเปิดไฟล์ <code class="bg-rose-50 dark:bg-rose-950/60 px-1 py-0.5 rounded font-mono">index.html</code> หรือ <code class="bg-rose-50 dark:bg-rose-950/60 px-1 py-0.5 rounded font-mono">เปิดระบบ.command</code> เพราะนั่นจะเป็นการเปิดแบบออฟไลน์ในเครื่องครับ</p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 space-y-2.5">
+              <div class="font-bold text-indigo-600 dark:text-indigo-400 text-xs flex items-center space-x-1.5">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-[11px]">2</span>
+                <span>วิธีผูก Cloudflare D1 Database (แก้ปัญหา "หาคำว่า function ไม่เจอ")</span>
+              </div>
+              
+              <div class="pl-6 space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                <div class="p-2.5 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 rounded-lg text-sky-900 dark:text-sky-200 text-[11px] leading-relaxed">
+                  💡 <strong>ทำไมถึงหาคำว่า Functions ไม่เจอ?</strong><br>
+                  Cloudflare ได้รวมเมนูและปรับปรุงหน้าต่าง Dashboard ใหม่ โดยเปลี่ยนชื่อเมนู <strong>Functions</strong> เป็นคำว่า <strong>Bindings</strong> (หรือหากหน้าจอของท่านแสดงเป็นภาษาไทย จะชื่อคำว่า <strong>การเชื่อมโยง</strong>) ครับ
+                </div>
+
+                <div class="space-y-1.5 leading-relaxed">
+                  <p><strong>ขั้นตอนการผูกฐานข้อมูลทีละคลิก:</strong></p>
+                  <ol class="list-decimal list-inside space-y-1 pl-1 text-[11.5px]">
+                    <li>เข้าสู่ระบบที่ <strong><a href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline">dash.cloudflare.com</a></strong></li>
+                    <li>เมนูด้านซ้ายเลือก <strong>Storage & Databases</strong> ➔ <strong>D1 SQL Database</strong> (ตรวจสอบว่ามีฐานข้อมูลชื่อ <code>team-taskflow-db</code> หรือยัง ถ้ายังไม่มีให้กดปุ่ม Create database แล้วพิมพ์ชื่อ <code>team-taskflow-db</code>)</li>
+                    <li>เมนูด้านซ้ายเลือก <strong>Workers & Pages</strong> ➔ คลิกที่ชื่อโปรเจกต์ของคุณ</li>
+                    <li>คลิกแท็บ <strong>Settings</strong> ด้านบน</li>
+                    <li>ในแถบเมนูย่อยซ้ายมือ ให้มองหาคำว่า:
+                      <strong class="text-indigo-600 dark:text-indigo-400">Bindings</strong> 
+                      (หรือถ้าหน้าจอเป็นภาษาไทยจะชื่อ <strong class="text-indigo-600 dark:text-indigo-400">การเชื่อมโยง</strong>)
+                      <div class="text-[10.5px] text-slate-400 mt-0.5 ml-4">*(หากเป็นหน้าตาเดิมจะอยู่ที่ Settings ➔ Functions ➔ เลื่อนหา D1 Database Bindings)*</div>
+                    </li>
+                    <li>กดปุ่ม <strong>Add</strong> (หรือ Add binding) ➔ เลือกชนิดเป็น <strong>D1 database</strong></li>
+                    <li>กรอกข้อมูล 2 ช่องดังนี้:
+                      <div class="ml-4 my-1 p-2 bg-slate-100 dark:bg-slate-700/60 rounded-md font-mono text-[11px] space-y-0.5">
+                        <div>Variable name: <strong class="text-indigo-600 dark:text-indigo-300">DB</strong> <span class="text-slate-400 font-sans text-[10px]">(ตัวพิมพ์ใหญ่ 2 ตัว ห้ามสะกดผิด)</span></div>
+                        <div>D1 database: เลือก <strong class="text-emerald-600 dark:text-emerald-300">team-taskflow-db</strong></div>
+                      </div>
+                    </li>
+                    <li>กดปุ่ม <strong>Save</strong> (บันทึก)</li>
+                    <li>⚡ <strong>ขั้นตอนสำคัญที่สุด (ห้ามลืม):</strong><br>
+                      คลิกแท็บ <strong>Deployments</strong> ด้านบน ➔ ตรงรายการ Deploy ล่าสุด กดปุ่มจุดสามจุด <strong>...</strong> ทางขวาสุด ➔ เลือก <strong>Retry deployment</strong> เพื่อให้ Cloudflare นำฐานข้อมูลไปใช้งานกับหน้าเว็บจริงทันทีครับ
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      const updateCloudStatusUI = (status, label = null, tooltip = null, errorDetail = null) => {
         cloudSyncStatus = status;
+        if (errorDetail) lastSyncError = errorDetail;
+        else if (tooltip) lastSyncError = tooltip;
+        else if (status === 'connected') lastSyncError = '';
+
         const dot = document.getElementById('cloudSyncDot');
         const text = document.getElementById('cloudSyncText');
         const btn = document.getElementById('btnCloudSync');
-        if (!dot || !text) return;
+        if (dot && text) {
+          dot.className = 'inline-block w-2 h-2 rounded-full transition-all duration-300';
+          if (status === 'connected') {
+            dot.classList.add('bg-emerald-500', 'shadow-xs', 'shadow-emerald-400');
+            text.innerHTML = '<span class="hidden sm:inline">☁️ </span>D1';
+            if (btn) btn.setAttribute('title', tooltip || 'เชื่อมต่อ Cloudflare D1 แล้ว ข้อมูลจะซิงค์อัตโนมัติ (คลิกเพื่อดูรายละเอียด)');
+          } else if (status === 'syncing') {
+            dot.classList.add('bg-amber-400', 'animate-pulse');
+            text.innerHTML = '<span class="hidden sm:inline">⏳ </span>ซิงค์';
+            if (btn) btn.setAttribute('title', tooltip || 'กำลังซิงค์ข้อมูลกับ Cloudflare D1...');
+          } else if (status === 'error') {
+            dot.classList.add('bg-rose-500');
+            text.innerHTML = '<span class="hidden sm:inline">⚠️ </span>Error';
+            if (btn) btn.setAttribute('title', tooltip || 'เกิดข้อผิดพลาดในการซิงค์ (คลิกเพื่อดูวิธีแก้ไข)');
+          } else {
+            // Local / Offline fallback
+            dot.classList.add('bg-slate-400');
+            text.innerHTML = '<span class="hidden sm:inline">💾 </span>Local';
+            if (btn) btn.setAttribute('title', tooltip || 'ทำงานในเครื่อง (Local Mode) - ข้อมูลบันทึกลงในบราวเซอร์ (คลิกเพื่อดูวิธีซิงค์)');
+          }
+        }
 
-        dot.className = 'inline-block w-2 h-2 rounded-full transition-all duration-300';
-        if (status === 'connected') {
-          dot.classList.add('bg-emerald-500', 'shadow-xs', 'shadow-emerald-400');
-          text.innerHTML = '<span class="hidden sm:inline">☁️ </span>D1';
-          if (btn) btn.setAttribute('title', tooltip || 'เชื่อมต่อ Cloudflare D1 แล้ว ข้อมูลจะซิงค์อัตโนมัติ (คลิกเพื่อรีเฟรช)');
-        } else if (status === 'syncing') {
-          dot.classList.add('bg-amber-400', 'animate-pulse');
-          text.innerHTML = '<span class="hidden sm:inline">⏳ </span>ซิงค์';
-          if (btn) btn.setAttribute('title', tooltip || 'กำลังซิงค์ข้อมูลกับ Cloudflare D1...');
-        } else if (status === 'error') {
-          dot.classList.add('bg-rose-500');
-          text.innerHTML = '<span class="hidden sm:inline">⚠️ </span>Error';
-          if (btn) btn.setAttribute('title', tooltip || 'เกิดข้อผิดพลาดในการซิงค์ (คลิกเพื่อลองใหม่)');
-        } else {
-          // Local / Offline fallback
-          dot.classList.add('bg-slate-400');
-          text.innerHTML = '<span class="hidden sm:inline">💾 </span>Local';
-          if (btn) btn.setAttribute('title', tooltip || 'ทำงานในเครื่อง (Local Mode) - ข้อมูลบันทึกลงในบราวเซอร์');
+        // Update Top Alert Banner
+        const banner = document.getElementById('cloudSyncAlertBanner');
+        if (banner) {
+          if (status === 'connected') {
+            banner.classList.add('hidden');
+            banner.innerHTML = '';
+          } else if (typeof window !== 'undefined' && !window.location.protocol.startsWith('http')) {
+            banner.className = 'flex items-center justify-between p-3 sm:p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs sm:text-sm shadow-xs transition-all';
+            banner.innerHTML = `
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <span class="text-base sm:text-xl shrink-0">💻</span>
+                <div class="min-w-0">
+                  <div class="font-bold">โหมดออฟไลน์ (Local File) — ข้อมูลจะไม่ซิงค์กับมือถือ:</div>
+                  <div class="text-[11px] sm:text-xs text-amber-800 dark:text-amber-300">
+                    คุณกำลังเปิดหน้าเว็บผ่านไฟล์ในเครื่อง (<code class="bg-amber-100 dark:bg-amber-900/80 px-1 py-0.5 rounded font-mono">file://</code>) ข้อมูลจึงบันทึกเฉพาะในเครื่องนี้ หากต้องการให้คอมกับมือถือซิงค์กัน ให้เปิดผ่าน URL ของ Cloudflare Pages ครับ
+                  </div>
+                </div>
+              </div>
+              <button type="button" onclick="window.appActions.openSyncDiagnosticModal()" class="shrink-0 ml-2 px-3 py-1.5 sm:py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center space-x-1">
+                <span>วิธีแก้</span>
+                <span>➔</span>
+              </button>
+            `;
+            banner.classList.remove('hidden');
+          } else {
+            banner.className = 'flex items-center justify-between p-3 sm:p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-xs sm:text-sm shadow-xs transition-all';
+            banner.innerHTML = `
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <span class="text-base sm:text-xl shrink-0">☁️</span>
+                <div class="min-w-0">
+                  <div class="font-bold">ยังไม่ได้ผูก Cloudflare D1 Database — ข้อมูลยังไม่ซิงค์ข้ามเครื่อง:</div>
+                  <div class="text-[11px] sm:text-xs text-rose-800 dark:text-rose-300">
+                    ระบบทำงานในโหมด LocalStorage ข้อมูลยังถูกบันทึกแยกกันในแต่ละอุปกรณ์ โปรดผูกฐานข้อมูล D1 ใน Cloudflare Pages Settings
+                  </div>
+                </div>
+              </div>
+              <button type="button" onclick="window.appActions.openSyncDiagnosticModal()" class="shrink-0 ml-2 px-3 py-1.5 sm:py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center space-x-1">
+                <span>วิธีผูก D1</span>
+                <span>➔</span>
+              </button>
+            `;
+            banner.classList.remove('hidden');
+          }
+        }
+
+        // Refresh modal if open
+        const modal = document.getElementById('syncDiagnosticModal');
+        if (modal && !modal.classList.contains('hidden')) {
+          renderSyncDiagnosticModalContent();
         }
       };
 
@@ -1321,7 +1567,7 @@
         if (!window.location.protocol.startsWith('http')) {
           updateCloudStatusUI('offline', null, 'เปิดผ่าน local file:// ข้อมูลจะบันทึกลงใน Local Storage');
           if (isManual) {
-            alert('💻 ขณะนี้คุณเปิดเว็บผ่านไฟล์ในคอมพิวเตอร์ (file://)\n\nข้อมูลจึงถูกบันทึกไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่สามารถซิงค์ข้ามไปยังมือถือได้ครับ\n\n👉 วิธีแก้ไข:\nให้เปิดหน้าเว็บผ่าน URL ของ Cloudflare Pages (เช่น https://....pages.dev) ทั้งบนคอมและมือถือ ข้อมูลจะซิงค์ตรงกันทันทีครับ');
+            window.appActions.openSyncDiagnosticModal();
           }
           return;
         }
@@ -1330,25 +1576,31 @@
         try {
           const res = await fetch('/api/tasks');
           if (!res.ok) {
-            updateCloudStatusUI('offline', null, 'ไม่พบ Cloudflare D1 endpoint หรือยังไม่ได้ผูก Database');
+            const errMsg = `ไม่พบ Cloudflare D1 endpoint หรือยังไม่ได้ผูก Database (HTTP ${res.status})`;
+            updateCloudStatusUI('offline', null, errMsg, errMsg);
             if (isManual) {
-              alert(`⚠️ ไม่สามารถติดต่อ Cloudflare API ได้ (HTTP ${res.status})\nโปรดตรวจสอบว่าเปิดผ่าน URL ของ Cloudflare Pages`);
+              window.appActions.openSyncDiagnosticModal();
             }
             return;
           }
           const data = await res.json();
           if (data && data.success) {
             if (Array.isArray(data.tasks)) {
-              const isBrandNewSetup = !data.seeded && data.tasks.length === 0 && !localStorage.getItem('team_taskflow_has_run');
+              const isBrandNewSetup = !data.seeded && data.tasks.length === 0;
 
               if (isBrandNewSetup) {
-                // Absolute first launch with an unseeded DB and empty browser
+                // First time connecting to a fresh unseeded database:
+                // Push whatever tasks the user currently has (or INITIAL_TASKS if empty) to D1
+                const initialToUpload = tasks.length > 0 ? tasks : INITIAL_TASKS;
                 updateCloudStatusUI('syncing');
-                await syncAllTasksToCloud(INITIAL_TASKS);
-                tasks = INITIAL_TASKS.map((t, idx) => normalizeTask(t, idx));
+                await syncAllTasksToCloud(initialToUpload);
+                tasks = initialToUpload.map((t, idx) => normalizeTask(t, idx));
                 saveTasksLocalOnly();
                 renderApp();
-                updateCloudStatusUI('connected', null, 'เชื่อมต่อ Cloudflare D1 และสร้างข้อมูลเริ่มต้นแล้ว');
+                updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 และอัปโหลดข้อมูลเริ่มต้นแล้ว (${tasks.length} งาน)`);
+                if (isManual) {
+                  showToast(`เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน) ☁️`, 'success');
+                }
               } else {
                 // Database is the single source of truth:
                 // If D1 has 0 tasks (e.g. user deleted all tasks), tasks becomes []!
@@ -1360,21 +1612,24 @@
                   renderApp();
                 }
                 updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
-                if (isManual) alert(`✅ ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน)`);
+                if (isManual) {
+                  showToast(`ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน) ☁️`, 'success');
+                }
               }
             }
           } else {
             const errMsg = data && data.error ? data.error : 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ';
-            updateCloudStatusUI('offline', null, errMsg);
+            updateCloudStatusUI('offline', null, errMsg, errMsg);
             if (isManual) {
-              alert(`⚠️ ยังไม่ได้ผูก Cloudflare D1 Database\n\nรายละเอียด: ${errMsg}\n\n🛠️ วิธีแก้เพื่อให้คอมกับมือถือซิงค์กัน:\n1. เข้า Cloudflare Dashboard ➔ Storage & Databases ➔ D1 ➔ กด Create database ตั้งชื่อ "team-taskflow-db"\n2. ไปที่ Workers & Pages ➔ เลือกโปรเจกต์ ➔ Settings ➔ Functions\n3. เลื่อนลงมาที่ D1 Database Bindings ➔ กด Add binding:\n   - Variable name: DB\n   - D1 database: เลือก team-taskflow-db\n4. กด Save แล้วไปที่แท็บ Deployments ➔ กด Retry deployment ล่าสุดครับ`);
+              window.appActions.openSyncDiagnosticModal();
             }
           }
         } catch (e) {
           console.warn('Cloudflare D1 init error:', e);
-          updateCloudStatusUI('offline', null, 'ไม่สามารถเชื่อมต่อ Cloudflare API ได้');
+          const errDetail = e && e.message ? e.message : 'ไม่สามารถเชื่อมต่อ Cloudflare API ได้';
+          updateCloudStatusUI('offline', null, 'ไม่สามารถเชื่อมต่อ Cloudflare API ได้', errDetail);
           if (isManual) {
-            alert('⚠️ ไม่สามารถเชื่อมต่อ Cloudflare API ได้\nโปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+            window.appActions.openSyncDiagnosticModal();
           }
         }
       };
@@ -3298,6 +3553,47 @@
 
       // 6. Global Action Dispatcher
       window.appActions = {
+        openSyncDiagnosticModal: () => {
+          renderSyncDiagnosticModalContent();
+          const modal = document.getElementById('syncDiagnosticModal');
+          if (modal) modal.classList.remove('hidden');
+        },
+        closeSyncDiagnosticModal: () => {
+          const modal = document.getElementById('syncDiagnosticModal');
+          if (modal) modal.classList.add('hidden');
+        },
+        retryCloudSyncFromModal: async () => {
+          const btn = document.getElementById('btnSyncModalRetry');
+          if (btn) {
+            btn.innerHTML = '<span>⏳</span><span>กำลังตรวจสอบ...</span>';
+            btn.disabled = true;
+          }
+          await initCloudSync(true);
+          renderSyncDiagnosticModalContent();
+          if (btn) {
+            btn.innerHTML = '<span>🔄</span><span>ตรวจสอบและซิงค์ใหม่</span>';
+            btn.disabled = false;
+          }
+        },
+        copyCurrentURL: () => {
+          const url = typeof window !== 'undefined' ? window.location.href : '';
+          const copySuccess = () => {
+            const btnText = document.getElementById('copyUrlBtnText');
+            if (btnText) {
+              const orig = btnText.textContent;
+              btnText.textContent = 'คัดลอกเรียบร้อยแล้ว! ✅';
+              setTimeout(() => { btnText.textContent = orig; }, 2500);
+            }
+            showToast('คัดลอก URL หน้าเว็บเรียบร้อยแล้ว 📋', 'info');
+          };
+          if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(copySuccess).catch(() => {
+              prompt('คัดลอก URL หน้าเว็บนี้:', url);
+            });
+          } else {
+            prompt('คัดลอก URL หน้าเว็บนี้:', url);
+          }
+        },
         selectModalColor: (colId) => {
           if (TASK_COLORS[colId]) {
             modalSelectedColor = colId;
@@ -3849,7 +4145,9 @@
       // Cloudflare D1 Manual & Auto-Sync
       const btnCloudSync = document.getElementById('btnCloudSync');
       if (btnCloudSync) {
-        btnCloudSync.onclick = () => initCloudSync(true);
+        btnCloudSync.onclick = () => {
+          window.appActions.openSyncDiagnosticModal();
+        };
       }
 
       // Auto-Sync across devices on tab focus & visibility change
