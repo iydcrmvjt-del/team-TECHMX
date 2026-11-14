@@ -1349,7 +1349,13 @@
       let managerTaskView = 'list';   // 'list' | 'kanban' (ค่าเริ่มต้น: ตารางงาน)
       let isCalendarCollapsed = false;
       let isDailyCollapsed = false;
-      let isMonthlyCollapsed = false;
+      let isMonthlyCollapsed = (function() {
+        try {
+          const saved = localStorage.getItem('team_taskflow_monthly_collapsed');
+          if (saved !== null) return saved === 'true';
+        } catch(e) {}
+        return true; // ค่าเริ่มต้น: แสดงแบบย่อในตอนเริ่มต้นตามที่ต้องการ
+      })();
       let calendarMode = 'range';     // 'range' | 'deadline'
       let calendarColorFilter = 'all';// 'all' | 'blue' | 'green' | 'purple' | 'orange' | 'rose' | 'teal' | 'indigo' | 'yellow' | 'red' | 'slate'
       const DEFAULT_MANAGER_CALENDAR_TYPES = ['Roll A', 'ปล่อยงาน'];
@@ -2253,8 +2259,8 @@
 
           // 1.5 Monthly Content Output Counter (Team Overview)
           html += `
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isMonthlyCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isMonthlyCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
                 <div class="flex items-center space-x-2.5">
                   <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
                   <div>
@@ -2437,8 +2443,8 @@
             </div>
 
             <!-- 1.5 Monthly Content Output Counter for Member -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isMonthlyCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isMonthlyCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
                 <div class="flex items-center space-x-2.5">
                   <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
                   <div>
@@ -3865,6 +3871,9 @@
         },
         toggleMonthlyCollapse: () => {
           isMonthlyCollapsed = !isMonthlyCollapsed;
+          try {
+            localStorage.setItem('team_taskflow_monthly_collapsed', String(isMonthlyCollapsed));
+          } catch(e) {}
           renderApp();
         },
         toggleCalendarCollapse: () => {
@@ -4346,7 +4355,8 @@
           managerCalendarSelectedTypes = [...DEFAULT_MANAGER_CALENDAR_TYPES];
           memberCalendarSelectedTypes = {};
           managerTaskView = 'list';
-          isMonthlyCollapsed = false;
+          isMonthlyCollapsed = true;
+          try { localStorage.setItem('team_taskflow_monthly_collapsed', 'true'); } catch(e) {}
           saveTasks(null, 'bulk');
           renderApp();
           showToast('รีเซ็ตข้อมูลตัวอย่างเรียบร้อยแล้ว', 'info');
