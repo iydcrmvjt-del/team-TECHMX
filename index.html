@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>ระบบจัดการงานทีม (Team TaskFlow)</title>
   <!-- Google Fonts: Prompt & Sarabun -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +44,12 @@
     })();
   </script>
   <style>
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw;
+      width: 100%;
+      position: relative;
+    }
     body {
       font-family: 'Prompt', 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #f8fafc;
@@ -204,15 +210,15 @@
 
   <!-- Header Navigation -->
   <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs transition-colors duration-200">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-14 sm:h-16 gap-2">
+    <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-2">
         <!-- Logo -->
-        <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-md shadow-indigo-500/20 shrink-0">
+        <div class="flex items-center space-x-1.5 sm:space-x-3 min-w-0 shrink">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-bold text-base sm:text-xl shadow-md shadow-indigo-500/20 shrink-0">
             📋
           </div>
-          <div>
-            <h1 class="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">Team TaskFlow</h1>
+          <div class="min-w-0">
+            <h1 class="text-xs sm:text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight truncate">Team TaskFlow</h1>
             <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 hidden sm:block">ระบบติดตามและจัดการงานทีม</p>
           </div>
         </div>
@@ -220,22 +226,22 @@
         <!-- Role / User Switcher & Tools -->
         <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 shrink-0">
           <!-- Cloudflare D1 Sync Status Badge -->
-          <button type="button" id="btnCloudSync" title="สถานะ Cloudflare D1 (คลิกเพื่อเชื่อมต่อหรือซิงค์ข้อมูล)" class="flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer">
+          <button type="button" id="btnCloudSync" title="สถานะ Cloudflare D1 (คลิกเพื่อเชื่อมต่อหรือซิงค์ข้อมูล)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
             <span id="cloudSyncDot" class="inline-block w-2 h-2 rounded-full bg-slate-400"></span>
-            <span id="cloudSyncText" class="text-[11px] sm:text-xs">Local</span>
+            <span id="cloudSyncText" class="text-[10px] sm:text-xs">Local</span>
           </button>
 
           <!-- Dark / Light Mode Toggle Button -->
-          <button type="button" id="btnThemeToggle" title="สลับโหมดมืด / สว่าง (Toggle Dark/Light Mode)" class="flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer">
-            <span id="themeToggleIcon" class="text-sm">🌙</span>
+          <button type="button" id="btnThemeToggle" title="สลับโหมดมืด / สว่าง (Toggle Dark/Light Mode)" class="flex items-center space-x-1 px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
+            <span id="themeToggleIcon" class="text-xs sm:text-sm">🌙</span>
             <span id="themeToggleText" class="hidden md:inline">โหมดมืด</span>
           </button>
 
-          <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-100 dark:bg-slate-800 p-1 sm:p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
             <span class="text-xs text-slate-500 dark:text-slate-400 font-medium pl-1 hidden lg:inline">สลับมุมมอง:</span>
-            <select id="userSelector" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-semibold py-1.5 pl-2 pr-6 sm:pr-8 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer max-w-[125px] sm:max-w-[200px]">
-              <option value="manager">👑 ภาพรวมทุกคน</option>
-              <optgroup label="── บอร์ดของทีมงาน ──">
+            <select id="userSelector" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-[11px] sm:text-sm font-semibold py-1 sm:py-1.5 pl-1.5 sm:pl-2 pr-5 sm:pr-8 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer max-w-[110px] sm:max-w-[200px]">
+              <option value="manager">👑 ภาพรวม</option>
+              <optgroup label="── บอร์ดทีม ──">
                 <option value="non">👨‍💻 นนท์</option>
                 <option value="aun">🧑‍💻 อั๋น</option>
                 <option value="eyeta">👩‍💼 อายตา</option>
@@ -265,7 +271,7 @@
   </header>
 
   <!-- Banner Area -->
-  <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-3.5 sm:py-4 px-3 sm:px-6 lg:px-8 shadow-inner">
+  <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-3.5 sm:py-4 px-2 sm:px-6 lg:px-8 shadow-inner">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div class="flex items-center space-x-2.5 sm:space-x-3 w-full sm:w-auto">
         <span id="bannerAvatar" class="text-2xl sm:text-3xl p-1.5 sm:p-2 bg-white/10 rounded-2xl backdrop-blur-sm shrink-0">👑</span>
@@ -287,9 +293,9 @@
   </div>
 
   <!-- Main Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-3.5 sm:py-6 space-y-3.5 sm:space-y-6 overflow-x-hidden">
     <!-- Dynamic Content will be rendered here -->
-    <div id="appRoot" class="space-y-6"></div>
+    <div id="appRoot" class="space-y-4 sm:space-y-6 w-full"></div>
   </main>
 
   <!-- Task Modal (Create / Edit) -->
@@ -1344,16 +1350,16 @@
 
           // 1.5 Monthly Content Output Counter (Team Overview)
           html += `
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">🏆</span>
+                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
                   <div>
-                    <h3 class="font-bold text-slate-800 text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} (ภาพรวมทั้งทีม)</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">ติดตามยอดส่งมอบคอนเทนต์หลักประจำเดือน: Long Form 🎬, คลิปสั้น (Short) 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} (ภาพรวมทั้งทีม)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ติดตามยอดส่งมอบคอนเทนต์หลักประจำเดือน: Long Form 🎬, คลิปสั้น (Short) 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
                   </div>
                 </div>
-                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
+                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
                   <span>${isMonthlyCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
                 </button>
               </div>
@@ -1363,16 +1369,16 @@
 
           // 2. Separated Timeline Calendar (Top Section)
           html += `
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">📅</span>
+                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📅</span>
                   <div>
-                    <h3 class="font-bold text-slate-800 text-base">ปฏิทินไทม์ไลน์ภาพรวมทีม (Team Timeline Calendar)</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">แสดงแผนงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁) • กรองดูตามประเภทงาน & ปรับสีกำกับงานได้ 15 สี (แยกกันชัดเจน)</p>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ปฏิทินไทม์ไลน์ภาพรวมทีม (Team Timeline Calendar)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">แสดงแผนงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁) • กรองดูตามประเภทงาน & ปรับสีกำกับงานได้ 15 สี (แยกกันชัดเจน)</p>
                   </div>
                 </div>
-                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
                   <span>${isCalendarCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
                 </button>
               </div>
@@ -1382,16 +1388,16 @@
 
           // 3. Separated Daily Summary (Top Section)
           html += `
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-amber-50 text-amber-600 rounded-xl text-lg">☀️</span>
+                  <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
                   <div>
-                    <h3 class="font-bold text-slate-800 text-base">สรุปงานประจำวันของแต่ละคน (Daily Summary & Agenda)</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของแต่ละคน (Daily Summary & Agenda)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
                   </div>
                 </div>
-                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
                   <span>${isDailyCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
                 </button>
               </div>
@@ -1401,15 +1407,15 @@
 
           // 4. Team Workload
           html += `
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
               <div class="flex items-center justify-between mb-4">
                 <div>
-                  <h3 class="font-bold text-slate-800 text-base">ภาระงานรายบุคคล (Team Workload)</h3>
-                  <p class="text-xs text-slate-500">นับรวมทั้งงานเดี่ยวและงานกลุ่ม • คลิกเพื่อสลับไปดูบอร์ดของคนนั้น</p>
+                  <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ภาระงานรายบุคคล (Team Workload)</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">นับรวมทั้งงานเดี่ยวและงานกลุ่ม • คลิกเพื่อสลับไปดูบอร์ดของคนนั้น</p>
                 </div>
-                <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full">สมาชิก ${TEAM_MEMBERS.length} คน</span>
+                <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">สมาชิก ${TEAM_MEMBERS.length} คน</span>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
                 ${TEAM_MEMBERS.map(m => {
                   const mTasks = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(m.id));
                   const mTotal = mTasks.length;
@@ -1458,38 +1464,38 @@
 
           // 5. Task Management & Filters Card (Kanban & Table)
           html += `
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                  <h3 class="font-bold text-slate-800 text-base">รายการงานทั้งหมดในทีม</h3>
-                  <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">${displayedTasks.length} รายการ</span>
+                  <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">รายการงานทั้งหมดในทีม</h3>
+                  <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${displayedTasks.length} รายการ</span>
                   <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center space-x-1">
                     <span>📅 เรียงตามกำหนดส่ง (Deadline)</span>
                   </span>
                 </div>
-                <div class="flex items-center bg-slate-100 p-1 rounded-xl space-x-1 self-start sm:self-auto">
-                  <button onclick="window.appActions.setManagerTaskView('kanban')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+                <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl space-x-1 w-full sm:w-auto justify-center sm:justify-start">
+                  <button onclick="window.appActions.setManagerTaskView('kanban')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
                     📊 Kanban รวม
                   </button>
-                  <button onclick="window.appActions.setManagerTaskView('list')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+                  <button onclick="window.appActions.setManagerTaskView('list')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
                     📋 ตารางงาน
                   </button>
                 </div>
               </div>
 
               <!-- Filter Bar -->
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div class="relative">
-                  <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ค้นหาชื่องาน หรือรายละเอียด..." class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs">
+                  <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ค้นหาชื่องาน หรือรายละเอียด..." class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs">
                 </div>
                 <div>
-                  <select id="filterAssigneeSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                  <select id="filterAssigneeSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
                     <option value="all" ${filterAssignee === 'all' ? 'selected' : ''}>👥 กรองตามผู้รับผิดชอบ: ทุกคน</option>
                     ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${filterAssignee === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
                   </select>
                 </div>
                 <div>
-                  <select id="filterStatusSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                  <select id="filterStatusSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
                     <option value="all" ${filterStatus === 'all' ? 'selected' : ''}>📌 กรองตามสถานะ: ทั้งหมด</option>
                     <option value="todo" ${filterStatus === 'todo' ? 'selected' : ''}>รอดำเนินการ (To Do)</option>
                     <option value="in-progress" ${filterStatus === 'in-progress' ? 'selected' : ''}>กำลังทำ (In Progress)</option>
@@ -1510,34 +1516,34 @@
           // 1. Member Header & Quick Stats
           html += `
             <div class="space-y-4">
-              <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center space-x-3">
-                  <span class="text-3xl">${currentUser.avatar}</span>
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-2.5 sm:space-x-3">
+                  <span class="text-2xl sm:text-3xl">${currentUser.avatar}</span>
                   <div>
-                    <h3 class="font-bold text-slate-800 text-lg">พื้นที่จัดการงานของ: ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500">ตรวจสอบปฏิทิน เช็กลิสต์รายวัน และจัดการสถานะงานผ่าน Kanban ด้านล่าง</p>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">พื้นที่จัดการงานของ: ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">ตรวจสอบปฏิทิน เช็กลิสต์รายวัน และจัดการสถานะงานผ่าน Kanban ด้านล่าง</p>
                   </div>
                 </div>
-                <div class="flex items-center space-x-2 text-xs">
-                  <span class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-medium">งานทั้งหมด: <strong>${displayedTasks.length}</strong></span>
-                  <span class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 font-medium">รอ: <strong>${displayedTasks.filter(t => t.status === 'todo').length}</strong></span>
-                  <span class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 font-medium">กำลังทำ: <strong>${displayedTasks.filter(t => t.status === 'in-progress').length}</strong></span>
-                  <span class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-medium">เสร็จแล้ว: <strong>${displayedTasks.filter(t => t.status === 'done').length}</strong></span>
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs w-full sm:w-auto">
+                  <span class="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">งานทั้งหมด: <strong>${displayedTasks.length}</strong></span>
+                  <span class="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-medium">รอ: <strong>${displayedTasks.filter(t => t.status === 'todo').length}</strong></span>
+                  <span class="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-medium">กำลังทำ: <strong>${displayedTasks.filter(t => t.status === 'in-progress').length}</strong></span>
+                  <span class="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium">เสร็จแล้ว: <strong>${displayedTasks.filter(t => t.status === 'done').length}</strong></span>
                 </div>
               </div>
             </div>
 
             <!-- 1.5 Monthly Content Output Counter for Member -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">🏆</span>
+                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
                   <div>
-                    <h3 class="font-bold text-slate-800 text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} ของ ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">ยอดส่งมอบผลงานคอนเทนต์และงานสำเร็จของคุณในเดือนนี้: Long Form 🎬, Short 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} ของ ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ยอดส่งมอบผลงานคอนเทนต์และงานสำเร็จของคุณในเดือนนี้: Long Form 🎬, Short 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
                   </div>
                 </div>
-                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
+                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
                   <span>${isMonthlyCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
                 </button>
               </div>
@@ -1545,16 +1551,16 @@
             </div>
 
             <!-- 2. Separated Timeline Calendar for Member (Top) -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl text-lg">📅</span>
+                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📅</span>
                   <div>
-                    <h3 class="font-bold text-slate-800 text-base">ปฏิทินไทม์ไลน์ของ ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">ตรวจสอบกำหนดการงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁)</p>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ปฏิทินไทม์ไลน์ของ ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ตรวจสอบกำหนดการงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁)</p>
                   </div>
                 </div>
-                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
                   <span>${isCalendarCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
                 </button>
               </div>
@@ -1562,16 +1568,16 @@
             </div>
 
             <!-- 3. Separated Daily Summary for Member (Top) -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-amber-50 text-amber-600 rounded-xl text-lg">☀️</span>
+                  <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
                   <div>
-                    <h3 class="font-bold text-slate-800 text-base">สรุปงานประจำวันของ ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">เช็กลิสต์งานที่ต้องทำในแต่ละวัน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของ ${currentUser.name}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานที่ต้องทำในแต่ละวัน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
                   </div>
                 </div>
-                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
                   <span>${isDailyCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
                 </button>
               </div>
@@ -1579,13 +1585,13 @@
             </div>
 
             <!-- 4. Member Kanban Board -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center space-x-2">
-                  <h3 class="font-bold text-slate-800 text-base">กระดานงาน Kanban ของ: ${currentUser.name}</h3>
-                  <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold">${displayedTasks.length} งาน</span>
+                  <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">กระดานงาน Kanban ของ: ${currentUser.name}</h3>
+                  <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-full font-semibold">${displayedTasks.length} งาน</span>
                 </div>
-                <span class="text-xs text-slate-400">ลากการ์ดเพื่อย้ายสถานะ หรือกดปุ่มย้ายสถานะในการ์ด</span>
+                <span class="text-xs text-slate-400 hidden sm:inline">ลากการ์ดเพื่อย้ายสถานะ หรือกดปุ่มย้ายสถานะในการ์ด</span>
               </div>
               ${renderKanban(displayedTasks, false)}
             </div>
@@ -1623,9 +1629,9 @@
         const totalPct = totalPlanned > 0 ? Math.round((totalDone / totalPlanned) * 100) : 0;
 
         return `
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
             <!-- 1. Long Form (เดิมคือ ปล่อยงานสำเร็จ) -->
-            <div class="bg-gradient-to-br from-indigo-50/70 to-white dark:from-indigo-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 shadow-2xs flex flex-col justify-between">
+            <div class="bg-gradient-to-br from-indigo-50/70 to-white dark:from-indigo-950/40 dark:to-slate-900 p-2.5 sm:p-3.5 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 shadow-2xs flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-xs font-semibold text-indigo-900 dark:text-indigo-300">
                   <span>🎬 Long Form</span>
@@ -1648,7 +1654,7 @@
             </div>
 
             <!-- 2. คลิปสั้น / Short -->
-            <div class="bg-gradient-to-br from-rose-50/70 to-white dark:from-rose-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-rose-100 dark:border-rose-900/60 shadow-2xs flex flex-col justify-between">
+            <div class="bg-gradient-to-br from-rose-50/70 to-white dark:from-rose-950/40 dark:to-slate-900 p-2.5 sm:p-3.5 rounded-2xl border border-rose-100 dark:border-rose-900/60 shadow-2xs flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-xs font-semibold text-rose-900 dark:text-rose-300">
                   <span>📱 คลิปสั้น / Short</span>
@@ -1671,7 +1677,7 @@
             </div>
 
             <!-- 3. ตัดต่อสำเร็จ (Video Edits) -->
-            <div class="bg-gradient-to-br from-teal-50/70 to-white dark:from-teal-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-teal-100 dark:border-teal-900/60 shadow-2xs flex flex-col justify-between">
+            <div class="bg-gradient-to-br from-teal-50/70 to-white dark:from-teal-950/40 dark:to-slate-900 p-2.5 sm:p-3.5 rounded-2xl border border-teal-100 dark:border-teal-900/60 shadow-2xs flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-xs font-semibold text-teal-900 dark:text-teal-300">
                   <span>✂️ ตัดต่อสำเร็จ</span>
@@ -1694,7 +1700,7 @@
             </div>
 
             <!-- 4. เขียนสคริปต์ (Scriptwriting) -->
-            <div class="bg-gradient-to-br from-amber-50/70 to-white dark:from-amber-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-amber-200 dark:border-amber-900/60 shadow-2xs flex flex-col justify-between">
+            <div class="bg-gradient-to-br from-amber-50/70 to-white dark:from-amber-950/40 dark:to-slate-900 p-2.5 sm:p-3.5 rounded-2xl border border-amber-200 dark:border-amber-900/60 shadow-2xs flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-xs font-semibold text-amber-900 dark:text-amber-300">
                   <span>📝 เขียนสคริปต์</span>
@@ -1717,7 +1723,7 @@
             </div>
 
             <!-- 5. กราฟฟิก & ภาพปก (Graphics) -->
-            <div class="bg-gradient-to-br from-emerald-50/70 to-white dark:from-emerald-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-900/60 shadow-2xs flex flex-col justify-between">
+            <div class="bg-gradient-to-br from-emerald-50/70 to-white dark:from-emerald-950/40 dark:to-slate-900 p-2.5 sm:p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-900/60 shadow-2xs flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-xs font-semibold text-emerald-900 dark:text-emerald-300">
                   <span>🎨 กราฟฟิก & ภาพปก</span>
@@ -1740,7 +1746,7 @@
             </div>
 
             <!-- 6. ความสำเร็จรวมประจำเดือน (Total Monthly KPI) -->
-            <div class="bg-gradient-to-br from-violet-50/80 to-white dark:from-violet-950/40 dark:to-slate-900 p-3.5 rounded-2xl border border-violet-200 dark:border-violet-900/70 shadow-2xs flex flex-col justify-between">
+            <div class="bg-gradient-to-br from-violet-50/80 to-white dark:from-violet-950/40 dark:to-slate-900 p-2.5 sm:p-3.5 rounded-2xl border border-violet-200 dark:border-violet-900/70 shadow-2xs flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-xs font-semibold text-violet-900 dark:text-violet-300">
                   <span>🏆 รวมทั้งหมดเดือนนี้</span>
@@ -1774,11 +1780,11 @@
         ];
 
         return `
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
             ${columns.map(col => {
               const colTasks = taskList.filter(t => t.status === col.id);
               return `
-                <div ondragover="window.appActions.onDragOver(event)" ondrop="window.appActions.onDrop(event, '${col.id}')" class="rounded-2xl p-4 border ${col.border} ${col.bg} kanban-col flex flex-col">
+                <div ondragover="window.appActions.onDragOver(event)" ondrop="window.appActions.onDrop(event, '${col.id}')" class="rounded-2xl p-3 sm:p-4 border ${col.border} ${col.bg} kanban-col flex flex-col">
                   <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
                     <div class="flex items-center space-x-2">
                       <span class="text-base">${col.icon}</span>
@@ -1809,7 +1815,7 @@
         const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
 
         return `
-          <div draggable="true" ondragstart="window.appActions.onDragStart(event, '${task.id}')" class="bg-white rounded-xl p-4 border border-slate-200 border-l-4 ${colConf.borderL} shadow-xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing group relative">
+          <div draggable="true" ondragstart="window.appActions.onDragStart(event, '${task.id}')" class="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 border-l-4 ${colConf.borderL} shadow-xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing group relative">
             <div class="flex items-center justify-between gap-2 mb-2">
               <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
                 <span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full border ${colConf.badge}" title="สีกำกับในปฏิทิน: ${colConf.name}">
@@ -2322,11 +2328,11 @@
                 </div>
 
                 <!-- Bottom Row on Mobile: Jump to Today, Date Picker, Member Filter -->
-                <div class="flex items-center space-x-2 w-full md:w-auto flex-wrap gap-y-2">
-                  ${!isToday ? `<button type="button" onclick="window.appActions.setDailyDate('${todayStr}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 transition shadow-xs cursor-pointer shrink-0">กลับมาวันนี้</button>` : ''}
-                  <input type="date" value="${dailySelectedDate}" onchange="window.appActions.setDailyDate(this.value)" class="flex-1 md:flex-initial px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs min-w-[130px]">
+                <div class="flex items-center gap-2 w-full md:w-auto flex-wrap">
+                  ${!isToday ? `<button type="button" onclick="window.appActions.setDailyDate('${todayStr}')" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 transition shadow-xs cursor-pointer shrink-0">กลับมาวันนี้</button>` : ''}
+                  <input type="date" value="${dailySelectedDate}" onchange="window.appActions.setDailyDate(this.value)" class="flex-1 min-w-[110px] md:flex-initial px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs">
                   ${isManager ? `
-                    <select onchange="window.appActions.setDailyMemberFilter(this.value)" class="flex-1 md:flex-initial px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs min-w-[140px] truncate">
+                    <select onchange="window.appActions.setDailyMemberFilter(this.value)" class="flex-1 min-w-[120px] md:flex-initial px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs truncate">
                       <option value="all" ${dailyMemberFilter === 'all' ? 'selected' : ''}>👥 สรุปทุกคน (${TEAM_MEMBERS.length} คน)</option>
                       ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${dailyMemberFilter === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
                     </select>
@@ -2336,7 +2342,7 @@
             </div>
 
             <!-- Members Daily Agenda Cards -->
-            <div class="grid gap-5 ${targetMembers.length > 1 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 max-w-3xl mx-auto'}">
+            <div class="grid gap-3.5 sm:gap-5 ${targetMembers.length > 1 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 w-full'}">
               ${targetMembers.map(member => {
                 const mTasks = taskList.filter(t => t.assigneeIds && t.assigneeIds.includes(member.id));
                 const dueToday = sortByPriority(mTasks.filter(t => t.deadline === dailySelectedDate && t.status !== 'done'));
@@ -2356,7 +2362,7 @@
                 const rate = grandTotal > 0 ? Math.round((completed.length / grandTotal) * 100) : 0;
 
                 return `
-                  <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition">
+                  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs flex flex-col justify-between space-y-3.5 sm:space-y-4 hover:shadow-md transition">
                     <div>
                       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                         <div class="flex items-center space-x-2.5">
