@@ -33,22 +33,40 @@ export async function onRequestOptions() {
   return new Response(null, { headers: jsonHeaders });
 }
 
+function getDb(env) {
+  if (!env) return null;
+  if (db && typeof db.prepare === 'function') return db;
+  if (env.db && typeof env.db.prepare === 'function') return env.db;
+  if (env['team-taskflow-db'] && typeof env['team-taskflow-db'].prepare === 'function') return env['team-taskflow-db'];
+  if (env.team_taskflow_db && typeof env.team_taskflow_db.prepare === 'function') return env.team_taskflow_db;
+  if (env.DATABASE && typeof env.DATABASE.prepare === 'function') return env.DATABASE;
+  if (env.D1 && typeof env.D1.prepare === 'function') return env.D1;
+  for (const key of Object.keys(env)) {
+    if (env[key] && typeof env[key].prepare === 'function') {
+      return env[key];
+    }
+  }
+  return null;
+}
+
 export async function onRequestGet({ env }) {
-  if (!env.DB) {
+  const db = getDb(env);
+  if (!db) {
+    const available = Object.keys(env || {}).filter(k => k !== 'ASSETS');
     return new Response(JSON.stringify({
       success: false,
       status: 'unbound',
-      message: 'D1 binding "DB" is not connected yet. Please bind your D1 database to variable name "DB" in Cloudflare Pages dashboard.'
+      message: `D1 binding not found (Bindings: [${available.join(', ') || 'none'}])`
     }), { status: 200, headers: jsonHeaders });
   }
 
   try {
     const stmts = INIT_SQL.trim().split(';').map(s => s.trim()).filter(Boolean);
     for (const sql of stmts) {
-      await env.DB.prepare(sql).run();
+      await db.prepare(sql).run();
     }
 
-    const countRes = await env.DB.prepare('SELECT COUNT(*) AS total FROM tasks').first();
+    const countRes = await db.prepare('SELECT COUNT(*) AS total FROM tasks').first();
 
     return new Response(JSON.stringify({
       success: true,

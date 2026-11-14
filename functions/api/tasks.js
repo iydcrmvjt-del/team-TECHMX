@@ -33,6 +33,22 @@ CREATE TABLE IF NOT EXISTS meta (
 );
 `;
 
+function getDb(env) {
+  if (!env) return null;
+  if (db && typeof db.prepare === 'function') return db;
+  if (env.db && typeof env.db.prepare === 'function') return env.db;
+  if (env['team-taskflow-db'] && typeof env['team-taskflow-db'].prepare === 'function') return env['team-taskflow-db'];
+  if (env.team_taskflow_db && typeof env.team_taskflow_db.prepare === 'function') return env.team_taskflow_db;
+  if (env.DATABASE && typeof env.DATABASE.prepare === 'function') return env.DATABASE;
+  if (env.D1 && typeof env.D1.prepare === 'function') return env.D1;
+  for (const key of Object.keys(env)) {
+    if (env[key] && typeof env[key].prepare === 'function') {
+      return env[key];
+    }
+  }
+  return null;
+}
+
 async function ensureTable(db) {
   try {
     const stmts = INIT_SQL.trim().split(';').map(s => s.trim()).filter(Boolean);
@@ -50,22 +66,24 @@ export async function onRequestOptions() {
 
 // GET: Fetch all tasks from Cloudflare D1
 export async function onRequestGet({ env }) {
-  if (!env.DB) {
+  const db = getDb(env);
+  if (!db) {
+    const available = Object.keys(env || {}).filter(k => k !== 'ASSETS');
     return new Response(JSON.stringify({
       success: false,
-      error: 'D1 database binding "DB" not found. Please bind your D1 database to "DB" in Cloudflare Pages Settings.',
+      error: `ยังไม่พบการผูก D1 Database (ตัวแปรในระบบ: [${available.join(', ') || 'ไม่มี'}]). ให้ผูก D1 ในหน้า Settings ➔ Bindings แล้วกด Retry deployment ครับ`,
       fallback: true,
       tasks: []
     }), { status: 200, headers: jsonHeaders });
   }
 
   try {
-    await ensureTable(env.DB);
-    let queryResult = await env.DB.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
+    await ensureTable(db);
+    let queryResult = await db.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
 
     let isSeeded = false;
     try {
-      const metaRow = await env.DB.prepare("SELECT value FROM meta WHERE key = 'seeded'").first();
+      const metaRow = await db.prepare("SELECT value FROM meta WHERE key = 'seeded'").first();
       if (metaRow) isSeeded = true;
     } catch(e) {}
 
@@ -118,10 +136,11 @@ export async function onRequestGet({ env }) {
 
 // POST: Upsert (insert or update) a single task
 export async function onRequestPost({ request, env }) {
-  if (!env.DB) {
+  const db = getDb(env);
+  if (!db) {
     return new Response(JSON.stringify({
       success: false,
-      error: 'D1 database binding "DB" not found.'
+      error: 'D1 database binding not found.'
     }), { status: 500, headers: jsonHeaders });
   }
 
@@ -155,7 +174,7 @@ export async function onRequestPost({ request, env }) {
     `;
 
     try {
-      await env.DB.prepare(sql).bind(
+      await db.prepare(sql).bind(
         task.id,
         task.title,
         optionsJson,
@@ -170,8 +189,8 @@ export async function onRequestPost({ request, env }) {
       ).run();
     } catch (insertErr) {
       if (insertErr.message && insertErr.message.includes('no such table')) {
-        await ensureTable(env.DB);
-        await env.DB.prepare(sql).bind(
+        await ensureTable(db);
+        await db.prepare(sql).bind(
           task.id,
           task.title,
           optionsJson,
@@ -189,7 +208,7 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
+    await db.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
 
     return new Response(JSON.stringify({
       success: true,
@@ -206,10 +225,11 @@ export async function onRequestPost({ request, env }) {
 
 // DELETE: Delete a task by ID
 export async function onRequestDelete({ request, env }) {
-  if (!env.DB) {
+  const db = getDb(env);
+  if (!db) {
     return new Response(JSON.stringify({
       success: false,
-      error: 'D1 database binding "DB" not found.'
+      error: 'D1 database binding not found.'
     }), { status: 500, headers: jsonHeaders });
   }
 
@@ -231,8 +251,8 @@ export async function onRequestDelete({ request, env }) {
       }), { status: 400, headers: jsonHeaders });
     }
 
-    await env.DB.prepare('DELETE FROM tasks WHERE id = ?').bind(taskId).run();
-    await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
+    await db.prepare('DELETE FROM tasks WHERE id = ?').bind(taskId).run();
+    await db.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
 
     return new Response(JSON.stringify({
       success: true,

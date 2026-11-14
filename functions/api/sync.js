@@ -33,6 +33,22 @@ CREATE TABLE IF NOT EXISTS meta (
 );
 `;
 
+function getDb(env) {
+  if (!env) return null;
+  if (db && typeof db.prepare === 'function') return db;
+  if (env.db && typeof env.db.prepare === 'function') return env.db;
+  if (env['team-taskflow-db'] && typeof env['team-taskflow-db'].prepare === 'function') return env['team-taskflow-db'];
+  if (env.team_taskflow_db && typeof env.team_taskflow_db.prepare === 'function') return env.team_taskflow_db;
+  if (env.DATABASE && typeof env.DATABASE.prepare === 'function') return env.DATABASE;
+  if (env.D1 && typeof env.D1.prepare === 'function') return env.D1;
+  for (const key of Object.keys(env)) {
+    if (env[key] && typeof env[key].prepare === 'function') {
+      return env[key];
+    }
+  }
+  return null;
+}
+
 async function ensureTable(db) {
   try {
     const stmts = INIT_SQL.trim().split(';').map(s => s.trim()).filter(Boolean);
@@ -50,10 +66,12 @@ export async function onRequestOptions() {
 
 // POST: Batch sync tasks into Cloudflare D1
 export async function onRequestPost({ request, env }) {
-  if (!env.DB) {
+  const db = getDb(env);
+  if (!db) {
+    const available = Object.keys(env || {}).filter(k => k !== 'ASSETS');
     return new Response(JSON.stringify({
       success: false,
-      error: 'D1 database binding "DB" not found.'
+      error: `D1 database binding not found. (Detected: [${available.join(', ') || 'none'}])`
     }), { status: 500, headers: jsonHeaders });
   }
 
@@ -76,12 +94,12 @@ export async function onRequestPost({ request, env }) {
       }), { status: 400, headers: jsonHeaders });
     }
 
-    await ensureTable(env.DB);
+    await ensureTable(db);
 
     const statements = [];
 
     if (shouldReplace) {
-      statements.push(env.DB.prepare('DELETE FROM tasks'));
+      statements.push(db.prepare('DELETE FROM tasks'));
     }
 
     const upsertSql = `
@@ -107,7 +125,7 @@ export async function onRequestPost({ request, env }) {
       const assigneeIdsJson = JSON.stringify(task.assigneeIds || task.assignee_ids || ['non']);
 
       statements.push(
-        env.DB.prepare(upsertSql).bind(
+        db.prepare(upsertSql).bind(
           task.id,
           task.title,
           optionsJson,
@@ -125,9 +143,9 @@ export async function onRequestPost({ request, env }) {
 
     if (statements.length > 0) {
       // Execute in batch (atomic transaction)
-      await env.DB.batch(statements);
+      await db.batch(statements);
     }
-    await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
+    await db.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
 
     return new Response(JSON.stringify({
       success: true,
