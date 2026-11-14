@@ -1346,6 +1346,9 @@
       const initCloudSync = async (isManual = false) => {
         if (!window.location.protocol.startsWith('http')) {
           updateCloudStatusUI('offline', null, 'เปิดผ่าน local file:// ข้อมูลจะบันทึกลงใน Local Storage');
+          if (isManual) {
+            alert('💻 ขณะนี้คุณเปิดเว็บผ่านไฟล์ในคอมพิวเตอร์ (file://)\n\nข้อมูลจึงถูกบันทึกไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่สามารถซิงค์ข้ามไปยังมือถือได้ครับ\n\n👉 วิธีแก้ไข:\nให้เปิดหน้าเว็บผ่าน URL ของ Cloudflare Pages (เช่น https://....pages.dev) ทั้งบนคอมและมือถือ ข้อมูลจะซิงค์ตรงกันทันทีครับ');
+          }
           return;
         }
 
@@ -1354,29 +1357,43 @@
           const res = await fetch('/api/tasks');
           if (!res.ok) {
             updateCloudStatusUI('offline', null, 'ไม่พบ Cloudflare D1 endpoint หรือยังไม่ได้ผูก Database');
+            if (isManual) {
+              alert(`⚠️ ไม่สามารถติดต่อ Cloudflare API ได้ (HTTP ${res.status})\nโปรดตรวจสอบว่าเปิดผ่าน URL ของ Cloudflare Pages`);
+            }
             return;
           }
           const data = await res.json();
           if (data && data.success) {
             if (Array.isArray(data.tasks) && data.tasks.length > 0) {
-              tasks = data.tasks.map((t, idx) => normalizeTask(t, idx));
-              saveTasksLocalOnly();
-              renderApp();
+              const newHash = JSON.stringify(data.tasks);
+              const oldHash = JSON.stringify(tasks);
+              if (newHash !== oldHash) {
+                tasks = data.tasks.map((t, idx) => normalizeTask(t, idx));
+                saveTasksLocalOnly();
+                renderApp();
+              }
               updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
-              if (isManual) alert(`ซิงค์ข้อมูลจาก Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน)`);
+              if (isManual) alert(`✅ ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน)\nข้อมูลบนอุปกรณ์ทุกเครื่องจะตรงกันอัตโนมัติครับ`);
             } else {
               // D1 is empty; push our local tasks into D1
               updateCloudStatusUI('syncing');
               await syncAllTasksToCloud(tasks);
               updateCloudStatusUI('connected', null, 'เชื่อมต่อ Cloudflare D1 และอัปโหลดข้อมูลเริ่มต้นเรียบร้อยแล้ว');
-              if (isManual) alert('ซิงค์ข้อมูลเริ่มต้นขึ้น Cloudflare D1 สำเร็จแล้ว!');
+              if (isManual) alert('✅ เชื่อมต่อและอัปโหลดข้อมูลเริ่มต้นขึ้น Cloudflare D1 สำเร็จแล้ว!');
             }
           } else {
-            updateCloudStatusUI('offline', null, data && data.error ? data.error : 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ');
+            const errMsg = data && data.error ? data.error : 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ';
+            updateCloudStatusUI('offline', null, errMsg);
+            if (isManual) {
+              alert(`⚠️ ยังไม่ได้ผูก Cloudflare D1 Database\n\nรายละเอียด: ${errMsg}\n\n🛠️ วิธีแก้เพื่อให้คอมกับมือถือซิงค์กัน:\n1. เข้า Cloudflare Dashboard ➔ Storage & Databases ➔ D1 ➔ กด Create database ตั้งชื่อ "team-taskflow-db"\n2. ไปที่ Workers & Pages ➔ เลือกโปรเจกต์ ➔ Settings ➔ Functions\n3. เลื่อนลงมาที่ D1 Database Bindings ➔ กด Add binding:\n   - Variable name: DB\n   - D1 database: เลือก team-taskflow-db\n4. กด Save แล้วไปที่แท็บ Deployments ➔ กด Retry deployment ล่าสุดครับ`);
+            }
           }
         } catch (e) {
           console.warn('Cloudflare D1 init error:', e);
           updateCloudStatusUI('offline', null, 'ไม่สามารถเชื่อมต่อ Cloudflare API ได้');
+          if (isManual) {
+            alert('⚠️ ไม่สามารถเชื่อมต่อ Cloudflare API ได้\nโปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+          }
         }
       };
 
@@ -3834,10 +3851,31 @@
         }
       };
 
-      // Cloudflare D1 Manual Sync Button
+      // Cloudflare D1 Manual & Auto-Sync
       const btnCloudSync = document.getElementById('btnCloudSync');
       if (btnCloudSync) {
         btnCloudSync.onclick = () => initCloudSync(true);
+      }
+
+      // Auto-Sync across devices on tab focus & visibility change
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && window.location.protocol.startsWith('http')) {
+          initCloudSync(false);
+        }
+      });
+      window.addEventListener('focus', () => {
+        if (window.location.protocol.startsWith('http')) {
+          initCloudSync(false);
+        }
+      });
+
+      // Periodic auto-sync every 25 seconds when tab is active
+      if (typeof window !== 'undefined' && window.setInterval) {
+        window.setInterval(() => {
+          if (document.visibilityState === 'visible' && window.location.protocol.startsWith('http')) {
+            initCloudSync(false);
+          }
+        }, 25000);
       }
 
       // PWA Install Prompt & Service Worker Registration
