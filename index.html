@@ -659,6 +659,62 @@
     </div>
   </div>
 
+    <!-- Task Archive Vault Modal (คลังประวัติงานที่ทำแล้ว) -->
+  <div id="archiveModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 max-h-[92vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center space-x-2.5">
+          <span class="p-2 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 rounded-xl text-lg">📦</span>
+          <div>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">คลังประวัติงานที่ทำแล้ว (Task Archive Vault)</h3>
+            <p class="text-[11px] text-slate-400">จัดเก็บงานที่เสร็จสิ้นแล้วเพื่อเคลียร์หน้ากระดานให้สะอาด สามารถค้นหาและดึงกลับมาได้ตลอดเวลา</p>
+          </div>
+        </div>
+        <button onclick="window.appActions.closeArchiveModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-lg cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Toolbar: Search, Filters & CSV Export -->
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div class="sm:col-span-5 relative">
+          <input type="text" id="archiveSearchInput" oninput="window.appActions.onArchiveSearchChange(this.value)" placeholder="🔍 ค้นหางานในคลัง..." class="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs">
+        </div>
+        <div class="sm:col-span-4">
+          <select id="archiveMemberFilter" onchange="window.appActions.onArchiveMemberFilterChange(this.value)" class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs">
+            <option value="all">👥 สมาชิกทุกคน</option>
+            <option value="non">👨‍💻 นนท์</option>
+            <option value="aun">🧑‍💻 อั๋น</option>
+            <option value="eyeta">👩‍💼 อายตา</option>
+            <option value="rang">🧔 หรั่ง</option>
+            <option value="tanya">👩‍💻 ธัญญ่า</option>
+            <option value="france">🧑‍🎨 ฟร้องซ์</option>
+          </select>
+        </div>
+        <div class="sm:col-span-3 flex items-center justify-end">
+          <button type="button" onclick="window.appActions.exportArchiveToCSV()" class="w-full sm:w-auto px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs rounded-lg shadow-2xs transition flex items-center justify-center space-x-1 cursor-pointer">
+            <span>📥</span>
+            <span>ส่งออก CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Archive Task List Container -->
+      <div id="archiveTaskListContainer" class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 pr-1 min-h-[220px]">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <span id="archiveCountSummaryText">กำลังโหลดรายการงานในคลัง...</span>
+        <button type="button" onclick="window.appActions.closeArchiveModal()" class="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl transition cursor-pointer">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
@@ -1321,7 +1377,9 @@
           deadline: t.deadline || getTodayStr(2),
           status: t.status || 'todo',
           priority: t.priority || 'normal',
-          assigneeIds: ids
+          assigneeIds: ids,
+          archived: t.archived === true || t.archived === 1 || t.status === 'archived',
+          archivedAt: t.archivedAt || (t.archived ? (t.updatedAt || new Date().toISOString()) : null)
         };
       };
 
@@ -2271,8 +2329,13 @@
           : `ตรวจสอบปฏิทินไทม์ไลน์และสรุปงานรายวันของ ${currentUser.name} ด้านบน พร้อมจัดการงานผ่านกระดาน Kanban`;
         document.getElementById('btnCreateTaskText').textContent = isManager ? 'มอบหมายงานใหม่' : 'เพิ่มงานใหม่';
 
-        // Filter tasks
-        let displayedTasks = tasks;
+        // Separate Active vs Archived tasks
+        const activeTasks = tasks.filter(t => !t.archived);
+        const archivedTasks = tasks.filter(t => t.archived);
+        const archivedCount = archivedTasks.length;
+
+        // Filter tasks for active board
+        let displayedTasks = activeTasks;
         if (!isManager) {
           displayedTasks = displayedTasks.filter(t => t.assigneeIds && t.assigneeIds.includes(currentUserId));
         } else {
@@ -2296,13 +2359,13 @@
         // Sort displayed tasks by Deadline (ใกล้กำหนดส่งขึ้นก่อน)
         displayedTasks = sortByDeadline(displayedTasks);
 
-        // Stats calculation
-        const total = tasks.length;
-        const todoCount = tasks.filter(t => t.status === 'todo').length;
-        const inProgressCount = tasks.filter(t => t.status === 'in-progress').length;
-        const doneCount = tasks.filter(t => t.status === 'done').length;
+        // Stats calculation (เฉพาะงานที่ยังดำเนินอยู่บนบอร์ดหลัก)
+        const total = activeTasks.length;
+        const todoCount = activeTasks.filter(t => t.status === 'todo').length;
+        const inProgressCount = activeTasks.filter(t => t.status === 'in-progress').length;
+        const doneCount = activeTasks.filter(t => t.status === 'done').length;
         const todayObj = new Date(); todayObj.setHours(0,0,0,0);
-        const overdueCount = tasks.filter(t => {
+        const overdueCount = activeTasks.filter(t => {
           if (t.status === 'done' || !t.deadline) return false;
           const d = parseDateLocal(t.deadline);
           if (!d) return false;
@@ -2491,13 +2554,20 @@
                     <span>📅 เรียงตามกำหนดส่ง (Deadline)</span>
                   </span>
                 </div>
-                <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl space-x-1 w-full sm:w-auto justify-center sm:justify-start">
-                  <button onclick="window.appActions.setManagerTaskView('kanban')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
-                    📊 Kanban รวม
+                <div class="flex items-center space-x-1.5 flex-wrap gap-y-1 w-full sm:w-auto justify-between sm:justify-start">
+                  <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer">
+                    <span>📦</span>
+                    <span>คลังงานที่ทำแล้ว</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
                   </button>
-                  <button onclick="window.appActions.setManagerTaskView('list')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
-                    📋 ตารางงาน
-                  </button>
+                  <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl space-x-1">
+                    <button onclick="window.appActions.setManagerTaskView('kanban')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
+                      📊 Kanban รวม
+                    </button>
+                    <button onclick="window.appActions.setManagerTaskView('list')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
+                      📋 ตารางงาน
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -2609,7 +2679,14 @@
                   <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">กระดานงาน Kanban ของ: ${currentUser.name}</h3>
                   <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-full font-semibold">${displayedTasks.length} งาน</span>
                 </div>
-                <span class="text-xs text-slate-400 hidden sm:inline">ลากการ์ดเพื่อย้ายสถานะ หรือกดปุ่มย้ายสถานะในการ์ด</span>
+                <div class="flex items-center space-x-2">
+                  <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer">
+                    <span>📦</span>
+                    <span>คลังงานที่ทำแล้ว</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
+                  </button>
+                  <span class="text-xs text-slate-400 hidden lg:inline">ลากการ์ดเพื่อย้ายสถานะ</span>
+                </div>
               </div>
               ${renderKanban(displayedTasks, false)}
             </div>
@@ -2808,7 +2885,15 @@
                       <span class="text-base">${col.icon}</span>
                       <h4 class="font-bold text-slate-800 text-sm">${col.title}</h4>
                     </div>
-                    <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white text-slate-700 shadow-xs border border-slate-200">${colTasks.length}</span>
+                    <div class="flex items-center space-x-1.5">
+                      ${col.id === 'done' && colTasks.length > 0 ? `
+                        <button type="button" onclick="window.appActions.archiveAllDoneTasks()" title="ย้ายงานที่เสร็จแล้วทั้งหมดเข้าคลังประวัติ เพื่อเคลียร์บอร์ดให้สะอาด" class="text-[10px] px-2 py-0.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-bold transition flex items-center space-x-1 cursor-pointer shadow-2xs">
+                          <span>📦</span>
+                          <span>จัดเก็บทั้งหมด</span>
+                        </button>
+                      ` : ''}
+                      <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white text-slate-700 shadow-xs border border-slate-200">${colTasks.length}</span>
+                    </div>
                   </div>
 
                   <div class="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1">
@@ -2880,7 +2965,16 @@
             </div>
 
             <!-- Quick status stepper -->
-            <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-end space-x-1.5 text-[11px]">
+            <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between space-x-1.5 text-[11px]">
+              <div>
+                ${task.status === 'done' ? `
+                  <button type="button" onclick="window.appActions.archiveTask('${task.id}')" title="จัดเก็บงานนี้เข้าคลังประวัติ (Archive)" class="text-[10.5px] px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 font-semibold transition flex items-center space-x-1 cursor-pointer">
+                    <span>📦</span>
+                    <span>จัดเก็บ</span>
+                  </button>
+                ` : ''}
+              </div>
+              <div class="flex items-center space-x-1.5">
               ${task.status !== 'todo' ? `
                 <button onclick="window.appActions.quickStatus('${task.id}', '${task.status === 'done' ? 'in-progress' : 'todo'}')" class="text-slate-400 hover:text-slate-700 px-2 py-0.5 rounded hover:bg-slate-100 transition">
                   ← ย้อนสถานะ
@@ -2891,6 +2985,7 @@
                   ถัดไป →
                 </button>
               ` : ''}
+              </div>
             </div>
           </div>
         `;
@@ -3902,7 +3997,81 @@
       };
 
       // 6. Global Action Dispatcher
-      window.appActions = {
+      
+      // Task Archive Vault State
+      let archiveSearchQuery = '';
+      let archiveMemberFilter = 'all';
+
+      const renderArchiveModalContent = () => {
+        const container = document.getElementById('archiveTaskListContainer');
+        const summaryText = document.getElementById('archiveCountSummaryText');
+        if (!container) return;
+
+        const allArchived = tasks.filter(t => t.archived);
+        let list = allArchived;
+
+        if (archiveMemberFilter !== 'all') {
+          list = list.filter(t => t.assigneeIds && t.assigneeIds.includes(archiveMemberFilter));
+        }
+
+        if (archiveSearchQuery.trim()) {
+          const q = archiveSearchQuery.toLowerCase().trim();
+          list = list.filter(t => 
+            (t.title && t.title.toLowerCase().includes(q)) ||
+            (t.note && t.note.toLowerCase().includes(q)) ||
+            (Array.isArray(t.options) && t.options.some(o => o.toLowerCase().includes(q)))
+          );
+        }
+
+        if (summaryText) {
+          summaryText.textContent = `แสดง ${list.length} จากทั้งหมด ${allArchived.length} งานในคลัง`;
+        }
+
+        if (list.length === 0) {
+          container.innerHTML = `
+            <div class="py-12 flex flex-col items-center justify-center text-center space-y-2 text-slate-400 dark:text-slate-500">
+              <span class="text-4xl">📦</span>
+              <p class="font-bold text-sm text-slate-600 dark:text-slate-300">ไม่มีรายการงานในคลังที่ตรงกับเงื่อนไข</p>
+              <p class="text-xs max-w-sm">เมื่องานในกระดานหลักเสร็จสิ้น คุณสามารถกดปุ่ม "📦 จัดเก็บ" เพื่อย้ายงานมาเก็บไว้ที่นี่ได้อย่างปลอดภัย</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = list.map(task => {
+          const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+          const assigneeNames = assignees.map(a => `${a.avatar} ${a.name}`).join(', ') || 'ไม่ได้ระบุ';
+          const deadlineText = formatThaiDate(task.deadline) || task.deadline || '-';
+
+          return `
+            <div class="p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs hover:border-slate-300 dark:hover:border-slate-600 transition space-y-2">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="flex items-center space-x-2 flex-1 min-w-0">
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 shrink-0">✅ เสร็จสิ้น</span>
+                  <h4 class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate">${escapeHtml(task.title)}</h4>
+                </div>
+                <div class="flex items-center space-x-1.5 shrink-0 self-end sm:self-auto">
+                  <button type="button" onclick="window.appActions.restoreTask('${task.id}')" title="ดึงงานนี้กลับไปที่กระดานหลัก" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/70 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 text-emerald-700 dark:text-emerald-300 font-bold text-xs rounded-lg transition flex items-center space-x-1 cursor-pointer shadow-2xs">
+                    <span>↩️</span>
+                    <span>ดึงกลับเข้าบอร์ด</span>
+                  </button>
+                  <button type="button" onclick="window.appActions.deleteArchivedTaskPermanently('${task.id}')" title="ลบงานนี้ออกจากระบบถาวร" class="p-1 text-slate-400 hover:text-rose-600 rounded cursor-pointer transition">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                <span>👥 ${assigneeNames}</span>
+                <span>•</span>
+                <span>📅 ส่งมอบ: ${deadlineText}</span>
+              </div>
+              ${renderTaskOptionBadges(task.options, true)}
+              ${task.note ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 truncate bg-white/60 dark:bg-slate-900/40 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800">${escapeHtml(task.note)}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      };
+window.appActions = {
         openSyncDiagnosticModal: () => {
           renderSyncDiagnosticModalContent();
           const modal = document.getElementById('syncDiagnosticModal');
@@ -4012,7 +4181,136 @@
           isDailyCollapsed = !isDailyCollapsed;
           renderApp();
         },
-        switchUser: (newUserId) => {
+                openArchiveModal: () => {
+          archiveSearchQuery = '';
+          archiveMemberFilter = 'all';
+          const inp = document.getElementById('archiveSearchInput');
+          if (inp) inp.value = '';
+          const sel = document.getElementById('archiveMemberFilter');
+          if (sel) sel.value = 'all';
+          renderArchiveModalContent();
+          const modal = document.getElementById('archiveModal');
+          if (modal) modal.classList.remove('hidden');
+        },
+        closeArchiveModal: () => {
+          const modal = document.getElementById('archiveModal');
+          if (modal) modal.classList.add('hidden');
+        },
+        onArchiveSearchChange: (val) => {
+          archiveSearchQuery = val || '';
+          renderArchiveModalContent();
+        },
+        onArchiveMemberFilterChange: (val) => {
+          archiveMemberFilter = val || 'all';
+          renderArchiveModalContent();
+        },
+        archiveTask: (taskId) => {
+          let targetTask = null;
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              targetTask = { ...t, archived: true, archivedAt: new Date().toISOString() };
+              return targetTask;
+            }
+            return t;
+          });
+          if (targetTask) {
+            saveTasks(targetTask, 'save');
+            renderApp();
+            showToast(`จัดเก็บงาน "${targetTask.title}" เข้าคลังประวัติแล้ว 📦`, 'info', 6000, {
+              text: 'ย้อนกลับ',
+              onClick: () => window.appActions.restoreTask(taskId)
+            });
+          }
+        },
+        archiveAllDoneTasks: () => {
+          const doneTasks = tasks.filter(t => t.status === 'done' && !t.archived);
+          if (doneTasks.length === 0) {
+            showToast('ไม่มีงานที่เสร็จสิ้นให้จัดเก็บ', 'info');
+            return;
+          }
+          const doneIds = new Set(doneTasks.map(t => t.id));
+          const nowIso = new Date().toISOString();
+          tasks = tasks.map(t => {
+            if (doneIds.has(t.id)) {
+              return { ...t, archived: true, archivedAt: nowIso };
+            }
+            return t;
+          });
+          saveTasks(null, 'bulk');
+          renderApp();
+          showToast(`จัดเก็บงานที่เสร็จแล้ว ${doneTasks.length} งาน เข้าคลังประวัติเรียบร้อย 📦`, 'success', 8000, {
+            text: 'ย้อนกลับ',
+            onClick: () => {
+              tasks = tasks.map(t => {
+                if (doneIds.has(t.id)) {
+                  return { ...t, archived: false, archivedAt: null };
+                }
+                return t;
+              });
+              saveTasks(null, 'bulk');
+              renderApp();
+              showToast(`ดึงงาน ${doneTasks.length} รายการ กลับเข้าบอร์ดแล้ว ↩️`, 'info');
+            }
+          });
+        },
+        restoreTask: (taskId) => {
+          let restored = null;
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              restored = { ...t, archived: false, status: 'done' };
+              return restored;
+            }
+            return t;
+          });
+          if (restored) {
+            saveTasks(restored, 'save');
+            renderApp();
+            renderArchiveModalContent();
+            showToast(`ดึงงาน "${restored.title}" กลับเข้าบอร์ดหลักแล้ว ↩️`, 'success');
+          }
+        },
+        deleteArchivedTaskPermanently: (taskId) => {
+          const task = tasks.find(t => t.id === taskId);
+          if (!task) return;
+          if (confirm(`ต้องการลบงาน "${task.title}" ออกจากระบบถาวรใช่หรือไม่?\n(ข้อมูลจะถูกลบออกจาก Cloudflare D1 และไม่สามารถกู้คืนได้)`)) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            saveTasks(taskId, 'delete');
+            renderApp();
+            renderArchiveModalContent();
+            showToast(`ลบงาน "${task.title}" ถาวรเรียบร้อยแล้ว`, 'info');
+          }
+        },
+        exportArchiveToCSV: () => {
+          const archived = tasks.filter(t => t.archived);
+          if (archived.length === 0) {
+            showToast('ไม่มีงานในคลังประวัติให้ส่งออก', 'info');
+            return;
+          }
+          const headers = ['ชื่องาน', 'ผู้รับผิดชอบ', 'ลักษณะงาน', 'วันที่เริ่ม', 'กำหนดส่ง', 'สถานะ', 'รายละเอียด/ลิงก์'];
+          const rows = archived.map(t => {
+            const memberNames = (t.assigneeIds || []).map(id => {
+              const m = TEAM_MEMBERS.find(mem => mem.id === id);
+              return m ? m.name : id;
+            }).join(', ');
+            const opts = (t.options || []).join(', ');
+            const note = (t.note || '').replace(/"/g, '""');
+            const title = (t.title || '').replace(/"/g, '""');
+            return `"${title}","${memberNames}","${opts}","${t.date}","${t.deadline}","เสร็จสิ้น (จัดเก็บแล้ว)","${note}"`;
+          });
+
+          const csvContent = "\uFEFF" + headers.join(',') + "\n" + rows.join("\n");
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `รายงานคลังงานที่ทำแล้ว_${(new Date()).toISOString().split('T')[0]}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว 📥', 'success');
+        },
+switchUser: (newUserId) => {
           currentUserId = newUserId;
           if (newUserId !== 'manager') {
             memberCalendarSelectedTypes[newUserId] = []; // ปฏิทินของแต่ละคน ให้แสดงค่าทั้งหมดเป็นค่าแรก
