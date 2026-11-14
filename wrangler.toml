@@ -9,6 +9,9 @@ pages_build_output_dir = "."
 workers_dev = true
 
 # หมายเหตุสำหรับการผูกฐานข้อมูล Cloudflare D1 (Database Binding):
-# ในหน้า Cloudflare Dashboard (ทั้ง Pages และ Workers)
-# ให้ไปที่ Settings -> Variables (หรือ Functions) -> D1 Database Bindings
-# กำหนด Variable name: DB และเลือกฐานข้อมูล team-taskflow-db
+# ผูก D1 Database ถาวรผ่านโค้ด ป้องกันการหลุดเวลามีการ deploy ใหม่จาก GitHub
+[[d1_databases]]
+binding = "DB"
+database_name = "team-taskflow-db"
+database_id = "e8af7dcc-b7da-4e89-8ae0-63d197b948ff"
+
