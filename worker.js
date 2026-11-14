@@ -35,16 +35,18 @@ CREATE TABLE IF NOT EXISTS meta (
 
 function getDb(env) {
   if (!env) return null;
-  if (env.DB && typeof db.prepare === 'function') return env.DB;
+  if (env.DB && typeof env.DB.prepare === 'function') return env.DB;
   if (env.db && typeof env.db.prepare === 'function') return env.db;
   if (env['team-taskflow-db'] && typeof env['team-taskflow-db'].prepare === 'function') return env['team-taskflow-db'];
   if (env.team_taskflow_db && typeof env.team_taskflow_db.prepare === 'function') return env.team_taskflow_db;
   if (env.DATABASE && typeof env.DATABASE.prepare === 'function') return env.DATABASE;
   if (env.D1 && typeof env.D1.prepare === 'function') return env.D1;
   for (const key of Object.keys(env)) {
-    if (env[key] && typeof env[key].prepare === 'function') {
-      return env[key];
-    }
+    try {
+      if (env[key] && typeof env[key].prepare === 'function') {
+        return env[key];
+      }
+    } catch (e) {}
   }
   return null;
 }
@@ -213,7 +215,8 @@ export default {
 
     // 2. API: /api/sync
     if (url.pathname === "/api/sync" && request.method === "POST") {
-      if (!env.DB) {
+      const db = getDb(env);
+      if (!db) {
         return new Response(JSON.stringify({ success: false, error: "D1 database not bound" }), { status: 500, headers: jsonHeaders });
       }
       try {
