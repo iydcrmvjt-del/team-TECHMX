@@ -3174,7 +3174,12 @@
                   const isHoliday = !!holiday && cell.isCurrentMonth;
 
                   return `
-                    <div ${isToday ? 'id="todayCalendarCell"' : ''} class="calendar-cell p-1.5 sm:p-2 transition flex flex-col justify-start group ${!cell.isCurrentMonth ? 'bg-slate-50/60 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600' : (isHoliday ? 'bg-rose-50/35 dark:bg-rose-950/25 hover:bg-rose-50/55 dark:hover:bg-rose-900/35' : 'bg-white dark:bg-slate-900/40 hover:bg-slate-50/30 dark:hover:bg-slate-800/30')}">
+                    <div ${isToday ? 'id="todayCalendarCell"' : ''} 
+                         ondragover="window.appActions.onCalendarCellDragOver(event)" 
+                         ondragenter="window.appActions.onCalendarCellDragEnter(event, this)" 
+                         ondragleave="window.appActions.onCalendarCellDragLeave(event, this)" 
+                         ondrop="window.appActions.onCalendarCellDrop(event, '${cell.dateStr}', this)"
+                         class="calendar-cell p-1.5 sm:p-2 transition flex flex-col justify-start group relative ${!cell.isCurrentMonth ? 'bg-slate-50/60 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600' : (isHoliday ? 'bg-rose-50/35 dark:bg-rose-950/25 hover:bg-rose-50/55 dark:hover:bg-rose-900/35' : 'bg-white dark:bg-slate-900/40 hover:bg-slate-50/30 dark:hover:bg-slate-800/30')}">
                       <div class="flex items-center justify-between mb-1 px-1 h-6 shrink-0">
                         <div class="flex items-center space-x-1 min-w-0">
                           <span class="text-xs font-semibold inline-flex items-center justify-center ${isToday ? 'w-6 h-6 rounded-full bg-indigo-600 text-white font-bold shadow-xs' : (isHoliday ? 'w-6 h-6 rounded-full text-rose-600 dark:text-rose-400 font-bold bg-rose-100/90 dark:bg-rose-900/60' : 'w-6 h-6 text-slate-700 dark:text-slate-300')}">
@@ -3226,9 +3231,12 @@
                           const assigneeNames = assignees.map(a => a.name).join(', ');
 
                           return `
-                            <div onclick="window.appActions.openTaskDetails('${task.id}')" 
-                                 class="h-[23px] px-1.5 flex items-center space-x-1 cursor-pointer select-none shadow-xs hover:brightness-110 active:scale-[0.99] transition ${shapeClass} ${colorClass}" 
-                                 title="${escapeHtml(task.title)}${assigneeNames ? ` (${escapeHtml(assigneeNames)})` : ''} - คลิกเพื่อดูรายละเอียดข้อมูลงาน">
+                            <div draggable="true" 
+                                 ondragstart="window.appActions.onCalendarTaskDragStart(event, '${task.id}', '${cell.dateStr}')" 
+                                 ondragend="window.appActions.onCalendarTaskDragEnd(event)" 
+                                 onclick="window.appActions.openTaskDetails('${task.id}')" 
+                                 class="h-[23px] px-1.5 flex items-center space-x-1 cursor-grab active:cursor-grabbing select-none shadow-xs hover:brightness-110 active:scale-[0.99] transition ${shapeClass} ${colorClass}" 
+                                 title="${escapeHtml(task.title)}${assigneeNames ? ` (${escapeHtml(assigneeNames)})` : ''} • ลากเพื่อย้ายวันที่ในปฏิทิน (คลิกดูรายละเอียด)">
                               <span class="text-[9px] shrink-0 leading-none opacity-90">${prefix}</span>
                               <span class="font-semibold truncate flex-1 leading-none text-[11px]">${escapeHtml(task.title)}</span>
                               ${optIcons ? `<span class="text-[9.5px] shrink-0 leading-none ml-0.5 tracking-tight" title="ลักษณะงาน: ${(task.options || []).join(', ')}">${optIcons}</span>` : ''}
@@ -3615,7 +3623,10 @@
         if (modal) modal.classList.add('hidden');
       };
 
+      let isDraggingCalendarTask = false;
+
       const openTaskDetails = (taskId) => {
+        if (isDraggingCalendarTask) return;
         const task = tasks.find(t => t.id === taskId);
         if (!task) return;
 
@@ -4071,6 +4082,120 @@
             if (updated && targetStatus === 'done' && oldStatus !== 'done') {
               notifyLarkTaskDone(updated);
             }
+          }
+        },
+        onCalendarTaskDragStart: (e, taskId, originDate) => {
+          isDraggingCalendarTask = true;
+          try {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', taskId);
+            e.dataTransfer.setData('application/json', JSON.stringify({ taskId, originDate }));
+          } catch(err) {}
+          if (e.target) {
+            e.target.classList.add('opacity-40');
+          }
+        },
+        onCalendarTaskDragEnd: (e) => {
+          if (e.target) {
+            e.target.classList.remove('opacity-40');
+          }
+          document.querySelectorAll('.calendar-cell').forEach(el => {
+            el.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/70', 'dark:bg-indigo-950/70');
+          });
+          setTimeout(() => {
+            isDraggingCalendarTask = false;
+          }, 150);
+        },
+        onCalendarCellDragOver: (e) => {
+          e.preventDefault();
+          try { e.dataTransfer.dropEffect = 'move'; } catch(err) {}
+        },
+        onCalendarCellDragEnter: (e, elem) => {
+          e.preventDefault();
+          if (elem && elem.classList) {
+            elem.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50/70', 'dark:bg-indigo-950/70');
+          }
+        },
+        onCalendarCellDragLeave: (e, elem) => {
+          if (elem && elem.classList && !elem.contains(e.relatedTarget)) {
+            elem.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/70', 'dark:bg-indigo-950/70');
+          }
+        },
+        onCalendarCellDrop: (e, targetDate, elem) => {
+          e.preventDefault();
+          if (elem && elem.classList) {
+            elem.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/70', 'dark:bg-indigo-950/70');
+          }
+          document.querySelectorAll('.calendar-cell').forEach(el => {
+            el.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/70', 'dark:bg-indigo-950/70');
+          });
+
+          let taskId = null;
+          let originDate = null;
+          try {
+            const rawJson = e.dataTransfer.getData('application/json');
+            if (rawJson) {
+              const parsed = JSON.parse(rawJson);
+              taskId = parsed.taskId;
+              originDate = parsed.originDate;
+            }
+          } catch(err) {}
+
+          if (!taskId) {
+            taskId = e.dataTransfer.getData('text/plain');
+          }
+          if (!taskId || !targetDate) return;
+
+          const task = tasks.find(t => t.id === taskId);
+          if (!task) return;
+
+          const oldStartDate = task.date || task.deadline || targetDate;
+          const oldDeadline = task.deadline || task.date || targetDate;
+
+          let newStartDate = targetDate;
+          let newDeadline = targetDate;
+
+          if (originDate && originDate !== targetDate) {
+            const dtTarget = parseDateLocal(targetDate);
+            const dtOrigin = parseDateLocal(originDate);
+            if (dtTarget && dtOrigin) {
+              const deltaDays = Math.round((dtTarget - dtOrigin) / (1000 * 60 * 60 * 24));
+              newStartDate = changeDateByDays(oldStartDate, deltaDays);
+              newDeadline = changeDateByDays(oldDeadline, deltaDays);
+            }
+          } else if (!originDate) {
+            const dtStart = parseDateLocal(oldStartDate);
+            const dtEnd = parseDateLocal(oldDeadline);
+            const spanDays = (dtStart && dtEnd) ? Math.max(0, Math.round((dtEnd - dtStart) / (1000 * 60 * 60 * 24))) : 0;
+            newStartDate = targetDate;
+            newDeadline = changeDateByDays(targetDate, spanDays);
+          }
+
+          if (newStartDate === task.date && newDeadline === task.deadline) return;
+
+          let updatedTask = null;
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              updatedTask = {
+                ...t,
+                date: newStartDate,
+                deadline: newDeadline
+              };
+              return updatedTask;
+            }
+            return t;
+          });
+
+          saveTasks(updatedTask, 'save');
+          renderApp();
+
+          const targetHoliday = getThaiHoliday(newDeadline);
+          const holidayNote = targetHoliday ? ` (ตรงกับวันหยุด: ${targetHoliday} 🇹🇭)` : '';
+
+          if (newStartDate === newDeadline) {
+            showToast(`ย้ายงาน "${task.title}" ไปวันที่ ${formatThaiDate(newDeadline)}${holidayNote} เรียบร้อยแล้ว 📅`, 'success');
+          } else {
+            showToast(`ย้ายงาน "${task.title}" ไปวันที่ ${newStartDate} ถึง ${newDeadline}${holidayNote} เรียบร้อยแล้ว 📅`, 'success');
           }
         },
         openLarkSettings: () => {
