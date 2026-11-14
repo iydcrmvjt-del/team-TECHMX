@@ -1928,7 +1928,7 @@
             config: { wide_screen_mode: true, enable_forward: true },
             header: {
               template: "green",
-              title: { tag: "plain_text", content: `✅ งานเสร็จสิ้นแล้ว: ${task.title}` }
+              title: { tag: "plain_text", content: `✅ งานเสร็จสิ้นแล้ว: ${task.title} [${optList}]` }
             },
             elements: [
               {
@@ -1980,7 +1980,7 @@
             config: { wide_screen_mode: true, enable_forward: true },
             header: {
               template: "blue",
-              title: { tag: "plain_text", content: `📋 มอบหมายงานใหม่: ${task.title}` }
+              title: { tag: "plain_text", content: `📋 มอบหมายงานใหม่: ${task.title} [${optList}]` }
             },
             elements: [
               {
@@ -2029,6 +2029,14 @@
         let totalCompleted = 0;
 
         const memberSummaries = [];
+        const dailyActiveTasks = new Map();
+
+        const formatLarkTaskItem = (t) => {
+          const opts = (Array.isArray(t.options) && t.options.length > 0)
+            ? t.options.map(o => (TASK_OPTIONS_CONFIG[o] ? `${TASK_OPTIONS_CONFIG[o].icon} ${TASK_OPTIONS_CONFIG[o].name}` : o)).join(', ')
+            : 'งานทั่วไป';
+          return `${t.title} [${opts}]`;
+        };
 
         targetMembers.forEach(member => {
           const mTasks = taskList.filter(t => t.assigneeIds && t.assigneeIds.includes(member.id));
@@ -2044,6 +2052,11 @@
             return (s <= selectedDate && selectedDate <= e) || t.deadline === selectedDate;
           });
 
+          // Track unique tasks for overall type statistics
+          [...dueToday, ...inProg, ...overdue, ...completed].forEach(t => {
+            dailyActiveTasks.set(t.id, t);
+          });
+
           totalDueToday += dueToday.length;
           totalInProg += inProg.length;
           totalOverdue += overdue.length;
@@ -2053,16 +2066,32 @@
           if (mTotal > 0) {
             let taskLines = [];
             if (dueToday.length > 0) {
-              taskLines.push(`  • 🚨 **ส่งวันนี้:** ${dueToday.map(t => t.title).join(', ')}`);
+              if (dueToday.length === 1) {
+                taskLines.push(`  • 🚨 **ส่งวันนี้:** ${formatLarkTaskItem(dueToday[0])}`);
+              } else {
+                taskLines.push(`  • 🚨 **ส่งวันนี้ (${dueToday.length} งาน):**\n    - ` + dueToday.map(formatLarkTaskItem).join('\n    - '));
+              }
             }
             if (inProg.length > 0) {
-              taskLines.push(`  • ⚡ **กำลังทำ:** ${inProg.map(t => t.title).join(', ')}`);
+              if (inProg.length === 1) {
+                taskLines.push(`  • ⚡ **กำลังทำ:** ${formatLarkTaskItem(inProg[0])}`);
+              } else {
+                taskLines.push(`  • ⚡ **กำลังทำ (${inProg.length} งาน):**\n    - ` + inProg.map(formatLarkTaskItem).join('\n    - '));
+              }
             }
             if (overdue.length > 0) {
-              taskLines.push(`  • ⚠️ **เกินกำหนด:** ${overdue.map(t => t.title).join(', ')}`);
+              if (overdue.length === 1) {
+                taskLines.push(`  • ⚠️ **เกินกำหนด:** ${formatLarkTaskItem(overdue[0])}`);
+              } else {
+                taskLines.push(`  • ⚠️ **เกินกำหนด (${overdue.length} งาน):**\n    - ` + overdue.map(formatLarkTaskItem).join('\n    - '));
+              }
             }
             if (completed.length > 0) {
-              taskLines.push(`  • ✅ **เสร็จแล้ว:** ${completed.length} งาน`);
+              if (completed.length === 1) {
+                taskLines.push(`  • ✅ **เสร็จแล้ว:** ${formatLarkTaskItem(completed[0])}`);
+              } else {
+                taskLines.push(`  • ✅ **เสร็จแล้ว (${completed.length} งาน):**\n    - ` + completed.map(formatLarkTaskItem).join('\n    - '));
+              }
             }
 
             memberSummaries.push(
@@ -2071,11 +2100,72 @@
           }
         });
 
-        const appUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.href : 'https://techmx-team-todo.pages.dev';
+        // Compute overall task options breakdown
+        const typeCounts = {};
+        dailyActiveTasks.forEach(t => {
+          if (Array.isArray(t.options)) {
+            t.options.forEach(opt => {
+              typeCounts[opt] = (typeCounts[opt] || 0) + 1;
+            });
+          }
+        });
+        const typeSummaryList = Object.entries(typeCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([opt, count]) => {
+            const conf = TASK_OPTIONS_CONFIG[opt] || { icon: '🏷️', name: opt };
+            return `${conf.icon} ${conf.name} (${count})`;
+          });
+        const typeSummaryText = typeSummaryList.length > 0
+          ? `**🎬 ลักษณะงานในวันนี้:** ${typeSummaryList.join(' • ')}`
+          : '';
+
+        const appUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.href : 'https://team-taskflow.iydcrmvjt.workers.dev';
 
         let breakdownText = memberSummaries.length > 0 
           ? memberSummaries.join('\n\n')
           : '🎉 ไม่มีภาระงานค้างสำหรับสมาชิกที่เลือกในวันนี้';
+
+        const cardElements = [
+          {
+            tag: "div",
+            fields: [
+              {
+                is_short: true,
+                text: { tag: "lark_md", content: `**🚨 ต้องส่งวันนี้:** ${totalDueToday} งาน\n**⚡ กำลังทำอยู่:** ${totalInProg} งาน` }
+              },
+              {
+                is_short: true,
+                text: { tag: "lark_md", content: `**⚠️ งานค้างเกินกำหนด:** ${totalOverdue} งาน\n**✅ เสร็จสิ้นแล้ว:** ${totalCompleted} งาน` }
+              }
+            ]
+          }
+        ];
+
+        if (typeSummaryText) {
+          cardElements.push({
+            tag: "div",
+            text: { tag: "lark_md", content: typeSummaryText }
+          });
+        }
+
+        cardElements.push(
+          { tag: "hr" },
+          {
+            tag: "div",
+            text: { tag: "lark_md", content: `**📋 รายละเอียดงานรายบุคคล (พร้อมลักษณะงาน):**\n\n${breakdownText}` }
+          },
+          {
+            tag: "action",
+            actions: [
+              {
+                tag: "button",
+                text: { tag: "plain_text", content: "🚀 ไปที่บอร์ดงาน Team TaskFlow" },
+                type: "primary",
+                url: appUrl
+              }
+            ]
+          }
+        );
 
         return {
           msg_type: "interactive",
@@ -2085,37 +2175,7 @@
               template: "orange",
               title: { tag: "plain_text", content: `📊 รายงานสรุปงานประจำวัน: ${thaiDate}` }
             },
-            elements: [
-              {
-                tag: "div",
-                fields: [
-                  {
-                    is_short: true,
-                    text: { tag: "lark_md", content: `**🚨 ต้องส่งวันนี้:** ${totalDueToday} งาน\n**⚡ กำลังทำอยู่:** ${totalInProg} งาน` }
-                  },
-                  {
-                    is_short: true,
-                    text: { tag: "lark_md", content: `**⚠️ งานค้างเกินกำหนด:** ${totalOverdue} งาน\n**✅ เสร็จสิ้นแล้ว:** ${totalCompleted} งาน` }
-                  }
-                ]
-              },
-              { tag: "hr" },
-              {
-                tag: "div",
-                text: { tag: "lark_md", content: `**📋 รายละเอียดงานรายบุคคล:**\n\n${breakdownText}` }
-              },
-              {
-                tag: "action",
-                actions: [
-                  {
-                    tag: "button",
-                    text: { tag: "plain_text", content: "🚀 ไปที่บอร์ดงาน Team TaskFlow" },
-                    type: "primary",
-                    url: appUrl
-                  }
-                ]
-              }
-            ]
+            elements: cardElements
           }
         };
       };
