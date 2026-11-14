@@ -1473,17 +1473,17 @@
       })();
       let isWorkloadCollapsed = (function() {
         try {
-          const saved = localStorage.getItem('team_taskflow_workload_collapsed');
+          const saved = localStorage.getItem('team_taskflow_workload_collapsed_v2');
           if (saved !== null) return saved === 'true';
         } catch(e) {}
-        return false; // ค่าเริ่มต้น: แสดงภาระงาน
+        return true; // ค่าเริ่มต้น: ซ่อนภาระงาน
       })();
       let isAllTasksCollapsed = (function() {
         try {
-          const saved = localStorage.getItem('team_taskflow_all_tasks_collapsed');
+          const saved = localStorage.getItem('team_taskflow_all_tasks_collapsed_v2');
           if (saved !== null) return saved === 'true';
         } catch(e) {}
-        return false; // ค่าเริ่มต้น: แสดงรายการงานทั้งหมด
+        return true; // ค่าเริ่มต้น: ซ่อนรายการงานทั้งหมด
       })();
       let isMemberKanbanCollapsed = (function() {
         try {
@@ -4257,14 +4257,14 @@ window.appActions = {
         toggleWorkloadCollapse: () => {
           isWorkloadCollapsed = !isWorkloadCollapsed;
           try {
-            localStorage.setItem('team_taskflow_workload_collapsed', String(isWorkloadCollapsed));
+            localStorage.setItem('team_taskflow_workload_collapsed_v2', String(isWorkloadCollapsed));
           } catch(e) {}
           renderApp();
         },
         toggleAllTasksCollapse: () => {
           isAllTasksCollapsed = !isAllTasksCollapsed;
           try {
-            localStorage.setItem('team_taskflow_all_tasks_collapsed', String(isAllTasksCollapsed));
+            localStorage.setItem('team_taskflow_all_tasks_collapsed_v2', String(isAllTasksCollapsed));
           } catch(e) {}
           renderApp();
         },
@@ -4416,7 +4416,7 @@ switchUser: (newUserId) => {
           managerTaskView = v;
           if (isAllTasksCollapsed) {
             isAllTasksCollapsed = false;
-            try { localStorage.setItem('team_taskflow_all_tasks_collapsed', 'false'); } catch(e) {}
+            try { localStorage.setItem('team_taskflow_all_tasks_collapsed_v2', 'false'); } catch(e) {}
           }
           renderApp();
         },
@@ -5170,12 +5170,12 @@ switchUser: (newUserId) => {
           memberCalendarSelectedTypes = {};
           managerTaskView = 'list';
           isMonthlyCollapsed = true;
-          isWorkloadCollapsed = false;
-          isAllTasksCollapsed = false;
+          isWorkloadCollapsed = true;
+          isAllTasksCollapsed = true;
           isMemberKanbanCollapsed = false;
           try { localStorage.setItem('team_taskflow_monthly_collapsed', 'true'); } catch(e) {}
-          try { localStorage.setItem('team_taskflow_workload_collapsed', 'false'); } catch(e) {}
-          try { localStorage.setItem('team_taskflow_all_tasks_collapsed', 'false'); } catch(e) {}
+          try { localStorage.setItem('team_taskflow_workload_collapsed_v2', 'true'); } catch(e) {}
+          try { localStorage.setItem('team_taskflow_all_tasks_collapsed_v2', 'true'); } catch(e) {}
           try { localStorage.setItem('team_taskflow_member_kanban_collapsed', 'false'); } catch(e) {}
           saveTasks(null, 'bulk');
           renderApp();
