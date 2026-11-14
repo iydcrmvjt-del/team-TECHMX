@@ -215,7 +215,8 @@
     html.dark #taskDetailModal > div,
     html.dark #larkSettingsModal > div,
     html.dark #pwaInstallModal > div,
-    html.dark #syncDiagnosticModal > div {
+    html.dark #syncDiagnosticModal > div,
+    html.dark #aiReportModal > div {
       background-color: #111827 !important;
       border-color: #243149 !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
@@ -327,6 +328,91 @@
   <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-3.5 sm:py-6 space-y-3.5 sm:space-y-6 overflow-x-hidden">
     <!-- Cloud Sync Alert Banner (shown when running locally on file:// or D1 not bound) -->
     <div id="cloudSyncAlertBanner" class="hidden"></div>
+
+    <!-- AI Magic Command Center & Smart Search Bar -->
+    <div id="magicCommandBarContainer" class="bg-white dark:bg-slate-900 rounded-2xl border border-indigo-100 dark:border-indigo-950/70 p-3 sm:p-4 shadow-xs space-y-3 transition-all duration-200">
+      <!-- Search & AI Command Input Row -->
+      <div class="relative flex items-center">
+        <div class="absolute left-3 sm:left-3.5 flex items-center pointer-events-none space-x-1.5 text-indigo-500 dark:text-indigo-400">
+          <span class="text-base sm:text-lg animate-pulse">✨</span>
+          <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hidden sm:inline px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300">AI Copilot</span>
+        </div>
+
+        <input type="text" id="magicSearchInput" autocomplete="off"
+          placeholder="✨ ค้นหาชื่องาน, สั่งงานสไตล์ AI (เช่น ให้บอยตัดต่อคลิป... ส่งศุกร์นี้), หรือพิมพ์ สรุปผลงานเดือนนี้..."
+          class="w-full pl-10 sm:pl-28 pr-24 sm:pr-32 py-2.5 sm:py-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 shadow-2xs transition">
+
+        <div class="absolute right-2 flex items-center space-x-1 sm:space-x-1.5">
+          <button type="button" id="btnMagicClear" onclick="window.appActions.clearMagicInput()" class="hidden p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition cursor-pointer" title="ล้างข้อความ">
+            ✕
+          </button>
+          <button type="button" id="btnMagicAction" onclick="window.appActions.triggerMagicAction()" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs shadow-xs transition flex items-center space-x-1 cursor-pointer">
+            <span>✨</span>
+            <span class="hidden sm:inline">สั่ง AI / ค้นหา</span>
+            <span class="sm:hidden">ค้นหา</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Magic Task Live Preview Box (Dynamically shown when NLP detects task creation command) -->
+      <div id="magicTaskPreviewBox" class="hidden p-3 sm:p-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/90 dark:bg-emerald-950/50 text-slate-800 dark:text-slate-100 space-y-2.5 shadow-sm">
+        <!-- Content will be rendered dynamically -->
+      </div>
+
+      <!-- Quick Filter & AI Action Pills -->
+      <div class="flex items-center flex-wrap gap-1.5 sm:gap-2 pt-0.5">
+        <span class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mr-1 flex items-center space-x-1">
+          <span>⚡ ทางลัด:</span>
+        </span>
+
+        <!-- Quick Filter: Urgent -->
+        <button type="button" onclick="window.appActions.toggleQuickFilter('urgent')" id="qfBtn-urgent" class="quick-filter-btn text-xs px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition flex items-center space-x-1 cursor-pointer">
+          <span>🔥</span>
+          <span>เฉพาะงานด่วน</span>
+          <span id="qfBadge-urgent" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 font-bold">0</span>
+        </button>
+
+        <!-- Quick Filter: This Week -->
+        <button type="button" onclick="window.appActions.toggleQuickFilter('week')" id="qfBtn-week" class="quick-filter-btn text-xs px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition flex items-center space-x-1 cursor-pointer">
+          <span>📅</span>
+          <span>ส่งสัปดาห์นี้</span>
+          <span id="qfBadge-week" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-bold">0</span>
+        </button>
+
+        <!-- Quick Filter: Revision -->
+        <button type="button" onclick="window.appActions.toggleQuickFilter('revision')" id="qfBtn-revision" class="quick-filter-btn text-xs px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition flex items-center space-x-1 cursor-pointer">
+          <span>🛠️</span>
+          <span>มีแก้งาน</span>
+          <span id="qfBadge-revision" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 font-bold">0</span>
+        </button>
+
+        <!-- Quick Filter: Overdue -->
+        <button type="button" onclick="window.appActions.toggleQuickFilter('overdue')" id="qfBtn-overdue" class="quick-filter-btn text-xs px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition flex items-center space-x-1 cursor-pointer">
+          <span>⚠️</span>
+          <span>เลยกำหนด</span>
+          <span id="qfBadge-overdue" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 font-bold">0</span>
+        </button>
+
+        <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
+
+        <!-- AI Action: Month Summary -->
+        <button type="button" onclick="window.appActions.openAiReportModal('month')" class="text-xs px-2.5 py-1 rounded-lg border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/70 hover:bg-violet-100 dark:hover:bg-violet-900/60 text-violet-700 dark:text-violet-300 font-semibold transition flex items-center space-x-1 cursor-pointer shadow-2xs">
+          <span>📊</span>
+          <span>สรุปเดือนนี้ (AI)</span>
+        </button>
+
+        <!-- AI Action: Week Summary -->
+        <button type="button" onclick="window.appActions.openAiReportModal('week')" class="text-xs px-2.5 py-1 rounded-lg border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 font-semibold transition flex items-center space-x-1 cursor-pointer shadow-2xs">
+          <span>⚡</span>
+          <span>สรุปสัปดาห์นี้ (AI)</span>
+        </button>
+
+        <!-- Clear Filter Button (Shown when active) -->
+        <button type="button" id="qfBtnClearAll" onclick="window.appActions.clearAllFilters()" class="hidden text-xs px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium transition items-center space-x-1 cursor-pointer">
+          <span>✕ ล้างตัวกรอง</span>
+        </button>
+      </div>
+    </div>
 
     <!-- Dynamic Content will be rendered here -->
     <div id="appRoot" class="space-y-4 sm:space-y-6 w-full"></div>
@@ -631,6 +717,46 @@
           <button type="button" id="btnSyncModalRetry" onclick="window.appActions.retryCloudSyncFromModal()" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-semibold text-xs shadow-xs transition cursor-pointer flex items-center justify-center space-x-1.5">
             <span>🔄</span>
             <span>ตรวจสอบและซิงค์ใหม่</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Assistant & Report Modal -->
+  <div id="aiReportModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-indigo-100 dark:border-indigo-900/60 max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">✨</span>
+          <h3 id="aiReportModalTitle" class="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-lg">AI Copilot สรุปรายงานผลงาน</h3>
+        </div>
+        <button onclick="window.appActions.closeAiReportModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- Content / Report Text -->
+      <div class="mt-4 flex-1 overflow-y-auto custom-scrollbar">
+        <div id="aiReportContent" class="text-xs sm:text-sm font-sans whitespace-pre-wrap leading-relaxed p-4 bg-slate-50 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 select-text">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[11px] text-slate-400 flex items-center space-x-1">
+          <span>💡 สามารถคัดลอกหรือส่งรายงานเข้าห้องแชต Lark ได้ทันที</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button type="button" id="btnCopyAiReport" onclick="window.appActions.copyAiReport()" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition flex items-center space-x-1.5 shadow-xs cursor-pointer">
+            <span>📋</span>
+            <span>คัดลอกข้อความ</span>
+          </button>
+          <button type="button" id="btnSendAiReportToLark" onclick="window.appActions.sendAiReportToLark()" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold transition flex items-center space-x-1.5 shadow-xs cursor-pointer">
+            <span>🦜</span>
+            <span>ส่งเข้า Lark</span>
           </button>
         </div>
       </div>
@@ -1372,6 +1498,10 @@
       let searchQuery = '';
       let filterAssignee = 'all';
       let filterStatus = 'all';
+      let activeQuickFilter = 'none'; // 'none' | 'urgent' | 'week' | 'revision' | 'overdue'
+      let currentMagicParsedTask = null;
+      let currentAiReportText = '';
+      let currentAiReportScope = 'month';
 
       // Theme State (Dark / Light)
       let currentTheme = localStorage.getItem('team_taskflow_theme') || 'dark';
@@ -2200,13 +2330,44 @@
             displayedTasks = displayedTasks.filter(t => t.status === filterStatus);
           }
         }
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
+        // Quick Filters
+        const todayZero = new Date(); todayZero.setHours(0,0,0,0);
+        if (activeQuickFilter === 'urgent') {
+          displayedTasks = displayedTasks.filter(t => (t.priority === 'high' || t.priority === 'urgent') && t.status !== 'done');
+        } else if (activeQuickFilter === 'week') {
+          const next7Days = new Date(todayZero); next7Days.setDate(next7Days.getDate() + 7);
+          displayedTasks = displayedTasks.filter(t => {
+            if (!t.deadline || t.status === 'done') return false;
+            const d = parseDateLocal(t.deadline);
+            if (!d) return false;
+            return d >= todayZero && d <= next7Days;
+          });
+        } else if (activeQuickFilter === 'revision') {
           displayedTasks = displayedTasks.filter(t => 
-            t.title.toLowerCase().includes(q) || 
+            (Array.isArray(t.options) && t.options.includes('แก้งาน')) ||
+            (t.title && t.title.includes('แก้')) ||
+            (t.note && t.note.includes('แก้'))
+          );
+        } else if (activeQuickFilter === 'overdue') {
+          displayedTasks = displayedTasks.filter(t => {
+            if (t.status === 'done' || !t.deadline) return false;
+            const d = parseDateLocal(t.deadline);
+            return d && d < todayZero;
+          });
+        }
+
+        // Live Search Query
+        if (searchQuery && searchQuery.trim()) {
+          const q = searchQuery.toLowerCase().trim();
+          displayedTasks = displayedTasks.filter(t => 
+            (t.title && t.title.toLowerCase().includes(q)) || 
             (t.note && t.note.toLowerCase().includes(q)) ||
             (Array.isArray(t.options) && t.options.some(o => o.toLowerCase().includes(q))) ||
-            (typeof t.description === 'string' && t.description.toLowerCase().includes(q))
+            (typeof t.description === 'string' && t.description.toLowerCase().includes(q)) ||
+            (Array.isArray(t.assigneeIds) && t.assigneeIds.some(id => {
+              const m = TEAM_MEMBERS.find(tm => tm.id === id);
+              return m && m.name.toLowerCase().includes(q);
+            }))
           );
         }
 
@@ -2535,6 +2696,7 @@
 
         root.innerHTML = html;
         bindEventListeners();
+        updateQuickFilterUI();
       };
 
       // Monthly Content Output Counter (Item 4: สรุปยอดผลงานประจำเดือน)
@@ -3818,6 +3980,439 @@
         document.getElementById('taskDetailModal').classList.remove('hidden');
       };
 
+      // Quick Filters UI Badge & Button Styles Updater
+      const updateQuickFilterUI = () => {
+        const todayZero = new Date(); todayZero.setHours(0,0,0,0);
+        const next7Days = new Date(todayZero); next7Days.setDate(next7Days.getDate() + 7);
+
+        const scopedTasks = (currentUserId === 'manager')
+          ? tasks
+          : tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(currentUserId));
+
+        const urgentCount = scopedTasks.filter(t => (t.priority === 'high' || t.priority === 'urgent') && t.status !== 'done').length;
+        const weekCount = scopedTasks.filter(t => {
+          if (!t.deadline || t.status === 'done') return false;
+          const d = parseDateLocal(t.deadline);
+          return d && d >= todayZero && d <= next7Days;
+        }).length;
+        const revCount = scopedTasks.filter(t => 
+          (Array.isArray(t.options) && t.options.includes('แก้งาน')) ||
+          (t.title && t.title.includes('แก้')) ||
+          (t.note && t.note.includes('แก้'))
+        ).length;
+        const overdueCount = scopedTasks.filter(t => {
+          if (!t.deadline || t.status === 'done') return false;
+          const d = parseDateLocal(t.deadline);
+          return d && d < todayZero;
+        }).length;
+
+        const bUrgent = document.getElementById('qfBadge-urgent'); if (bUrgent) bUrgent.textContent = urgentCount;
+        const bWeek = document.getElementById('qfBadge-week'); if (bWeek) bWeek.textContent = weekCount;
+        const bRev = document.getElementById('qfBadge-revision'); if (bRev) bRev.textContent = revCount;
+        const bOverdue = document.getElementById('qfBadge-overdue'); if (bOverdue) bOverdue.textContent = overdueCount;
+
+        ['urgent', 'week', 'revision', 'overdue'].forEach(key => {
+          const btn = document.getElementById(`qfBtn-${key}`);
+          if (!btn) return;
+          const isActive = activeQuickFilter === key;
+          if (isActive) {
+            btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-xs', 'ring-2', 'ring-indigo-400');
+            btn.classList.remove('bg-slate-50', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
+          } else {
+            btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-xs', 'ring-2', 'ring-indigo-400');
+            btn.classList.add('bg-slate-50', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
+          }
+        });
+
+        const btnClear = document.getElementById('qfBtnClearAll');
+        if (btnClear) {
+          if (activeQuickFilter !== 'none' || (searchQuery && searchQuery.trim())) {
+            btnClear.classList.remove('hidden');
+            btnClear.classList.add('inline-flex');
+          } else {
+            btnClear.classList.add('hidden');
+            btnClear.classList.remove('inline-flex');
+          }
+        }
+      };
+
+      // AI Natural Language Parser for Magic Task Creation
+      const parseMagicTask = (text) => {
+        if (!text) return null;
+
+        // 1. Assignees
+        const MEMBER_MAP = {
+          'นนท์': 'non', 'นน': 'non', 'บอย': 'non',
+          'อั๋น': 'aun', 'ตาล': 'aun',
+          'อายตา': 'eyeta', 'เอ': 'eyeta',
+          'หรั่ง': 'rang', 'บี': 'rang',
+          'ธัญญ่า': 'tanya',
+          'ฟร้องซ์': 'france', 'ฟรองซ์': 'france'
+        };
+
+        const foundAssignees = [];
+        for (const [name, uid] of Object.entries(MEMBER_MAP)) {
+          if (text.includes(name) && !foundAssignees.includes(uid)) {
+            foundAssignees.push(uid);
+          }
+        }
+        const assignees = foundAssignees.length > 0
+          ? foundAssignees
+          : (currentUserId !== 'manager' ? [currentUserId] : ['non']);
+
+        // 2. Options (ลักษณะงาน)
+        const options = [];
+        if (text.includes('ตัดต่อ')) options.push('ตัดต่อ');
+        if (/กราฟฟิก|กราฟิก|cg|ปกคลิป|thumbnail/i.test(text)) options.push('กราฟฟิก');
+        if (/เขียนสคริปต์|สคริปต์|script/i.test(text)) options.push('เขียนสคริปต์');
+        if (/roll a|โรลเอ/i.test(text)) options.push('Roll A');
+        if (/ins|insert|อินเสิร์ต/i.test(text)) options.push('ins');
+        if (/short|shorts|ช็อต|รีล|reels|tiktok/i.test(text)) options.push('Short');
+        if (/ปล่อยงาน|ออนแอร์|publish/i.test(text)) options.push('ปล่อยงาน');
+        if (/แก้งาน|แก้ไข|แก้|revise/i.test(text)) options.push('แก้งาน');
+        if (options.length === 0) {
+          if (/คลิป|วิดีโอ|video|รีวิว/i.test(text)) {
+            options.push('ตัดต่อ');
+          } else {
+            options.push('Roll A', 'ins');
+          }
+        }
+
+        // 3. Priority
+        let priority = 'normal';
+        if (/ด่วนมาก|ด่วนสุด|ไฟลุก|urgent|สำคัญมาก/i.test(text)) {
+          priority = 'high';
+        } else if (/ด่วน/i.test(text)) {
+          priority = 'high';
+        } else if (/ไม่ด่วน|ชิล|ว่างค่อยทำ/i.test(text)) {
+          priority = 'low';
+        }
+
+        // 4. Dates & Deadline
+        const today = new Date();
+        let targetDeadline = new Date(today);
+        targetDeadline.setDate(targetDeadline.getDate() + 2); // default 2 days
+
+        const WEEKDAY_MAP = {
+          'อาทิตย์': 0, 'จันทร์': 1, 'อังคาร': 2, 'พุธ': 3, 'พฤหัส': 4, 'พฤหัสบดี': 4, 'ศุกร์': 5, 'เสาร์': 6
+        };
+        const MONTH_MAP = {
+          'ม.ค.': 0, 'ก.พ.': 1, 'มี.ค.': 2, 'เม.ย.': 3, 'พ.ค.': 4, 'มิ.ย.': 5,
+          'ก.ค.': 6, 'ส.ค.': 7, 'ก.ย.': 8, 'ต.ค.': 9, 'พ.ย.': 10, 'ธ.ค.': 11,
+          'มกราคม': 0, 'กุมภาพันธ์': 1, 'มีนาคม': 2, 'เมษายน': 3, 'พฤษภาคม': 4, 'มิถุนายน': 5,
+          'กรกฎาคม': 6, 'สิงหาคม': 7, 'กันยายน': 8, 'ตุลาคม': 9, 'พฤศจิกายน': 10, 'ธันวาคม': 11
+        };
+
+        if (/วันนี้/i.test(text)) {
+          targetDeadline = new Date(today);
+        } else if (/พรุ่งนี้/i.test(text)) {
+          targetDeadline = new Date(today);
+          targetDeadline.setDate(targetDeadline.getDate() + 1);
+        } else if (/มะรืน/i.test(text)) {
+          targetDeadline = new Date(today);
+          targetDeadline.setDate(targetDeadline.getDate() + 2);
+        } else {
+          const mWeek = text.match(/วัน(จันทร์|อังคาร|พุธ|พฤหัสบดี|พฤหัส|ศุกร์|เสาร์|อาทิตย์)(?:นี้|หน้า)?/);
+          if (mWeek) {
+            const targetDay = WEEKDAY_MAP[mWeek[1]];
+            const currentDay = today.getDay();
+            let diff = (targetDay - currentDay + 7) % 7;
+            if (diff === 0) diff = 7;
+            targetDeadline = new Date(today);
+            targetDeadline.setDate(targetDeadline.getDate() + diff);
+          } else {
+            const mDate = text.match(/(?:วันที่\s*)?(\d{1,2})\s*(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.|มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)/);
+            if (mDate) {
+              const d = parseInt(mDate[1], 10);
+              const m = MONTH_MAP[mDate[2]];
+              targetDeadline = new Date(today.getFullYear(), m, d);
+            }
+          }
+        }
+
+        const dateStr = formatDateLocal(today);
+        const deadlineStr = formatDateLocal(targetDeadline);
+
+        // 5. Note extraction
+        let note = '';
+        const mStudio = text.match(/(?:ที่|ใน)?\s*(สตูดิโอ\s*[A-Za-z0-9]+|นอกสถานที่|สตู\s*[A-Za-z0-9]+)/i);
+        if (mStudio) {
+          note = mStudio[1];
+        }
+        const mNote = text.match(/โน้ต\s*[:：]?\s*([^,.
+]+)/i);
+        if (mNote) {
+          note = note ? `${note} • ${mNote[1].trim()}` : mNote[1].trim();
+        }
+
+        // 6. Clean Title
+        let clean = text;
+        clean = clean.replace(/^(?:สร้างงาน|เพิ่มงาน|มอบหมายงาน|งาน)\s*/i, '');
+        clean = clean.replace(/(?:ให้|รบกวน|ฝาก)\s*(?:บอย|ตาล|เอ|บี|นนท์|นน|อั๋น|อายตา|หรั่ง|ธัญญ่า|ฟร้องซ์|ฟรองซ์)\s*/gi, '');
+        clean = clean.replace(/^(?:บอย|ตาล|เอ|บี|นนท์|นน|อั๋น|อายตา|หรั่ง|ธัญญ่า|ฟร้องซ์|ฟรองซ์)\s*/gi, '');
+        clean = clean.replace(/\s*(?:ส่ง)?(?:วัน[^\s,]+|พรุ่งนี้|มะรืน|วันนี้|วันที่\s*\d+\s*[^\s,]+|\d+\s*พ\.ย\.)/gi, '');
+        clean = clean.replace(/\s*(?:ด่วนมาก|ด่วนสุด|ด่วน|ไฟลุก|ไม่ด่วน|สำคัญมาก)/gi, '');
+        clean = clean.replace(/\s*(?:มีกราฟฟิก|มีสคริปต์|พร้อมกราฟฟิก|พร้อมสคริปต์)/gi, '');
+        clean = clean.replace(/(?:ที่|ใน)?\s*(สตูดิโอ\s*[A-Za-z0-9]+|นอกสถานที่|สตู\s*[A-Za-z0-9]+)/gi, '');
+        clean = clean.replace(/โน้ต\s*[:：]?\s*([^,.
+]+)/gi, '');
+        clean = clean.trim().replace(/^[,:;•\s]+|[,:;•\s]+$/g, '');
+
+        if (!clean || clean.length < 3) {
+          clean = `งาน${options.join(' + ')} (สร้างด่วนผ่าน AI)`;
+        }
+
+        const colKeys = Object.keys(TASK_COLORS);
+        const chosenColor = colKeys[Math.floor(Math.random() * colKeys.length)] || 'blue';
+
+        return {
+          id: 'task-' + Date.now(),
+          title: clean,
+          options: options,
+          note: note,
+          description: options.join(', ') + (note ? ` (${note})` : ''),
+          color: chosenColor,
+          date: dateStr,
+          deadline: deadlineStr,
+          status: 'todo',
+          priority: priority,
+          assigneeIds: assignees
+        };
+      };
+
+      // Handle typing in Magic Search Bar
+      const handleMagicInput = (rawVal) => {
+        const val = rawVal || '';
+        const trimmed = val.trim();
+        const clearBtn = document.getElementById('btnMagicClear');
+        const previewBox = document.getElementById('magicTaskPreviewBox');
+
+        if (clearBtn) {
+          if (trimmed.length > 0) clearBtn.classList.remove('hidden');
+          else clearBtn.classList.add('hidden');
+        }
+
+        if (trimmed.length === 0) {
+          currentMagicParsedTask = null;
+          if (previewBox) previewBox.classList.add('hidden');
+          searchQuery = '';
+          renderApp();
+          return;
+        }
+
+        // Check if creation trigger
+        const isCreation = /^(?:ให้|สร้างงาน|เพิ่มงาน|มอบหมาย|รบกวน|ฝาก)\s*/i.test(trimmed) ||
+          /(?:นนท์|นน|บอย|อั๋น|ตาล|อายตา|เอ|หรั่ง|บี|ธัญญ่า|ฟร้องซ์)\s*(?:ตัดต่อ|ถ่าย|สคริปต์|กราฟฟิก|แก้งาน|ทำ)/i.test(trimmed) ||
+          (/(?:นนท์|นน|บอย|อั๋น|ตาล|อายตา|เอ|หรั่ง|บี|ธัญญ่า|ฟร้องซ์)/i.test(trimmed) && /(?:ตัดต่อ|เขียนสคริปต์|กราฟฟิก|Roll A|ins|Short|ปล่อยงาน|แก้งาน|ส่งวัน|ส่งพรุ่งนี้)/i.test(trimmed));
+
+        if (isCreation) {
+          currentMagicParsedTask = parseMagicTask(trimmed);
+          if (previewBox && currentMagicParsedTask) {
+            const assignees = (currentMagicParsedTask.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+            const assigneesHtml = assignees.map(m => `${m.avatar} ${m.name}`).join(', ') || 'นนท์';
+            const optBadges = currentMagicParsedTask.options.map(o => `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-semibold">${escapeHtml(o)}</span>`).join(' ');
+
+            previewBox.innerHTML = `
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2 border-b border-emerald-200 dark:border-emerald-800/80">
+                <div class="flex items-center space-x-2">
+                  <span class="text-base sm:text-lg">🤖</span>
+                  <span class="text-xs font-bold text-emerald-900 dark:text-emerald-200">AI ตรวจพบคำสั่งสร้างงาน:</span>
+                </div>
+                <span class="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium">กด Enter หรือคลิกปุ่มเพื่อบันทึกลงระบบทันที</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <div>
+                  <span class="text-[10.5px] text-slate-500 dark:text-slate-400 block">📌 ชื่องาน:</span>
+                  <span class="font-bold text-slate-800 dark:text-slate-100 truncate block">${escapeHtml(currentMagicParsedTask.title)}</span>
+                </div>
+                <div>
+                  <span class="text-[10.5px] text-slate-500 dark:text-slate-400 block">👥 มอบหมายให้:</span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-100 block">${assigneesHtml}</span>
+                </div>
+                <div>
+                  <span class="text-[10.5px] text-slate-500 dark:text-slate-400 block">🎬 ลักษณะงาน:</span>
+                  <div class="flex flex-wrap gap-1 mt-0.5">${optBadges}</div>
+                </div>
+                <div>
+                  <span class="text-[10.5px] text-slate-500 dark:text-slate-400 block">🏁 กำหนดส่ง:</span>
+                  <span class="font-bold text-indigo-700 dark:text-indigo-300 block">${formatThaiDate(currentMagicParsedTask.deadline) || currentMagicParsedTask.deadline} ${currentMagicParsedTask.priority === 'high' ? '🔥 (ด่วนมาก)' : ''}</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-end space-x-2 pt-1 border-t border-emerald-200/60 dark:border-emerald-800/60">
+                <button type="button" onclick="window.appActions.cancelMagicPreview()" class="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 cursor-pointer transition">
+                  ✕ ยกเลิก
+                </button>
+                <button type="button" onclick="window.appActions.openInTaskModalFromMagic()" class="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer shadow-2xs transition">
+                  ✏️ แก้ไขในฟอร์มละเอียด
+                </button>
+                <button type="button" onclick="window.appActions.confirmMagicTask()" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold shadow-xs transition flex items-center space-x-1 cursor-pointer">
+                  <span>🚀 สร้างงานทันที (Enter)</span>
+                </button>
+              </div>
+            `;
+            previewBox.classList.remove('hidden');
+          }
+          return;
+        }
+
+        // Not creation -> hide preview
+        currentMagicParsedTask = null;
+        if (previewBox) previewBox.classList.add('hidden');
+
+        // Check if report query (e.g. "สรุปผลงานเดือนนี้")
+        if (/สรุปรายงาน|สรุปผลงาน|สรุปงาน|รายงาน/i.test(trimmed)) {
+          // Keep search query empty or set to filtered
+          return;
+        }
+
+        // Standard live filter
+        searchQuery = trimmed;
+        renderApp();
+      };
+
+      // AI Copilot Summary Report Generator
+      const generateAiReport = (scope = 'month', customQuery = '') => {
+        currentAiReportScope = scope;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const todayZero = new Date(); todayZero.setHours(0,0,0,0);
+
+        let targetTasks = [];
+        let scopeTitle = '';
+
+        if (scope === 'week') {
+          const startOfWeek = new Date(todayZero);
+          const currentDay = todayZero.getDay(); // 0 is Sunday
+          const diffToMon = currentDay === 0 ? -6 : 1 - currentDay;
+          startOfWeek.setDate(todayZero.getDate() + diffToMon);
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+          const startStr = formatDateLocal(startOfWeek);
+          const endStr = formatDateLocal(endOfWeek);
+
+          targetTasks = tasks.filter(t => {
+            const d = t.deadline || t.date;
+            return d && d >= startStr && d <= endStr;
+          });
+          scopeTitle = `ประจำสัปดาห์ (${formatThaiDate(startStr)} ถึง ${formatThaiDate(endStr)})`;
+        } else {
+          // Month
+          const ymStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+          targetTasks = tasks.filter(t => {
+            return (t.deadline && t.deadline.startsWith(ymStr)) || (t.date && t.date.startsWith(ymStr));
+          });
+          scopeTitle = `ประจำเดือน ${THAI_MONTHS[currentMonth]} ${currentYear + 543}`;
+        }
+
+        if (targetTasks.length === 0) {
+          targetTasks = [...tasks];
+        }
+
+        const total = targetTasks.length;
+        const doneList = targetTasks.filter(t => t.status === 'done');
+        const inProgList = targetTasks.filter(t => t.status === 'in-progress');
+        const todoList = targetTasks.filter(t => t.status === 'todo');
+        const overdueList = targetTasks.filter(t => {
+          if (t.status === 'done' || !t.deadline) return false;
+          const d = parseDateLocal(t.deadline);
+          return d && d < todayZero;
+        });
+
+        const pct = total > 0 ? Math.round((doneList.length / total) * 100) : 0;
+
+        // Member performance breakdown
+        const memberStats = TEAM_MEMBERS.map(m => {
+          const mTasks = targetTasks.filter(t => t.assigneeIds && t.assigneeIds.includes(m.id));
+          const mDone = mTasks.filter(t => t.status === 'done').length;
+          const mPending = mTasks.filter(t => t.status !== 'done').length;
+          const mTotal = mTasks.length;
+          return { ...m, total: mTotal, done: mDone, pending: mPending };
+        }).filter(m => m.total > 0);
+
+        // Task Options breakdown
+        const optCounts = {};
+        TASK_OPTIONS_LIST.forEach(opt => { optCounts[opt] = 0; });
+        targetTasks.forEach(t => {
+          if (Array.isArray(t.options)) {
+            t.options.forEach(opt => {
+              if (optCounts[opt] !== undefined) optCounts[opt]++;
+            });
+          }
+        });
+
+        const optSummary = Object.entries(optCounts)
+          .filter(([_, cnt]) => cnt > 0)
+          .sort((a, b) => b[1] - a[1])
+          .map(([opt, cnt]) => `${opt}: ${cnt} งาน`)
+          .join(' • ');
+
+        let report = `📊 สรุปผลงานภาพรวมทีม ${scopeTitle} (AI Copilot)
+`;
+        report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+        report += `🎯 สรุปผลงานภาพรวม (Key Metrics):
+`;
+        report += `• งานทั้งหมด: ${total} รายการ
+`;
+        report += `• ✅ สำเร็จแล้ว (Done): ${doneList.length} รายการ (อัตราความสำเร็จ ${pct}%)
+`;
+        report += `• ⚡ กำลังดำเนินการ (In Progress): ${inProgList.length} รายการ
+`;
+        report += `• 📋 รอดำเนินการ (To Do): ${todoList.length} รายการ
+`;
+        report += `• ⚠️ งานเกินกำหนด (Overdue): ${overdueList.length} รายการ
+
+`;
+
+        report += `👥 ความคืบหน้ารายบุคคล:
+`;
+        if (memberStats.length > 0) {
+          memberStats.forEach(m => {
+            const statusEmoji = m.pending === 0 ? '✨ ปิดครบ 100%' : `ค้าง ${m.pending} งาน`;
+            report += `• ${m.avatar} ${m.name}: สำเร็จ ${m.done}/${m.total} งาน (${statusEmoji})
+`;
+          });
+        } else {
+          report += `• ไม่มีข้อมูลงานรายบุคคลในช่วงเวลานี้
+`;
+        }
+        report += `
+`;
+
+        if (optSummary) {
+          report += `🎬 สถิติลักษณะงาน:
+• ${optSummary}
+
+`;
+        }
+
+        report += `💡 ข้อเสนอแนะ & วิเคราะห์เชิงกลยุทธ์จาก AI:
+`;
+        if (overdueList.length > 0) {
+          report += `1. ⚠️ ตรวจพบงานเกินกำหนด ${overdueList.length} งาน แนะนำให้ผู้จัดการช่วยติดตามเพื่อเคลียร์คอขวด
+`;
+        } else {
+          report += `1. 🎉 ยอดเยี่ยม! ไม่มีงานค้างเกินกำหนด ทีมส่งงานได้ตรงเวลาดีมาก
+`;
+        }
+        const revisionTasks = targetTasks.filter(t => (Array.isArray(t.options) && t.options.includes('แก้งาน')) || (t.title && t.title.includes('แก้')));
+        if (revisionTasks.length > 0) {
+          report += `2. 🛠️ มีงานในขั้นตอน "แก้งาน" ${revisionTasks.length} รายการ ควรเช็ก Feedback รอบสุดท้ายเพื่อปล่อยงานได้ทันกำหนด
+`;
+        }
+        report += `3. 🚀 สัดส่วนการกระจายงานมีความต่อเนื่อง อัตราการปิดงานเฉลี่ยอยู่ที่ ${pct}%
+`;
+        report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+        report += `ระบบ Team TaskFlow • สร้างสรุปรายงานอัตโนมัติ`;
+
+        currentAiReportText = report;
+        return { report, scopeTitle };
+      };
+
       // 6. Global Action Dispatcher
       window.appActions = {
         openSyncDiagnosticModal: () => {
@@ -4377,13 +4972,188 @@
         },
         toggleTheme: () => {
           applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        },
+        toggleQuickFilter: (key) => {
+          if (activeQuickFilter === key) {
+            activeQuickFilter = 'none';
+          } else {
+            activeQuickFilter = key;
+          }
+          renderApp();
+          updateQuickFilterUI();
+        },
+        clearAllFilters: () => {
+          activeQuickFilter = 'none';
+          searchQuery = '';
+          const inp = document.getElementById('magicSearchInput');
+          if (inp) inp.value = '';
+          const box = document.getElementById('magicTaskPreviewBox');
+          if (box) box.classList.add('hidden');
+          const btnClear = document.getElementById('btnMagicClear');
+          if (btnClear) btnClear.classList.add('hidden');
+          currentMagicParsedTask = null;
+          renderApp();
+          updateQuickFilterUI();
+          showToast('ล้างตัวกรองและการค้นหาทั้งหมดแล้ว', 'info');
+        },
+        clearMagicInput: () => {
+          const inp = document.getElementById('magicSearchInput');
+          if (inp) inp.value = '';
+          handleMagicInput('');
+        },
+        triggerMagicAction: () => {
+          const inp = document.getElementById('magicSearchInput');
+          const val = inp ? inp.value.trim() : '';
+          if (!val) {
+            showToast('พิมพ์คำสั่งหรือคำค้นหาในช่อง AI ก่อนกดปุ่มครับ ✨', 'info');
+            return;
+          }
+          if (currentMagicParsedTask) {
+            window.appActions.confirmMagicTask();
+          } else if (/สรุปผลงาน|สรุปรายงาน|สรุปงาน|รายงาน/i.test(val)) {
+            window.appActions.openAiReportModal(/สัปดาห์/i.test(val) ? 'week' : 'month');
+          } else {
+            searchQuery = val;
+            renderApp();
+            showToast(`ค้นหา: "${val}"`, 'info');
+          }
+        },
+        confirmMagicTask: () => {
+          if (!currentMagicParsedTask) return;
+          const newTask = { ...currentMagicParsedTask };
+          tasks.unshift(newTask);
+          saveTasks(newTask, 'save');
+          notifyLarkTaskCreated(newTask);
+
+          currentMagicParsedTask = null;
+          const inp = document.getElementById('magicSearchInput');
+          if (inp) inp.value = '';
+          const box = document.getElementById('magicTaskPreviewBox');
+          if (box) box.classList.add('hidden');
+          const btnClear = document.getElementById('btnMagicClear');
+          if (btnClear) btnClear.classList.add('hidden');
+
+          renderApp();
+          showToast(`✨ AI มอบหมายงาน "${newTask.title}" เรียบร้อยแล้ว! 🚀`, 'success');
+        },
+        openInTaskModalFromMagic: () => {
+          if (!currentMagicParsedTask) return;
+          const taskCopy = { ...currentMagicParsedTask };
+          currentMagicParsedTask = null;
+          const box = document.getElementById('magicTaskPreviewBox');
+          if (box) box.classList.add('hidden');
+
+          openModal();
+          document.getElementById('formTitle').value = taskCopy.title || '';
+          modalSelectedAssignees = [...taskCopy.assigneeIds];
+          modalSelectedOptions = [...taskCopy.options];
+          document.getElementById('formDate').value = taskCopy.date;
+          document.getElementById('formDeadline').value = taskCopy.deadline;
+          document.getElementById('formPriority').value = taskCopy.priority;
+          if (document.getElementById('formNote')) {
+            document.getElementById('formNote').value = taskCopy.note || '';
+          }
+          renderModalOptions();
+          renderModalAssignees();
+          showToast('นำข้อมูลจาก AI มาใส่ในฟอร์มละเอียดแล้ว ตรวจสอบและบันทึกได้เลย ✏️', 'info');
+        },
+        cancelMagicPreview: () => {
+          currentMagicParsedTask = null;
+          const box = document.getElementById('magicTaskPreviewBox');
+          if (box) box.classList.add('hidden');
+        },
+        openAiReportModal: (scope = 'month') => {
+          const { report, scopeTitle } = generateAiReport(scope);
+          const modal = document.getElementById('aiReportModal');
+          const titleEl = document.getElementById('aiReportModalTitle');
+          const contentEl = document.getElementById('aiReportContent');
+          if (titleEl) titleEl.textContent = `✨ AI Copilot สรุปรายงานผลงาน ${scopeTitle}`;
+          if (contentEl) contentEl.textContent = report;
+          if (modal) modal.classList.remove('hidden');
+        },
+        closeAiReportModal: () => {
+          const modal = document.getElementById('aiReportModal');
+          if (modal) modal.classList.add('hidden');
+        },
+        copyAiReport: async () => {
+          if (!currentAiReportText) return;
+          try {
+            await navigator.clipboard.writeText(currentAiReportText);
+            showToast('📋 คัดลอกรายงานสรุป AI เรียบร้อยแล้ว พร้อมส่งต่อได้ทันที!', 'success');
+          } catch(e) {
+            // Fallback
+            const ta = document.createElement('textarea');
+            ta.value = currentAiReportText;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('📋 คัดลอกรายงานสรุป AI เรียบร้อยแล้ว!', 'success');
+          }
+        },
+        sendAiReportToLark: async () => {
+          if (!currentAiReportText) return;
+          const cfg = getLarkConfig();
+          if (!cfg.webhookUrl) {
+            if (confirm('ยังไม่ได้ระบุ Lark Webhook URL ต้องการเปิดหน้าตั้งค่าตอนนี้หรือไม่?')) {
+              window.appActions.openLarkSettings();
+            }
+            return;
+          }
+
+          showToast('กำลังส่งรายงานสรุป AI เข้า Lark... 🦜', 'lark', 2000);
+          const card = {
+            msg_type: 'interactive',
+            card: {
+              config: { wide_screen_mode: true },
+              header: {
+                title: { tag: 'plain_text', content: `✨ สรุปรายงานผลงานทีม (AI Copilot)` },
+                template: 'purple'
+              },
+              elements: [
+                {
+                  tag: 'div',
+                  text: {
+                    tag: 'lark_md',
+                    content: currentAiReportText
+                  }
+                },
+                {
+                  tag: 'action',
+                  actions: [
+                    {
+                      tag: 'button',
+                      text: { tag: 'plain_text', content: '📋 เปิดดูระบบ TaskFlow' },
+                      type: 'primary',
+                      url: window.location.href
+                    }
+                  ]
+                }
+              ]
+            }
+          };
+
+          const res = await sendToLark(card);
+          if (res && res.success) {
+            showToast('ส่งรายงานสรุป AI เข้าห้องแชต Lark สำเร็จแล้ว! 🦜', 'success');
+          } else {
+            const err = (res && res.error) || 'เกิดข้อผิดพลาดในการส่งเข้า Lark';
+            showToast(`ส่งไม่สำเร็จ: ${err}`, 'error', 4500);
+            alert(`ไม่สามารถส่งรายงานสรุปเข้า Lark ได้:
+${err}`);
+          }
         }
       };
 
       const bindEventListeners = () => {
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
-          searchInput.oninput = (e) => { searchQuery = e.target.value; renderApp(); };
+          searchInput.oninput = (e) => {
+            searchQuery = e.target.value;
+            const magicInp = document.getElementById('magicSearchInput');
+            if (magicInp) magicInp.value = searchQuery;
+            renderApp();
+          };
         }
         const filterAssigneeSelect = document.getElementById('filterAssigneeSelect');
         if (filterAssigneeSelect) {
@@ -4645,6 +5415,22 @@
           }).catch((err) => {
             console.warn('TaskFlow ServiceWorker registration failed:', err);
           });
+        });
+      }
+
+      // Magic AI Search Input Events
+      const magicSearchInput = document.getElementById('magicSearchInput');
+      if (magicSearchInput) {
+        magicSearchInput.addEventListener('input', (e) => {
+          handleMagicInput(e.target.value);
+        });
+        magicSearchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            window.appActions.triggerMagicAction();
+          } else if (e.key === 'Escape') {
+            window.appActions.cancelMagicPreview();
+          }
         });
       }
 
