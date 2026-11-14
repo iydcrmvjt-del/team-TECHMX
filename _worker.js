@@ -228,7 +228,70 @@ export default {
       }
     }
 
-    // 4. Default: Serve static assets (index.html, etc.) via Pages asset handler
+    // 4. API: /api/lark (Proxy for Lark Custom Bot Webhook to avoid browser CORS)
+    if (url.pathname === '/api/lark' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const webhookUrl = (body && body.webhookUrl) || (env && env.LARK_WEBHOOK_URL) || '';
+        if (!webhookUrl) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'กรุณาระบุ Lark Webhook URL ในการตั้งค่า (Settings)'
+          }), { status: 400, headers: jsonHeaders });
+        }
+
+        let parsed;
+        try {
+          parsed = new URL(webhookUrl);
+        } catch(e) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'รูปแบบ Webhook URL ไม่ถูกต้อง'
+          }), { status: 400, headers: jsonHeaders });
+        }
+
+        const allowedHosts = ['open.larksuite.com', 'open.feishu.cn'];
+        if (!allowedHosts.includes(parsed.hostname) || !parsed.pathname.startsWith('/open-apis/bot/v2/hook/')) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'Webhook URL ต้องมาจาก open.larksuite.com หรือ open.feishu.cn'
+          }), { status: 400, headers: jsonHeaders });
+        }
+
+        const payload = (body && body.payload) ? body.payload : body;
+        if (payload.webhookUrl) delete payload.webhookUrl;
+
+        const larkRes = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const larkData = await larkRes.json().catch(() => ({}));
+        if (!larkRes.ok || (larkData && larkData.code && larkData.code !== 0)) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: (larkData && (larkData.msg || larkData.message)) || `Lark Error HTTP ${larkRes.status}`,
+            details: larkData
+          }), { status: 200, headers: jsonHeaders });
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'ส่งการแจ้งเตือนเข้า Lark สำเร็จ',
+          details: larkData
+        }), { headers: jsonHeaders });
+      } catch(err) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: err.message
+        }), { status: 500, headers: jsonHeaders });
+      }
+    }
+
+    // 5. Default: Serve static assets (index.html, etc.) via Pages asset handler
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
       return env.ASSETS.fetch(request);
     }

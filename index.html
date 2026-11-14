@@ -250,6 +250,12 @@
             <span id="themeToggleText" class="hidden md:inline">โหมดมืด</span>
           </button>
 
+          <!-- Lark Bot Settings Button -->
+          <button type="button" id="btnOpenLarkSettings" onclick="window.appActions.openLarkSettings()" title="ตั้งค่าการแจ้งเตือนเข้า Lark (Bot Webhook)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
+            <span class="text-xs">🦜</span>
+            <span class="hidden md:inline text-xs">Lark</span>
+          </button>
+
           <!-- PWA Install Button (Dynamic) -->
           <button type="button" id="btnPWAInstall" onclick="window.appActions.triggerPWAInstall()" title="ติดตั้งเป็นแอปบนอุปกรณ์ (Install App)" class="hidden items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
             <span class="text-xs">📲</span>
@@ -509,6 +515,83 @@
       </div>
     </div>
   </div>
+
+  <!-- Lark Custom Bot Webhook Settings Modal -->
+  <div id="larkSettingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center space-x-2.5">
+          <span class="p-2 bg-sky-50 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 rounded-xl text-lg">🦜</span>
+          <div>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ตั้งค่าการแจ้งเตือนเข้า Lark (Bot Webhook)</h3>
+            <p class="text-[11px] text-slate-400">ส่งแจ้งเตือนงานเสร็จและสรุปงานรายวันเข้ากลุ่มแชท Lark อัตโนมัติ</p>
+          </div>
+        </div>
+        <button onclick="window.appActions.closeLarkSettings()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-lg cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Webhook URL input -->
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-200 mb-1 text-xs">
+            🔗 Lark Custom Bot Webhook URL: <span class="text-rose-500">*</span>
+          </label>
+          <input type="url" id="larkWebhookInput" placeholder="https://open.larksuite.com/open-apis/bot/v2/hook/xxxxxxx-xxxx-xxxx..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 font-mono">
+          <p class="text-[10.5px] text-slate-400 dark:text-slate-500 mt-1">
+            💡 วิธีสร้าง: ในกลุ่มแชท Lark กด <strong>Settings (⚙️) ➜ Bots ➜ Add Bot ➜ Custom Bot</strong> แล้วคัดลอก Webhook URL มาวางที่นี่
+          </p>
+        </div>
+
+        <!-- Notification Toggles -->
+        <div class="space-y-2.5 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div class="font-semibold text-slate-700 dark:text-slate-200 text-xs mb-1">🔔 ตัวเลือกการแจ้งเตือนอัตโนมัติ:</div>
+          
+          <label class="flex items-start space-x-2.5 cursor-pointer">
+            <input type="checkbox" id="larkNotifyOnDone" class="mt-0.5 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer">
+            <div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100 text-xs">แจ้งเตือนเมื่องานเสร็จสิ้น (Task Done ✅)</div>
+              <div class="text-[10.5px] text-slate-500 dark:text-slate-400">ส่งการ์ดแจ้งเตือนสีเขียวเข้า Lark ทันทีเมื่อมีงานถูกเปลี่ยนสถานะเป็น "เสร็จสิ้น" พร้อมชื่อผู้รับผิดชอบและลิงก์ส่งงาน</div>
+            </div>
+          </label>
+
+          <label class="flex items-start space-x-2.5 cursor-pointer">
+            <input type="checkbox" id="larkNotifyOnCreate" class="mt-0.5 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer">
+            <div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100 text-xs">แจ้งเตือนเมื่องานถูกสร้างใหม่ (Task Created 📋)</div>
+              <div class="text-[10.5px] text-slate-500 dark:text-slate-400">ส่งการ์ดแจ้งเตือนสีน้ำเงินเข้า Lark เมื่อมีการเพิ่มงานใหม่ให้ทีม</div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Test & Status Area -->
+        <div class="flex items-center justify-between gap-2 p-3 rounded-xl bg-sky-50/60 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/60">
+          <div>
+            <div class="font-semibold text-sky-900 dark:text-sky-200 text-xs">ทดสอบส่งเข้า Lark</div>
+            <div id="larkTestStatusText" class="text-[10.5px] text-sky-700/80 dark:text-sky-300/80">กดปุ่มเพื่อส่งการ์ดทดสอบไปยังกลุ่มแชท</div>
+          </div>
+          <button type="button" id="btnTestLarkWebhook" onclick="window.appActions.testLarkConnection()" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-slate-700 text-sky-700 dark:text-sky-300 font-semibold text-xs rounded-xl shadow-2xs transition cursor-pointer shrink-0 flex items-center space-x-1">
+            <span>🔔</span>
+            <span>ทดสอบส่ง</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end space-x-2">
+        <button type="button" onclick="window.appActions.closeLarkSettings()" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+          ยกเลิก
+        </button>
+        <button type="button" onclick="window.appActions.saveLarkSettings()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center space-x-1.5">
+          <span>💾</span>
+          <span>บันทึกการตั้งค่า</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
   <!-- Footer -->
   <footer class="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
@@ -1310,6 +1393,365 @@
         if (diffDays === 0) return { label: 'กำหนดส่งวันนี้!', type: 'today', badgeClass: 'bg-amber-50 text-amber-800 border-amber-300 font-bold dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' };
         if (diffDays <= 2) return { label: `เหลืออีก ${diffDays} วัน`, type: 'urgent', badgeClass: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800' };
         return { label: `ครบกำหนด ${deadlineStr}`, type: 'normal', badgeClass: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700' };
+      };
+
+      // ================= LARK BOT INTEGRATION & TOAST =================
+      const showToast = (message, type = 'info', duration = 3500) => {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'pointer-events-auto flex items-center space-x-2.5 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transform transition-all duration-300 translate-y-2 opacity-0';
+        
+        let icon = '🔔';
+        if (type === 'success') {
+          toast.className += ' bg-emerald-600 text-white border-emerald-500 shadow-emerald-900/30';
+          icon = '✅';
+        } else if (type === 'error') {
+          toast.className += ' bg-rose-600 text-white border-rose-500 shadow-rose-900/30';
+          icon = '❌';
+        } else if (type === 'lark') {
+          toast.className += ' bg-sky-600 text-white border-sky-500 shadow-sky-900/30';
+          icon = '🦜';
+        } else {
+          toast.className += ' bg-slate-800 text-white border-slate-700';
+        }
+
+        toast.innerHTML = `
+          <span class="text-base shrink-0">${icon}</span>
+          <span class="flex-1">${escapeHtml(message)}</span>
+        `;
+
+        container.appendChild(toast);
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 300);
+        }, duration);
+      };
+
+      const LARK_CONFIG_STORAGE_KEY = 'team_taskflow_lark_config';
+
+      const getLarkConfig = () => {
+        try {
+          const raw = localStorage.getItem(LARK_CONFIG_STORAGE_KEY);
+          if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return {
+          webhookUrl: '',
+          notifyOnDone: true,
+          notifyOnCreate: true
+        };
+      };
+
+      const setLarkConfig = (config) => {
+        try {
+          localStorage.setItem(LARK_CONFIG_STORAGE_KEY, JSON.stringify(config));
+        } catch(e) {}
+      };
+
+      const sendToLark = async (payload) => {
+        const config = getLarkConfig();
+        if (!config.webhookUrl) {
+          console.log('Lark notification skipped: Webhook URL not set.');
+          return { success: false, reason: 'no_webhook' };
+        }
+
+        if (window.location.protocol.startsWith('http')) {
+          try {
+            const res = await fetch('/api/lark', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                webhookUrl: config.webhookUrl,
+                payload: payload
+              })
+            });
+            const data = await res.json();
+            return data;
+          } catch(err) {
+            console.error('Lark proxy fetch error:', err);
+            return { success: false, error: err.message };
+          }
+        } else {
+          try {
+            const res = await fetch(config.webhookUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            return data;
+          } catch(err) {
+            console.warn('Lark direct fetch error (CORS):', err);
+            return { success: false, error: 'เบราว์เซอร์บล็อก CORS หากเปิดผ่าน local file:// แนะนำให้เปิดผ่าน Cloudflare URL หรือ localhost เพื่อส่งเข้า Lark' };
+          }
+        }
+      };
+
+      const buildLarkDoneCard = (task) => {
+        const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+        const assigneeNames = assignees.map(a => `${a.avatar} ${a.name}`).join(', ') || 'ไม่ได้ระบุ';
+        const optList = (task.options || []).map(o => (TASK_OPTIONS_CONFIG[o] ? `${TASK_OPTIONS_CONFIG[o].icon} ${TASK_OPTIONS_CONFIG[o].name}` : o)).join(', ') || 'งานทั่วไป';
+        const deadlineStr = formatThaiDate(task.deadline) || task.deadline || 'ไม่มีกำหนด';
+        const appUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.href : 'https://techmx-team-todo.pages.dev';
+        let noteSection = task.note ? `\n\n**📝 บันทึก / ลิงก์ส่งงาน:**\n${task.note}` : '';
+
+        return {
+          msg_type: "interactive",
+          card: {
+            config: { wide_screen_mode: true, enable_forward: true },
+            header: {
+              template: "green",
+              title: { tag: "plain_text", content: `✅ งานเสร็จสิ้นแล้ว: ${task.title}` }
+            },
+            elements: [
+              {
+                tag: "div",
+                fields: [
+                  {
+                    is_short: true,
+                    text: { tag: "lark_md", content: `**👤 ผู้รับผิดชอบ:**\n${assigneeNames}` }
+                  },
+                  {
+                    is_short: true,
+                    text: { tag: "lark_md", content: `**📅 กำหนดส่ง (Deadline):**\n${deadlineStr}` }
+                  }
+                ]
+              },
+              { tag: "hr" },
+              {
+                tag: "div",
+                text: { tag: "lark_md", content: `**🎬 ลักษณะงาน:** ${optList}${noteSection}` }
+              },
+              {
+                tag: "action",
+                actions: [
+                  {
+                    tag: "button",
+                    text: { tag: "plain_text", content: "🌐 เปิดดูบนระบบ TaskFlow" },
+                    type: "primary",
+                    url: appUrl
+                  }
+                ]
+              }
+            ]
+          }
+        };
+      };
+
+      const buildLarkCreateCard = (task) => {
+        const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+        const assigneeNames = assignees.map(a => `${a.avatar} ${a.name}`).join(', ') || 'ไม่ได้ระบุ';
+        const optList = (task.options || []).map(o => (TASK_OPTIONS_CONFIG[o] ? `${TASK_OPTIONS_CONFIG[o].icon} ${TASK_OPTIONS_CONFIG[o].name}` : o)).join(', ') || 'งานทั่วไป';
+        const deadlineStr = formatThaiDate(task.deadline) || task.deadline || 'ไม่มีกำหนด';
+        const appUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.href : 'https://techmx-team-todo.pages.dev';
+        const priorityText = task.priority === 'high' ? '🔥 ด่วนมาก' : (task.priority === 'low' ? 'ไม่รีบ' : 'ปกติ');
+        let noteSection = task.note ? `\n\n**📝 รายละเอียด:**\n${task.note}` : '';
+
+        return {
+          msg_type: "interactive",
+          card: {
+            config: { wide_screen_mode: true, enable_forward: true },
+            header: {
+              template: "blue",
+              title: { tag: "plain_text", content: `📋 มอบหมายงานใหม่: ${task.title}` }
+            },
+            elements: [
+              {
+                tag: "div",
+                fields: [
+                  {
+                    is_short: true,
+                    text: { tag: "lark_md", content: `**👤 ผู้รับผิดชอบ:**\n${assigneeNames}` }
+                  },
+                  {
+                    is_short: true,
+                    text: { tag: "lark_md", content: `**📅 กำหนดส่ง (Deadline):**\n${deadlineStr}` }
+                  }
+                ]
+              },
+              { tag: "hr" },
+              {
+                tag: "div",
+                text: { tag: "lark_md", content: `**🔥 ความสำคัญ:** ${priorityText}\n**🎬 ลักษณะงาน:** ${optList}${noteSection}` }
+              },
+              {
+                tag: "action",
+                actions: [
+                  {
+                    tag: "button",
+                    text: { tag: "plain_text", content: "🌐 เปิดดูและรับงานบน TaskFlow" },
+                    type: "primary",
+                    url: appUrl
+                  }
+                ]
+              }
+            ]
+          }
+        };
+      };
+
+      const buildLarkDailyDigestCard = (selectedDate, taskList, memberFilter) => {
+        const thaiDate = formatThaiDate(selectedDate) || selectedDate;
+        const targetMembers = (memberFilter && memberFilter !== 'all')
+          ? TEAM_MEMBERS.filter(m => m.id === memberFilter)
+          : TEAM_MEMBERS;
+
+        let totalDueToday = 0;
+        let totalInProg = 0;
+        let totalOverdue = 0;
+        let totalCompleted = 0;
+
+        const memberSummaries = [];
+
+        targetMembers.forEach(member => {
+          const mTasks = taskList.filter(t => t.assigneeIds && t.assigneeIds.includes(member.id));
+          const dueToday = mTasks.filter(t => t.deadline === selectedDate && t.status !== 'done');
+          const inProg = mTasks.filter(t => {
+            const s = t.date || t.deadline; const e = t.deadline || t.date;
+            return s <= selectedDate && selectedDate <= e && t.deadline !== selectedDate && t.status !== 'done';
+          });
+          const overdue = mTasks.filter(t => t.deadline < selectedDate && t.status !== 'done');
+          const completed = mTasks.filter(t => {
+            if (t.status !== 'done') return false;
+            const s = t.date || t.deadline; const e = t.deadline || t.date;
+            return (s <= selectedDate && selectedDate <= e) || t.deadline === selectedDate;
+          });
+
+          totalDueToday += dueToday.length;
+          totalInProg += inProg.length;
+          totalOverdue += overdue.length;
+          totalCompleted += completed.length;
+
+          const mTotal = dueToday.length + inProg.length + overdue.length + completed.length;
+          if (mTotal > 0) {
+            let taskLines = [];
+            if (dueToday.length > 0) {
+              taskLines.push(`  • 🚨 **ส่งวันนี้:** ${dueToday.map(t => t.title).join(', ')}`);
+            }
+            if (inProg.length > 0) {
+              taskLines.push(`  • ⚡ **กำลังทำ:** ${inProg.map(t => t.title).join(', ')}`);
+            }
+            if (overdue.length > 0) {
+              taskLines.push(`  • ⚠️ **เกินกำหนด:** ${overdue.map(t => t.title).join(', ')}`);
+            }
+            if (completed.length > 0) {
+              taskLines.push(`  • ✅ **เสร็จแล้ว:** ${completed.length} งาน`);
+            }
+
+            memberSummaries.push(
+              `**${member.avatar} ${member.name}** (เสร็จ ${completed.length}/${mTotal} งาน):\n` + taskLines.join('\n')
+            );
+          }
+        });
+
+        const appUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.href : 'https://techmx-team-todo.pages.dev';
+
+        let breakdownText = memberSummaries.length > 0 
+          ? memberSummaries.join('\n\n')
+          : '🎉 ไม่มีภาระงานค้างสำหรับสมาชิกที่เลือกในวันนี้';
+
+        return {
+          msg_type: "interactive",
+          card: {
+            config: { wide_screen_mode: true, enable_forward: true },
+            header: {
+              template: "orange",
+              title: { tag: "plain_text", content: `📊 รายงานสรุปงานประจำวัน: ${thaiDate}` }
+            },
+            elements: [
+              {
+                tag: "div",
+                fields: [
+                  {
+                    is_short: true,
+                    text: { tag: "lark_md", content: `**🚨 ต้องส่งวันนี้:** ${totalDueToday} งาน\n**⚡ กำลังทำอยู่:** ${totalInProg} งาน` }
+                  },
+                  {
+                    is_short: true,
+                    text: { tag: "lark_md", content: `**⚠️ งานค้างเกินกำหนด:** ${totalOverdue} งาน\n**✅ เสร็จสิ้นแล้ว:** ${totalCompleted} งาน` }
+                  }
+                ]
+              },
+              { tag: "hr" },
+              {
+                tag: "div",
+                text: { tag: "lark_md", content: `**📋 รายละเอียดงานรายบุคคล:**\n\n${breakdownText}` }
+              },
+              {
+                tag: "action",
+                actions: [
+                  {
+                    tag: "button",
+                    text: { tag: "plain_text", content: "🚀 ไปที่บอร์ดงาน Team TaskFlow" },
+                    type: "primary",
+                    url: appUrl
+                  }
+                ]
+              }
+            ]
+          }
+        };
+      };
+
+      const buildLarkTestCard = () => {
+        const appUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.href : 'https://techmx-team-todo.pages.dev';
+        return {
+          msg_type: "interactive",
+          card: {
+            config: { wide_screen_mode: true },
+            header: {
+              template: "turquoise",
+              title: { tag: "plain_text", content: "🦜 ทดสอบการเชื่อมต่อ TaskFlow <> Lark Bot" }
+            },
+            elements: [
+              {
+                tag: "div",
+                text: {
+                  tag: "lark_md",
+                  content: "🎉 **เชื่อมต่อสำเร็จแล้ว!**\n\nระบบ Team TaskFlow ได้เชื่อมต่อกับ Lark Custom Bot ของกลุ่มนี้เรียบร้อยแล้ว ต่อจากนี้เมื่อมีงานเสร็จหรือกดส่งสรุปงานประจำวัน ระบบจะส่งการ์ดแจ้งเตือนมายังกลุ่มนี้ทันทีครับ"
+                }
+              },
+              {
+                tag: "action",
+                actions: [
+                  {
+                    tag: "button",
+                    text: { tag: "plain_text", content: "🌐 เปิด Team TaskFlow" },
+                    type: "primary",
+                    url: appUrl
+                  }
+                ]
+              }
+            ]
+          }
+        };
+      };
+
+      const notifyLarkTaskDone = async (task) => {
+        const config = getLarkConfig();
+        if (!config.webhookUrl || !config.notifyOnDone) return;
+        const card = buildLarkDoneCard(task);
+        const result = await sendToLark(card);
+        if (result && result.success) {
+          showToast(`ส่งแจ้งเตือนงานเสร็จ "${task.title}" เข้า Lark แล้ว! 🦜`, 'lark');
+        }
+      };
+
+      const notifyLarkTaskCreated = async (task) => {
+        const config = getLarkConfig();
+        if (!config.webhookUrl || !config.notifyOnCreate) return;
+        const card = buildLarkCreateCard(task);
+        const result = await sendToLark(card);
+        if (result && result.success) {
+          showToast(`ส่งแจ้งเตือนงานใหม่ "${task.title}" เข้า Lark แล้ว! 🦜`, 'lark');
+        }
       };
 
       // 3. Render Helpers
@@ -2422,6 +2864,10 @@
                       ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${dailyMemberFilter === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
                     </select>
                   ` : ''}
+                  <button type="button" onclick="window.appActions.sendDailyDigestToLark()" title="ส่งสรุปงานประจำวันเข้ากลุ่มแชท Lark" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white transition shadow-xs cursor-pointer flex items-center space-x-1.5 shrink-0">
+                    <span>🦜</span>
+                    <span>ส่งสรุปเข้า Lark</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -2994,8 +3440,10 @@
         },
         detailSetStatus: (taskId, newStatus) => {
           let updated = null;
+          let oldStatus = null;
           tasks = tasks.map(t => {
             if (t.id === taskId) {
+              oldStatus = t.status;
               updated = { ...t, status: newStatus };
               return updated;
             }
@@ -3004,6 +3452,9 @@
           saveTasks(updated, 'save');
           renderApp();
           openTaskDetails(taskId);
+          if (updated && newStatus === 'done' && oldStatus !== 'done') {
+            notifyLarkTaskDone(updated);
+          }
         },
         openEditModal: (taskId) => {
           const t = tasks.find(item => item.id === taskId);
@@ -3021,8 +3472,10 @@
         },
         quickStatus: (taskId, newStatus) => {
           let updated = null;
+          let oldStatus = null;
           tasks = tasks.map(t => {
             if (t.id === taskId) {
+              oldStatus = t.status;
               updated = { ...t, status: newStatus };
               return updated;
             }
@@ -3030,10 +3483,14 @@
           });
           saveTasks(updated, 'save');
           renderApp();
+          if (updated && newStatus === 'done' && oldStatus !== 'done') {
+            notifyLarkTaskDone(updated);
+          }
         },
         cycleDailyStatus: (taskId) => {
           const task = tasks.find(t => t.id === taskId);
           if (!task) return;
+          const oldStatus = task.status;
           const nextStatus = task.status === 'todo' ? 'in-progress' : (task.status === 'in-progress' ? 'done' : 'todo');
           let updated = null;
           tasks = tasks.map(t => {
@@ -3045,6 +3502,9 @@
           });
           saveTasks(updated, 'save');
           renderApp();
+          if (updated && nextStatus === 'done' && oldStatus !== 'done') {
+            notifyLarkTaskDone(updated);
+          }
         },
         toggleModalAssignee: (memberId) => {
           if (modalSelectedAssignees.includes(memberId)) {
@@ -3077,8 +3537,10 @@
           const taskId = e.dataTransfer.getData('text/plain');
           if (taskId) {
             let updated = null;
+            let oldStatus = null;
             tasks = tasks.map(t => {
               if (t.id === taskId) {
+                oldStatus = t.status;
                 updated = { ...t, status: targetStatus };
                 return updated;
               }
@@ -3086,6 +3548,108 @@
             });
             saveTasks(updated, 'save');
             renderApp();
+            if (updated && targetStatus === 'done' && oldStatus !== 'done') {
+              notifyLarkTaskDone(updated);
+            }
+          }
+        },
+        openLarkSettings: () => {
+          const cfg = getLarkConfig();
+          const input = document.getElementById('larkWebhookInput');
+          if (input) input.value = cfg.webhookUrl || '';
+          const chkDone = document.getElementById('larkNotifyOnDone');
+          if (chkDone) chkDone.checked = cfg.notifyOnDone !== false;
+          const chkCreate = document.getElementById('larkNotifyOnCreate');
+          if (chkCreate) chkCreate.checked = cfg.notifyOnCreate !== false;
+          const statusText = document.getElementById('larkTestStatusText');
+          if (statusText) {
+            statusText.textContent = 'กดปุ่มเพื่อส่งการ์ดทดสอบไปยังกลุ่มแชท';
+            statusText.className = 'text-[10.5px] text-sky-700/80 dark:text-sky-300/80';
+          }
+          const modal = document.getElementById('larkSettingsModal');
+          if (modal) modal.classList.remove('hidden');
+        },
+        closeLarkSettings: () => {
+          const modal = document.getElementById('larkSettingsModal');
+          if (modal) modal.classList.add('hidden');
+        },
+        saveLarkSettings: () => {
+          const input = document.getElementById('larkWebhookInput');
+          const webhookUrl = input ? input.value.trim() : '';
+          const chkDone = document.getElementById('larkNotifyOnDone');
+          const chkCreate = document.getElementById('larkNotifyOnCreate');
+
+          if (webhookUrl && !webhookUrl.includes('open.larksuite.com') && !webhookUrl.includes('open.feishu.cn')) {
+            alert('Webhook URL ต้องเป็น Lark Bot Webhook (เช่น https://open.larksuite.com/open-apis/bot/v2/hook/...)');
+            return;
+          }
+
+          const newCfg = {
+            webhookUrl: webhookUrl,
+            notifyOnDone: chkDone ? chkDone.checked : true,
+            notifyOnCreate: chkCreate ? chkCreate.checked : true
+          };
+
+          setLarkConfig(newCfg);
+          showToast('บันทึกการตั้งค่า Lark เรียบร้อยแล้ว! 🦜', 'success');
+          const modal = document.getElementById('larkSettingsModal');
+          if (modal) modal.classList.add('hidden');
+        },
+        testLarkConnection: async () => {
+          const input = document.getElementById('larkWebhookInput');
+          const webhookUrl = input ? input.value.trim() : '';
+          const statusText = document.getElementById('larkTestStatusText');
+
+          if (!webhookUrl) {
+            alert('กรุณากรอก Lark Webhook URL ก่อนกดทดสอบ');
+            return;
+          }
+
+          if (statusText) {
+            statusText.textContent = 'กำลังทดสอบส่งข้อความเข้า Lark...';
+            statusText.className = 'text-[10.5px] text-sky-600 font-semibold animate-pulse';
+          }
+
+          const curCfg = getLarkConfig();
+          setLarkConfig({ ...curCfg, webhookUrl });
+
+          const testCard = buildLarkTestCard();
+          const res = await sendToLark(testCard);
+
+          if (res && res.success) {
+            if (statusText) {
+              statusText.textContent = '✅ เชื่อมต่อและส่งเข้า Lark สำเร็จแล้ว!';
+              statusText.className = 'text-[10.5px] text-emerald-600 font-bold';
+            }
+            showToast('ทดสอบส่งเข้า Lark สำเร็จ! ดูข้อความในการ์ดกลุ่มแชทได้เลย 🦜', 'lark');
+          } else {
+            const err = (res && res.error) || 'ไม่สามารถส่งเข้า Lark ได้ ตรวจสอบ Webhook URL อีกครั้ง';
+            if (statusText) {
+              statusText.textContent = `❌ ผิดพลาด: ${err}`;
+              statusText.className = 'text-[10.5px] text-rose-600 font-bold';
+            }
+            alert(`ทดสอบส่งไม่สำเร็จ:\n${err}`);
+          }
+        },
+        sendDailyDigestToLark: async () => {
+          const cfg = getLarkConfig();
+          if (!cfg.webhookUrl) {
+            if (confirm('ยังไม่ได้ระบุ Lark Webhook URL ต้องการเปิดหน้าตั้งค่าตอนนี้หรือไม่?')) {
+              window.appActions.openLarkSettings();
+            }
+            return;
+          }
+
+          showToast('กำลังเตรียมสรุปงานและส่งเข้า Lark... 🦜', 'lark', 2000);
+          const card = buildLarkDailyDigestCard(dailySelectedDate, tasks, dailyMemberFilter);
+          const res = await sendToLark(card);
+
+          if (res && res.success) {
+            showToast(`ส่งสรุปงานวันที่ ${formatThaiDate(dailySelectedDate)} เข้า Lark สำเร็จแล้ว! 🦜`, 'success');
+          } else {
+            const err = (res && res.error) || 'เกิดข้อผิดพลาดในการส่งเข้า Lark';
+            showToast(`ส่งไม่สำเร็จ: ${err}`, 'error', 4500);
+            alert(`ไม่สามารถส่งสรุปงานเข้า Lark ได้:\n${err}`);
           }
         },
         toggleTheme: () => {
@@ -3140,10 +3704,18 @@
           if (e.target === taskModal) closeModal();
         };
       }
+      const larkSettingsModal = document.getElementById('larkSettingsModal');
+      if (larkSettingsModal) {
+        larkSettingsModal.onclick = (e) => {
+          if (e.target === larkSettingsModal) window.appActions.closeLarkSettings();
+        };
+      }
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           closeModal();
           closeTaskDetails();
+          window.appActions.closeLarkSettings();
+          window.appActions.closePWAInstallModal();
         }
       });
 
@@ -3196,7 +3768,11 @@
         };
 
         let savedTask = null;
+        const isNew = !taskId;
+        let oldStatus = null;
         if (taskId) {
+          const existing = tasks.find(t => t.id === taskId);
+          if (existing) oldStatus = existing.status;
           tasks = tasks.map(t => {
             if (t.id === taskId) {
               savedTask = { ...t, ...taskData };
@@ -3211,6 +3787,12 @@
         saveTasks(savedTask, 'save');
         closeModal();
         renderApp();
+
+        if (isNew) {
+          notifyLarkTaskCreated(savedTask);
+        } else if (savedTask && savedTask.status === 'done' && oldStatus !== 'done') {
+          notifyLarkTaskDone(savedTask);
+        }
       };
 
       // Export / Import / Reset
