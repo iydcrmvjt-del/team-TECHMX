@@ -1,18 +1,13 @@
 # ==============================================================================
-# Cloudflare Pages Configuration - Team TaskFlow
+# Cloudflare Pages & Workers Unified Configuration - Team TaskFlow
 # ==============================================================================
 
 name = "team-taskflow"
+main = "worker.js"
 compatibility_date = "2024-11-01"
 pages_build_output_dir = "."
 
-# หมายเหตุสำหรับการ Deploy ผ่าน Cloudflare Pages Dashboard (Git Integration):
-# การผูกฐานข้อมูล D1 แนะนำให้ทำผ่านหน้าเว็บ Cloudflare Dashboard ได้เลย
-# (ที่เมนู Settings -> Functions -> D1 Database Bindings กำหนด Variable name: DB)
-#
-# สำหรับผู้ที่ใช้ Wrangler CLI ในการ Deploy ผ่าน Terminal:
-# ให้ปลดคอมเมนต์ด้านล่างนี้แล้วใส่ Database ID จริงที่ได้จาก `wrangler d1 create`
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "team-taskflow-db"
-# database_id = "xxxx-xxxx-xxxx"
+# หมายเหตุสำหรับการผูกฐานข้อมูล Cloudflare D1 (Database Binding):
+# ในหน้า Cloudflare Dashboard (ทั้ง Pages และ Workers)
+# ให้ไปที่ Settings -> Variables (หรือ Functions) -> D1 Database Bindings
+# กำหนด Variable name: DB และเลือกฐานข้อมูล team-taskflow-db
