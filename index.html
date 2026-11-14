@@ -1611,7 +1611,7 @@
           const data = await res.json();
           if (data && data.success) {
             if (Array.isArray(data.tasks)) {
-              const isBrandNewSetup = !data.seeded && data.tasks.length === 0;
+              const isBrandNewSetup = (!data.seeded && data.tasks.length === 0) || (data.tasks.length === 0 && tasks.length > 0);
 
               if (isBrandNewSetup) {
                 // First time connecting to a fresh unseeded database:
