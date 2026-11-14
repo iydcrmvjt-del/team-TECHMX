@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS tasks (
 CREATE INDEX IF NOT EXISTS idx_tasks_deadline ON tasks(deadline);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(date);
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 `;
 
 async function ensureTable(db) {
@@ -56,18 +60,14 @@ export async function onRequestGet({ env }) {
   }
 
   try {
-    let queryResult;
+    await ensureTable(env.DB);
+    let queryResult = await env.DB.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
+
+    let isSeeded = false;
     try {
-      queryResult = await env.DB.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
-    } catch (dbErr) {
-      // If table doesn't exist yet, auto-create it
-      if (dbErr.message && dbErr.message.includes('no such table')) {
-        await ensureTable(env.DB);
-        queryResult = await env.DB.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
-      } else {
-        throw dbErr;
-      }
-    }
+      const metaRow = await env.DB.prepare("SELECT value FROM meta WHERE key = 'seeded'").first();
+      if (metaRow) isSeeded = true;
+    } catch(e) {}
 
     const tasks = (queryResult.results || []).map(row => {
       let options = [];
@@ -104,7 +104,8 @@ export async function onRequestGet({ env }) {
     return new Response(JSON.stringify({
       success: true,
       count: tasks.length,
-      tasks
+      tasks,
+      seeded: isSeeded
     }), { headers: jsonHeaders });
   } catch (err) {
     return new Response(JSON.stringify({
@@ -188,6 +189,8 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
+    await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
+
     return new Response(JSON.stringify({
       success: true,
       message: 'Task saved successfully',
@@ -229,6 +232,7 @@ export async function onRequestDelete({ request, env }) {
     }
 
     await env.DB.prepare('DELETE FROM tasks WHERE id = ?').bind(taskId).run();
+    await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
 
     return new Response(JSON.stringify({
       success: true,

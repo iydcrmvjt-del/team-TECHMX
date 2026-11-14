@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS tasks (
 CREATE INDEX IF NOT EXISTS idx_tasks_deadline ON tasks(deadline);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(date);
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 `;
 
 async function ensureTable(db) {
@@ -62,17 +66,14 @@ export default {
 
       if (request.method === 'GET') {
         try {
-          let queryResult;
+          await ensureTable(env.DB);
+          let queryResult = await env.DB.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
+
+          let isSeeded = false;
           try {
-            queryResult = await env.DB.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
-          } catch (dbErr) {
-            if (dbErr.message && dbErr.message.includes('no such table')) {
-              await ensureTable(env.DB);
-              queryResult = await env.DB.prepare('SELECT * FROM tasks ORDER BY deadline ASC, created_at ASC').all();
-            } else {
-              throw dbErr;
-            }
-          }
+            const metaRow = await env.DB.prepare("SELECT value FROM meta WHERE key = 'seeded'").first();
+            if (metaRow) isSeeded = true;
+          } catch(e) {}
 
           const tasks = (queryResult.results || []).map(row => {
             let options = [];
@@ -97,7 +98,7 @@ export default {
             };
           });
 
-          return new Response(JSON.stringify({ success: true, count: tasks.length, tasks }), { headers: jsonHeaders });
+          return new Response(JSON.stringify({ success: true, count: tasks.length, tasks, seeded: isSeeded }), { headers: jsonHeaders });
         } catch (err) {
           return new Response(JSON.stringify({ success: false, error: err.message, tasks: [] }), { status: 500, headers: jsonHeaders });
         }
@@ -149,6 +150,7 @@ export default {
             }
           }
 
+          await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
           return new Response(JSON.stringify({ success: true, message: 'Task saved successfully', taskId: task.id }), { headers: jsonHeaders });
         } catch (err) {
           return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });
@@ -165,6 +167,7 @@ export default {
             return new Response(JSON.stringify({ success: false, error: 'Missing task id' }), { status: 400, headers: jsonHeaders });
           }
           await env.DB.prepare('DELETE FROM tasks WHERE id = ?').bind(taskId).run();
+          await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
           return new Response(JSON.stringify({ success: true, message: 'Task deleted successfully', taskId }), { headers: jsonHeaders });
         } catch (err) {
           return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });
@@ -208,6 +211,7 @@ export default {
         if (statements.length > 0) {
           await env.DB.batch(statements);
         }
+        await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
         return new Response(JSON.stringify({ success: true, message: `Synced ${statements.length} tasks`, count: statements.length }), { headers: jsonHeaders });
       } catch (err) {
         return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });

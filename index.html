@@ -286,8 +286,11 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
               <input type="file" id="importFileInput" accept=".json" class="hidden">
             </label>
-            <button id="btnReset" title="รีเซ็ตเป็นข้อมูลตัวอย่าง" class="p-2 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer">
+            <button id="btnReset" title="รีเซ็ตเป็นข้อมูลตัวอย่าง" class="p-2 text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+            <button id="btnClearAll" title="ล้างงานทั้งหมดในระบบ (Clear All Tasks)" class="p-2 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
           </div>
         </div>
@@ -1142,49 +1145,24 @@
       // 2. Application State
       let tasks = (function() {
         try {
+          const hasRun = localStorage.getItem('team_taskflow_has_run');
           const saved9 = localStorage.getItem('team_taskflow_v9');
-          if (saved9) {
+          if (saved9 !== null) {
             const parsed = JSON.parse(saved9);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
+            if (Array.isArray(parsed)) return parsed.map((t, i) => normalizeTask(t, i));
+          }
+          if (hasRun) {
+            return []; // User has used the app and emptied all tasks intentionally
           }
           const saved8 = localStorage.getItem('team_taskflow_v8');
-          if (saved8) {
+          if (saved8 !== null) {
             const parsed = JSON.parse(saved8);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              return parsed.map((t, i) => {
-                const norm = normalizeTask(t, i);
-                const initMatch = INITIAL_TASKS.find(it => it.id === norm.id);
-                if (initMatch && initMatch.note && (!norm.note || norm.note === 'สตูดิโอ A' || norm.note === 'ส่งดราฟต์แรกให้รีวิว' || norm.note === 'เน้นช่วงต้นคลิป 3 วิแรก' || norm.note === 'ขนาด 1920x1080' || norm.note === 'อัปโหลดขึ้น YouTube และเพจ')) {
-                  norm.note = initMatch.note;
-                }
-                return norm;
-              });
-            }
+            if (Array.isArray(parsed)) return parsed.map((t, i) => normalizeTask(t, i));
           }
           const saved7 = localStorage.getItem('team_taskflow_v7');
-          if (saved7) {
+          if (saved7 !== null) {
             const parsed = JSON.parse(saved7);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
-          }
-          const saved6 = localStorage.getItem('team_taskflow_v6');
-          if (saved6) {
-            const parsed = JSON.parse(saved6);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
-          }
-          const saved5 = localStorage.getItem('team_taskflow_v5');
-          if (saved5) {
-            const parsed = JSON.parse(saved5);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
-          }
-          const saved4 = localStorage.getItem('team_taskflow_v4');
-          if (saved4) {
-            const parsed = JSON.parse(saved4);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((t, i) => normalizeTask(t, i));
-          }
-          const oldV3 = localStorage.getItem('team_todo_tasks_v3');
-          if (oldV3) {
-            const parsedOld = JSON.parse(oldV3);
-            if (Array.isArray(parsedOld)) return parsedOld.map((t, i) => normalizeTask(t, i));
+            if (Array.isArray(parsed)) return parsed.map((t, i) => normalizeTask(t, i));
           }
         } catch(e) {}
         return INITIAL_TASKS.map((t, i) => normalizeTask(t, i));
@@ -1247,12 +1225,8 @@
       // Local storage persistence
       const saveTasksLocalOnly = () => {
         try {
+          localStorage.setItem('team_taskflow_has_run', 'true');
           localStorage.setItem('team_taskflow_v9', JSON.stringify(tasks));
-          localStorage.setItem('team_taskflow_v8', JSON.stringify(tasks));
-          localStorage.setItem('team_taskflow_v7', JSON.stringify(tasks));
-          localStorage.setItem('team_taskflow_v6', JSON.stringify(tasks));
-          localStorage.setItem('team_taskflow_v5', JSON.stringify(tasks));
-          localStorage.setItem('team_taskflow_v4', JSON.stringify(tasks));
         } catch (e) {}
       };
 
@@ -1364,22 +1338,30 @@
           }
           const data = await res.json();
           if (data && data.success) {
-            if (Array.isArray(data.tasks) && data.tasks.length > 0) {
-              const newHash = JSON.stringify(data.tasks);
-              const oldHash = JSON.stringify(tasks);
-              if (newHash !== oldHash) {
-                tasks = data.tasks.map((t, idx) => normalizeTask(t, idx));
+            if (Array.isArray(data.tasks)) {
+              const isBrandNewSetup = !data.seeded && data.tasks.length === 0 && !localStorage.getItem('team_taskflow_has_run');
+
+              if (isBrandNewSetup) {
+                // Absolute first launch with an unseeded DB and empty browser
+                updateCloudStatusUI('syncing');
+                await syncAllTasksToCloud(INITIAL_TASKS);
+                tasks = INITIAL_TASKS.map((t, idx) => normalizeTask(t, idx));
                 saveTasksLocalOnly();
                 renderApp();
+                updateCloudStatusUI('connected', null, 'เชื่อมต่อ Cloudflare D1 และสร้างข้อมูลเริ่มต้นแล้ว');
+              } else {
+                // Database is the single source of truth:
+                // If D1 has 0 tasks (e.g. user deleted all tasks), tasks becomes []!
+                const newHash = JSON.stringify(data.tasks);
+                const oldHash = JSON.stringify(tasks);
+                if (newHash !== oldHash) {
+                  tasks = data.tasks.map((t, idx) => normalizeTask(t, idx));
+                  saveTasksLocalOnly();
+                  renderApp();
+                }
+                updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
+                if (isManual) alert(`✅ ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน)`);
               }
-              updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
-              if (isManual) alert(`✅ ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน)\nข้อมูลบนอุปกรณ์ทุกเครื่องจะตรงกันอัตโนมัติครับ`);
-            } else {
-              // D1 is empty; push our local tasks into D1
-              updateCloudStatusUI('syncing');
-              await syncAllTasksToCloud(tasks);
-              updateCloudStatusUI('connected', null, 'เชื่อมต่อ Cloudflare D1 และอัปโหลดข้อมูลเริ่มต้นเรียบร้อยแล้ว');
-              if (isManual) alert('✅ เชื่อมต่อและอัปโหลดข้อมูลเริ่มต้นขึ้น Cloudflare D1 สำเร็จแล้ว!');
             }
           } else {
             const errMsg = data && data.error ? data.error : 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ';
@@ -3848,8 +3830,21 @@
           isMonthlyCollapsed = false;
           saveTasks(null, 'bulk');
           renderApp();
+          showToast('รีเซ็ตข้อมูลตัวอย่างเรียบร้อยแล้ว', 'info');
         }
       };
+
+      const btnClearAll = document.getElementById('btnClearAll');
+      if (btnClearAll) {
+        btnClearAll.onclick = () => {
+          if (confirm('⚠️ ต้องการล้างงานทั้งหมดในระบบใช่หรือไม่?\n(ข้อมูลงานทั้งหมดจะถูกลบออกจากทั้งคอมพิวเตอร์ มือถือ และ Cloudflare D1)')) {
+            tasks = [];
+            saveTasks(null, 'bulk');
+            renderApp();
+            showToast('ล้างงานทั้งหมดในระบบเรียบร้อยแล้ว', 'info');
+          }
+        };
+      }
 
       // Cloudflare D1 Manual & Auto-Sync
       const btnCloudSync = document.getElementById('btnCloudSync');

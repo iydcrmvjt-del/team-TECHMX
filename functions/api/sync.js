@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS tasks (
 CREATE INDEX IF NOT EXISTS idx_tasks_deadline ON tasks(deadline);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(date);
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 `;
 
 async function ensureTable(db) {
@@ -65,7 +69,7 @@ export async function onRequestPost({ request, env }) {
       shouldReplace = !!body.replace;
     }
 
-    if (!Array.isArray(tasksToSync) || tasksToSync.length === 0) {
+    if (!Array.isArray(tasksToSync) || (!shouldReplace && tasksToSync.length === 0)) {
       return new Response(JSON.stringify({
         success: false,
         error: 'No tasks provided for sync'
@@ -123,6 +127,7 @@ export async function onRequestPost({ request, env }) {
       // Execute in batch (atomic transaction)
       await env.DB.batch(statements);
     }
+    await env.DB.prepare("INSERT INTO meta (key, value) VALUES ('seeded', '1') ON CONFLICT(key) DO UPDATE SET value = '1'").run().catch(() => {});
 
     return new Response(JSON.stringify({
       success: true,
