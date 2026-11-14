@@ -1790,7 +1790,7 @@
       };
 
       // ================= LARK BOT INTEGRATION & TOAST =================
-      const showToast = (message, type = 'info', duration = 3500) => {
+      const showToast = (message, type = 'info', duration = 3500, action = null) => {
         const container = document.getElementById('toastContainer');
         if (!container) return;
 
@@ -1811,22 +1811,48 @@
           toast.className += ' bg-slate-800 text-white border-slate-700';
         }
 
+        let actionHtml = '';
+        if (action && typeof action.onClick === 'function') {
+          actionHtml = `
+            <button type="button" class="toast-action-btn ml-2 px-2.5 py-1 rounded-xl bg-white/20 hover:bg-white/30 active:scale-95 text-white font-bold text-xs transition cursor-pointer shrink-0 border border-white/30 flex items-center space-x-1 shadow-xs">
+              <span>↩️</span>
+              <span>${escapeHtml(action.text || 'ย้อนกลับ')}</span>
+            </button>
+          `;
+        }
+
         toast.innerHTML = `
           <span class="text-base shrink-0">${icon}</span>
-          <span class="flex-1">${escapeHtml(message)}</span>
+          <span class="flex-1 leading-snug">${escapeHtml(message)}</span>
+          ${actionHtml}
         `;
+
+        let dismissTimer = null;
+        const dismissToast = () => {
+          if (dismissTimer) clearTimeout(dismissTimer);
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 300);
+        };
+
+        if (action && typeof action.onClick === 'function') {
+          const btn = toast.querySelector('.toast-action-btn');
+          if (btn) {
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              action.onClick();
+              dismissToast();
+            };
+          }
+        }
 
         container.appendChild(toast);
         requestAnimationFrame(() => {
           toast.classList.remove('translate-y-2', 'opacity-0');
         });
 
-        setTimeout(() => {
-          toast.classList.add('opacity-0', 'translate-y-2');
-          setTimeout(() => {
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
-          }, 300);
-        }, duration);
+        dismissTimer = setTimeout(dismissToast, duration);
       };
 
       const LARK_CONFIG_STORAGE_KEY = 'team_taskflow_lark_config';
@@ -3091,6 +3117,13 @@
                 <div class="flex items-center justify-between sm:justify-start w-full sm:w-auto space-x-3">
                   <h4 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">${THAI_MONTHS[month]} ${year + 543} (${year})</h4>
                   <div class="flex items-center space-x-1.5">
+                    ${lastMovedTaskInfo ? `
+                      <button type="button" onclick="window.appActions.undoLastDateMove()" title="ย้อนกลับการย้ายวันที่ล่าสุดของ \x27${escapeHtml(lastMovedTaskInfo.taskTitle)}\x27" class="text-xs px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/70 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-bold transition flex items-center space-x-1 shadow-2xs cursor-pointer">
+                        <span>↩️</span>
+                        <span class="hidden sm:inline">ย้อนกลับการย้าย</span>
+                        <span class="sm:hidden">ย้อนกลับ</span>
+                      </button>
+                    ` : ''}
                     <button onclick="window.appActions.calendarToday()" class="text-xs px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition cursor-pointer">วันนี้</button>
                     <button onclick="window.appActions.calendarPrevMonth()" class="p-1.5 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" title="เดือนก่อนหน้า">◀</button>
                     <button onclick="window.appActions.calendarNextMonth()" class="p-1.5 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" title="เดือนถัดไป">▶</button>
@@ -3624,6 +3657,7 @@
       };
 
       let isDraggingCalendarTask = false;
+      let lastMovedTaskInfo = null;
 
       const openTaskDetails = (taskId) => {
         if (isDraggingCalendarTask) return;
@@ -4173,6 +4207,16 @@
 
           if (newStartDate === task.date && newDeadline === task.deadline) return;
 
+          // เก็บข้อมูลประวัติการย้ายล่าสุดสำหรับกดย้อนกลับ (Undo)
+          lastMovedTaskInfo = {
+            taskId: task.id,
+            taskTitle: task.title,
+            oldStartDate: task.date,
+            oldDeadline: task.deadline,
+            newStartDate: newStartDate,
+            newDeadline: newDeadline
+          };
+
           let updatedTask = null;
           tasks = tasks.map(t => {
             if (t.id === taskId) {
@@ -4192,11 +4236,45 @@
           const targetHoliday = getThaiHoliday(newDeadline);
           const holidayNote = targetHoliday ? ` (ตรงกับวันหยุด: ${targetHoliday} 🇹🇭)` : '';
 
-          if (newStartDate === newDeadline) {
-            showToast(`ย้ายงาน "${task.title}" ไปวันที่ ${formatThaiDate(newDeadline)}${holidayNote} เรียบร้อยแล้ว 📅`, 'success');
-          } else {
-            showToast(`ย้ายงาน "${task.title}" ไปวันที่ ${newStartDate} ถึง ${newDeadline}${holidayNote} เรียบร้อยแล้ว 📅`, 'success');
+          const toastMsg = (newStartDate === newDeadline)
+            ? `ย้ายงาน "${task.title}" ไปวันที่ ${formatThaiDate(newDeadline)}${holidayNote} เรียบร้อยแล้ว 📅`
+            : `ย้ายงาน "${task.title}" ไปวันที่ ${newStartDate} ถึง ${newDeadline}${holidayNote} เรียบร้อยแล้ว 📅`;
+
+          showToast(toastMsg, 'success', 8000, {
+            text: 'ย้อนกลับ',
+            onClick: () => {
+              window.appActions.undoLastDateMove();
+            }
+          });
+        },
+        undoLastDateMove: () => {
+          if (!lastMovedTaskInfo) return;
+          const { taskId, taskTitle, oldStartDate, oldDeadline } = lastMovedTaskInfo;
+          const task = tasks.find(t => t.id === taskId);
+          if (!task) {
+            lastMovedTaskInfo = null;
+            return;
           }
+          let revertedTask = null;
+          tasks = tasks.map(t => {
+            if (t.id === taskId) {
+              revertedTask = {
+                ...t,
+                date: oldStartDate,
+                deadline: oldDeadline
+              };
+              return revertedTask;
+            }
+            return t;
+          });
+          lastMovedTaskInfo = null;
+          saveTasks(revertedTask, 'save');
+          renderApp();
+
+          const origText = (oldStartDate === oldDeadline)
+            ? formatThaiDate(oldDeadline)
+            : `${oldStartDate} ถึง ${oldDeadline}`;
+          showToast(`ย้อนกลับงาน "${taskTitle}" สู่ ${origText} เรียบร้อยแล้ว ↩️`, 'success');
         },
         openLarkSettings: () => {
           const cfg = getLarkConfig();
