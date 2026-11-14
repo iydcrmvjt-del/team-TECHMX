@@ -554,14 +554,27 @@
         </div>
 
         <!-- Notification Toggles -->
+        <!-- Notification Toggles -->
         <div class="space-y-2.5 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
           <div class="font-semibold text-slate-700 dark:text-slate-200 text-xs mb-1">🔔 ตัวเลือกการแจ้งเตือนอัตโนมัติ:</div>
           
           <label class="flex items-start space-x-2.5 cursor-pointer">
+            <input type="checkbox" id="larkCronAutoDigest" class="mt-0.5 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer" checked>
+            <div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100 text-xs flex items-center space-x-1.5">
+                <span>⏰ ส่งสรุปงานประจำวันอัตโนมัติทุกเช้า 09:00 น.</span>
+                <span class="px-1.5 py-0.2 rounded text-[9.5px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">จันทร์–ศุกร์</span>
+              </div>
+              <div class="text-[10.5px] text-slate-500 dark:text-slate-400">ระบบ Cloudflare Cron จะประมวลผลจากฐานข้อมูล D1 และยิงการ์ดสรุปงานเข้ากลุ่ม Lark อัตโนมัติทุก 09:00 น. วันจันทร์–ศุกร์ (เวลาไทย) โดยไม่ต้องเปิดหน้าเว็บทิ้งไว้</div>
+              <div id="larkCronLastStatusText" class="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5 font-medium"></div>
+            </div>
+          </label>
+
+          <label class="flex items-start space-x-2.5 cursor-pointer">
             <input type="checkbox" id="larkNotifyOnDone" class="mt-0.5 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer">
             <div>
               <div class="font-semibold text-slate-800 dark:text-slate-100 text-xs">แจ้งเตือนเมื่องานเสร็จสิ้น (Task Done ✅)</div>
-              <div class="text-[10.5px] text-slate-500 dark:text-slate-400">ส่งการ์ดแจ้งเตือนสีเขียวเข้า Lark ทันทีเมื่อมีงานถูกเปลี่ยนสถานะเป็น "เสร็จสิ้น" พร้อมชื่อผู้รับผิดชอบและลิงก์ส่งงาน</div>
+              <div class="text-[10.5px] text-slate-500 dark:text-slate-400">ส่งการ์ดแจ้งเตือนสีเขียวเข้า Lark ทันทีเมื่อมีงานถูกเปลี่ยนสถานะเป็น "เสร็จสิ้น" พร้อมระบุลักษณะงานและลิงก์ส่งงาน</div>
             </div>
           </label>
 
@@ -575,15 +588,24 @@
         </div>
 
         <!-- Test & Status Area -->
-        <div class="flex items-center justify-between gap-2 p-3 rounded-xl bg-sky-50/60 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/60">
-          <div>
-            <div class="font-semibold text-sky-900 dark:text-sky-200 text-xs">ทดสอบส่งเข้า Lark</div>
-            <div id="larkTestStatusText" class="text-[10.5px] text-sky-700/80 dark:text-sky-300/80">กดปุ่มเพื่อส่งการ์ดทดสอบไปยังกลุ่มแชท</div>
+        <div class="space-y-2 p-3 rounded-xl bg-sky-50/60 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/60">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div class="font-semibold text-sky-900 dark:text-sky-200 text-xs">ทดสอบส่งเข้า Lark</div>
+              <div id="larkTestStatusText" class="text-[10.5px] text-sky-700/80 dark:text-sky-300/80">กดปุ่มเพื่อทดสอบส่งการ์ดไปยังกลุ่มแชท</div>
+            </div>
+            <div class="flex items-center space-x-1.5 shrink-0">
+              <button type="button" id="btnTestLarkWebhook" onclick="window.appActions.testLarkConnection()" class="px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-slate-700 text-sky-700 dark:text-sky-300 font-semibold text-xs rounded-xl shadow-2xs transition cursor-pointer flex items-center space-x-1">
+                <span>🔔</span>
+                <span class="hidden sm:inline">ทดสอบการ์ด</span>
+                <span class="sm:hidden">ทดสอบ</span>
+              </button>
+              <button type="button" id="btnTestLarkCron" onclick="window.appActions.testLarkCronDigest()" class="px-2.5 sm:px-3 py-1.5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center space-x-1">
+                <span>⏰</span>
+                <span>ทดสอบยิงสรุป 09:00 น.</span>
+              </button>
+            </div>
           </div>
-          <button type="button" id="btnTestLarkWebhook" onclick="window.appActions.testLarkConnection()" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-slate-700 text-sky-700 dark:text-sky-300 font-semibold text-xs rounded-xl shadow-2xs transition cursor-pointer shrink-0 flex items-center space-x-1">
-            <span>🔔</span>
-            <span>ทดสอบส่ง</span>
-          </button>
         </div>
       </div>
 
@@ -1865,7 +1887,8 @@
         return {
           webhookUrl: '',
           notifyOnDone: true,
-          notifyOnCreate: true
+          notifyOnCreate: true,
+          cronAutoDigest: true
         };
       };
 
@@ -4336,7 +4359,7 @@
             : `${oldStartDate} ถึง ${oldDeadline}`;
           showToast(`ย้อนกลับงาน "${taskTitle}" สู่ ${origText} เรียบร้อยแล้ว ↩️`, 'success');
         },
-        openLarkSettings: () => {
+        openLarkSettings: async () => {
           const cfg = getLarkConfig();
           const input = document.getElementById('larkWebhookInput');
           if (input) input.value = cfg.webhookUrl || '';
@@ -4344,23 +4367,56 @@
           if (chkDone) chkDone.checked = cfg.notifyOnDone !== false;
           const chkCreate = document.getElementById('larkNotifyOnCreate');
           if (chkCreate) chkCreate.checked = cfg.notifyOnCreate !== false;
+          const chkCron = document.getElementById('larkCronAutoDigest');
+          if (chkCron) chkCron.checked = cfg.cronAutoDigest !== false;
+
           const statusText = document.getElementById('larkTestStatusText');
           if (statusText) {
-            statusText.textContent = 'กดปุ่มเพื่อส่งการ์ดทดสอบไปยังกลุ่มแชท';
+            statusText.textContent = 'กดปุ่มเพื่อทดสอบส่งการ์ดไปยังกลุ่มแชท';
             statusText.className = 'text-[10.5px] text-sky-700/80 dark:text-sky-300/80';
           }
           const modal = document.getElementById('larkSettingsModal');
           if (modal) modal.classList.remove('hidden');
+
+          // Async sync Lark config from Cloudflare D1
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              const res = await fetch('/api/lark-config');
+              if (res.ok) {
+                const cloudData = await res.json();
+                if (cloudData && cloudData.success && cloudData.config) {
+                  const c = cloudData.config;
+                  if (c.webhookUrl && !input.value) input.value = c.webhookUrl;
+                  if (chkDone && c.notifyOnDone !== undefined) chkDone.checked = c.notifyOnDone;
+                  if (chkCreate && c.notifyOnCreate !== undefined) chkCreate.checked = c.notifyOnCreate;
+                  if (chkCron && c.cronAutoDigest !== undefined) chkCron.checked = c.cronAutoDigest;
+                  setLarkConfig({
+                    webhookUrl: input.value,
+                    notifyOnDone: chkDone.checked,
+                    notifyOnCreate: chkCreate.checked,
+                    cronAutoDigest: chkCron.checked
+                  });
+                  if (cloudData.lastCronDigest && cloudData.lastCronDigest.bkkDate) {
+                    const cronStatusEl = document.getElementById('larkCronLastStatusText');
+                    if (cronStatusEl) {
+                      cronStatusEl.textContent = `⏰ ยิงสรุปอัตโนมัติล่าสุด: ${cloudData.lastCronDigest.bkkDate} (สำเร็จ ✅)`;
+                    }
+                  }
+                }
+              }
+            } catch(e) {}
+          }
         },
         closeLarkSettings: () => {
           const modal = document.getElementById('larkSettingsModal');
           if (modal) modal.classList.add('hidden');
         },
-        saveLarkSettings: () => {
+        saveLarkSettings: async () => {
           const input = document.getElementById('larkWebhookInput');
           const webhookUrl = input ? input.value.trim() : '';
           const chkDone = document.getElementById('larkNotifyOnDone');
           const chkCreate = document.getElementById('larkNotifyOnCreate');
+          const chkCron = document.getElementById('larkCronAutoDigest');
 
           if (webhookUrl && !webhookUrl.includes('open.larksuite.com') && !webhookUrl.includes('open.feishu.cn')) {
             alert('Webhook URL ต้องเป็น Lark Bot Webhook (เช่น https://open.larksuite.com/open-apis/bot/v2/hook/...)');
@@ -4370,11 +4426,26 @@
           const newCfg = {
             webhookUrl: webhookUrl,
             notifyOnDone: chkDone ? chkDone.checked : true,
-            notifyOnCreate: chkCreate ? chkCreate.checked : true
+            notifyOnCreate: chkCreate ? chkCreate.checked : true,
+            cronAutoDigest: chkCron ? chkCron.checked : true
           };
 
           setLarkConfig(newCfg);
-          showToast('บันทึกการตั้งค่า Lark เรียบร้อยแล้ว! 🦜', 'success');
+
+          // Save to backend D1 for scheduled Cloudflare Cron
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              await fetch('/api/lark-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newCfg)
+              });
+            } catch(e) {
+              console.warn('Failed to sync Lark config to cloud:', e);
+            }
+          }
+
+          showToast('บันทึกการตั้งค่า Lark และเปิดระบบ Cron 09:00 น. เรียบร้อยแล้ว! 🦜⏰', 'success');
           const modal = document.getElementById('larkSettingsModal');
           if (modal) modal.classList.add('hidden');
         },
@@ -4395,6 +4466,13 @@
 
           const curCfg = getLarkConfig();
           setLarkConfig({ ...curCfg, webhookUrl });
+          if (window.location.protocol.startsWith('http')) {
+            fetch('/api/lark-config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ...curCfg, webhookUrl })
+            }).catch(() => {});
+          }
 
           const testCard = buildLarkTestCard();
           const res = await sendToLark(testCard);
@@ -4407,6 +4485,80 @@
             showToast('ทดสอบส่งเข้า Lark สำเร็จ! ดูข้อความในการ์ดกลุ่มแชทได้เลย 🦜', 'lark');
           } else {
             const err = (res && res.error) || 'ไม่สามารถส่งเข้า Lark ได้ ตรวจสอบ Webhook URL อีกครั้ง';
+            if (statusText) {
+              statusText.textContent = `❌ ผิดพลาด: ${err}`;
+              statusText.className = 'text-[10.5px] text-rose-600 font-bold';
+            }
+            alert(`ทดสอบส่งไม่สำเร็จ:\n${err}`);
+          }
+        },
+        testLarkCronDigest: async () => {
+          const input = document.getElementById('larkWebhookInput');
+          const webhookUrl = input ? input.value.trim() : '';
+          const statusText = document.getElementById('larkTestStatusText');
+
+          if (!webhookUrl) {
+            alert('กรุณากรอก Lark Webhook URL ก่อนกดทดสอบ');
+            return;
+          }
+
+          if (statusText) {
+            statusText.textContent = 'กำลังทดสอบยิงสรุปงาน 09:00 น. เข้า Lark...';
+            statusText.className = 'text-[10.5px] text-sky-600 font-semibold animate-pulse';
+          }
+
+          // Ensure config is saved
+          const curCfg = getLarkConfig();
+          setLarkConfig({ ...curCfg, webhookUrl });
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              await fetch('/api/lark-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...curCfg, webhookUrl })
+              });
+            } catch(e) {}
+          }
+
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              const res = await fetch('/api/lark-trigger-cron', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ webhookUrl })
+              });
+              const json = await res.json();
+              if (json && json.success) {
+                if (statusText) {
+                  statusText.textContent = '✅ ทดสอบยิงสรุปงาน 09:00 น. สำเร็จแล้ว!';
+                  statusText.className = 'text-[10.5px] text-emerald-600 font-bold';
+                }
+                showToast('ยิงสรุปงาน 09:00 น. เข้า Lark เรียบร้อยแล้ว! ตรวจสอบในกลุ่มแชทได้เลย 🦜⏰', 'lark');
+                return;
+              } else {
+                throw new Error(json.error || 'Server cron failed');
+              }
+            } catch(err) {
+              console.warn('Server trigger failed, falling back to direct send:', err);
+            }
+          }
+
+          // Fallback to client-side daily digest send
+          const todayDate = (new Date()).toISOString().split('T')[0];
+          const card = buildLarkDailyDigestCard(todayDate, tasks, 'all');
+          if (card && card.card && card.card.header && card.card.header.title) {
+            card.card.header.title.content = `⏰ [ทดสอบ] สรุปงานประจำวันอัตโนมัติ (09:00 น.): ${formatThaiDate(todayDate)}`;
+            card.card.header.template = 'turquoise';
+          }
+          const res = await sendToLark(card);
+          if (res && res.success) {
+            if (statusText) {
+              statusText.textContent = '✅ ส่งสรุปทดสอบเข้า Lark สำเร็จแล้ว!';
+              statusText.className = 'text-[10.5px] text-emerald-600 font-bold';
+            }
+            showToast('ส่งสรุปทดสอบเข้า Lark สำเร็จ! 🦜⏰', 'lark');
+          } else {
+            const err = (res && res.error) || 'ไม่สามารถส่งเข้า Lark ได้';
             if (statusText) {
               statusText.textContent = `❌ ผิดพลาด: ${err}`;
               statusText.className = 'text-[10.5px] text-rose-600 font-bold';
