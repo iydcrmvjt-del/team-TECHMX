@@ -215,10 +215,45 @@
     html.dark #taskDetailModal > div,
     html.dark #larkSettingsModal > div,
     html.dark #pwaInstallModal > div,
-    html.dark #syncDiagnosticModal > div {
+    html.dark #syncDiagnosticModal > div,
+    html.dark #archiveModal > div {
       background-color: #111827 !important;
       border-color: #243149 !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+    }
+
+    /* ================= DESKTOP UI ENLARGEMENT ================= */
+    /* Scale up UI, typography and layout on desktop screens (>=1024px) */
+    /* Mobile displays (<1024px) remain strictly untouched at standard 16px */
+    @media (min-width: 1024px) {
+      html {
+        font-size: 17.5px; /* ~9.4% boost for all rem-based typography and layout */
+      }
+      .kanban-col {
+        min-height: 520px;
+      }
+      .calendar-cell {
+        min-height: 135px;
+      }
+      /* Expand max container width on desktop for spacious layout */
+      .max-w-7xl {
+        max-width: 1440px !important;
+      }
+    }
+
+    @media (min-width: 1440px) {
+      html {
+        font-size: 18px; /* ~12.5% boost on large desktop monitors */
+      }
+      .kanban-col {
+        min-height: 560px;
+      }
+      .calendar-cell {
+        min-height: 145px;
+      }
+      .max-w-7xl {
+        max-width: 1560px !important;
+      }
     }
   </style>
 </head>
