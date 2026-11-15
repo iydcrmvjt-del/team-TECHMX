@@ -117,6 +117,13 @@ function getBangkokDate() {
   return `${year}-${month}-${day}`;
 }
 
+function getBangkokDayOfWeek() {
+  const d = new Date();
+  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const bkk = new Date(utc + (3600000 * 7));
+  return bkk.getDay(); // 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday, 4 = Thursday, 5 = Friday, 6 = Saturday
+}
+
 function formatThaiDateBkk(dateStr) {
   if (!dateStr || typeof dateStr !== 'string') return '';
   const parts = dateStr.split('-');
@@ -277,14 +284,45 @@ function buildLarkCronDigestPayload(selectedDate, taskList, isAuto = true) {
       config: { wide_screen_mode: true, enable_forward: true },
       header: {
         template: isAuto ? "turquoise" : "orange",
-        title: { tag: "plain_text", content: `⏰ สรุปงานประจำวันอัตโนมัติ (09:00 น.): ${thaiDate}` }
+        title: { tag: "plain_text", content: `${isAuto ? '⏰ สรุปงานประจำวันอัตโนมัติ (09:00 น. จันทร์–ศุกร์)' : '🧪 ทดสอบสรุปงานประจำวัน (09:00 น.)'}: ${thaiDate}` }
       },
       elements: cardElements
     }
   };
 }
 
-async function handleScheduledDailyDigest(env, event) {
+async function handleScheduledDailyDigest(env, event, isManual = false) {
+  // 1. Strict Day-of-Week validation (Bangkok Time UTC+7)
+  // Only Monday (1) through Friday (5) are allowed.
+  // Sunday (0) and Saturday (6) MUST BE SKIPPED for automated cron!
+  const bkkDay = getBangkokDayOfWeek();
+  const isWeekend = (bkkDay === 0 || bkkDay === 6);
+  const dayNames = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์'];
+
+  if (!isManual && isWeekend) {
+    const todayStr = getBangkokDate();
+    console.log(`[Lark Cron] Skipped: Today is ${dayNames[bkkDay]} (Bangkok time). Automated daily digest runs Mon-Fri only.`);
+    const db = getDb(env);
+    if (db) {
+      try {
+        const record = JSON.stringify({
+          timestamp: new Date().toISOString(),
+          bkkDate: formatThaiDateBkk(todayStr),
+          status: "skipped_weekend",
+          reason: `งดส่งอัตโนมัติเนื่องจากเป็น${dayNames[bkkDay]} (ระบบส่งเฉพาะวันจันทร์–ศุกร์)`
+        });
+        await db.prepare("INSERT INTO meta (key, value) VALUES ('last_cron_digest', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(record).run();
+      } catch(e) {}
+    }
+    return {
+      success: false,
+      reason: "weekend_skipped",
+      dayOfWeek: bkkDay,
+      dayName: dayNames[bkkDay],
+      message: `วันนี้เป็น${dayNames[bkkDay]} ระบบงดส่งการแจ้งเตือนอัตโนมัติในวันเสาร์-อาทิตย์ (ส่งเฉพาะวันจันทร์-ศุกร์)`
+    };
+  }
+
   const db = getDb(env);
   let webhookUrl = (env && env.LARK_WEBHOOK_URL) || "";
   let cronEnabled = true;
@@ -303,7 +341,7 @@ async function handleScheduledDailyDigest(env, event) {
     }
   }
 
-  if (!webhookUrl || !cronEnabled) {
+  if (!webhookUrl || (!isManual && !cronEnabled)) {
     console.log("Automated daily digest skipped: webhookUrl not set or cron disabled.");
     return { success: false, reason: "disabled_or_no_webhook" };
   }
@@ -725,7 +763,7 @@ export default {
         } catch(e) {}
 
         const customEnv = bodyWebhook ? { ...env, LARK_WEBHOOK_URL: bodyWebhook } : env;
-        const result = await handleScheduledDailyDigest(customEnv, null);
+        const result = await handleScheduledDailyDigest(customEnv, null, true);
         return new Response(JSON.stringify({ success: true, message: "Scheduled digest triggered", result }), { headers: jsonHeaders });
       } catch(err) {
         return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });
@@ -743,6 +781,6 @@ export default {
   }
 ,
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(handleScheduledDailyDigest(env, event));
+    ctx.waitUntil(handleScheduledDailyDigest(env, event, false));
   }
 };
