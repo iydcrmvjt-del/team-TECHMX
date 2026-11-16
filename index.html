@@ -429,36 +429,79 @@
         </div>
 
         <!-- Schedule Dates, Priority & Status in 4-column responsive grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50/70 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              🚩 วันที่เริ่มงาน <span class="text-rose-500">*</span>
-            </label>
-            <input type="date" id="formDate" required class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <div id="formDateHolidayNotice" class="text-[10.5px] text-rose-600 dark:text-rose-400 font-semibold mt-1 hidden items-center space-x-1"></div>
+        <div class="bg-slate-50/70 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                🚩 วันที่เริ่มงาน <span class="text-rose-500">*</span>
+              </label>
+              <input type="date" id="formDate" required class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <div id="formDateHolidayNotice" class="text-[10.5px] text-rose-600 dark:text-rose-400 font-semibold mt-1 hidden items-center space-x-1"></div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                🏁 กำหนดส่ง (Deadline) <span class="text-rose-500">*</span>
+              </label>
+              <input type="date" id="formDeadline" required class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <div id="formDeadlineHolidayNotice" class="text-[10.5px] text-rose-600 dark:text-rose-400 font-semibold mt-1 hidden items-center space-x-1"></div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">ความสำคัญ</label>
+              <select id="formPriority" class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="normal">ปกติ</option>
+                <option value="high">ด่วนมาก 🔥</option>
+                <option value="low">ไม่ด่วน</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">สถานะ</label>
+              <select id="formStatus" class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="todo">รอดำเนินการ (To Do)</option>
+                <option value="in-progress">กำลังทำ (In Progress)</option>
+                <option value="done">เสร็จสิ้น (Done)</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              🏁 กำหนดส่ง (Deadline) <span class="text-rose-500">*</span>
-            </label>
-            <input type="date" id="formDeadline" required class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <div id="formDeadlineHolidayNotice" class="text-[10.5px] text-rose-600 dark:text-rose-400 font-semibold mt-1 hidden items-center space-x-1"></div>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">ความสำคัญ</label>
-            <select id="formPriority" class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-              <option value="normal">ปกติ</option>
-              <option value="high">ด่วนมาก 🔥</option>
-              <option value="low">ไม่ด่วน</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">สถานะ</label>
-            <select id="formStatus" class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-              <option value="todo">รอดำเนินการ (To Do)</option>
-              <option value="in-progress">กำลังทำ (In Progress)</option>
-              <option value="done">เสร็จสิ้น (Done)</option>
-            </select>
+
+          <!-- Time Settings: All-Day vs Specific Time -->
+          <div class="pt-2.5 border-t border-slate-200/70 dark:border-slate-700/70">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center space-x-3 sm:space-x-4">
+                <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center space-x-1">
+                  <span>⏰</span>
+                  <span>ช่วงเวลาปฏิบัติงาน:</span>
+                </span>
+                <label class="inline-flex items-center space-x-1.5 cursor-pointer text-xs font-medium text-slate-700 dark:text-slate-200 select-none">
+                  <input type="radio" name="formTimeType" id="timeTypeAllDay" value="allday" checked class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                  <span>งานตลอดทั้งวัน (All Day)</span>
+                </label>
+                <label class="inline-flex items-center space-x-1.5 cursor-pointer text-xs font-medium text-slate-700 dark:text-slate-200 select-none">
+                  <input type="radio" name="formTimeType" id="timeTypeCustom" value="custom" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                  <span>กำหนดเวลาเริ่ม - สิ้นสุด</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Specific Time Inputs (shown when custom is selected) -->
+            <div id="timeInputsContainer" class="hidden mt-2.5 pt-2.5 border-t border-dashed border-slate-200 dark:border-slate-700">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center space-x-1">
+                    <span>🕒 เวลาเริ่ม (Start Time)</span>
+                  </label>
+                  <input type="time" id="formStartTime" value="09:00" class="w-full px-3 py-1.5 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center space-x-1">
+                    <span>🏁 เวลาสิ้นสุด (End Time)</span>
+                  </label>
+                  <input type="time" id="formEndTime" value="18:00" class="w-full px-3 py-1.5 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+              </div>
+              <p class="text-[10.5px] text-slate-400 dark:text-slate-500 mt-1.5">
+                💡 เวลาจะแสดงกำกับบนการ์ดงาน, หน้ารายละเอียดงาน, และหน้าสรุปงานประจำวัน
+              </p>
+            </div>
           </div>
         </div>
 
@@ -1401,6 +1444,12 @@
           ? t.note 
           : ((typeof t.description === 'string' && !TASK_OPTIONS_LIST.some(opt => t.description.includes(opt))) ? t.description : '');
 
+        const isAllDay = (t.isAllDay !== undefined)
+          ? Boolean(t.isAllDay)
+          : ((t.is_all_day !== undefined) ? Boolean(t.is_all_day) : true);
+        const startTime = (typeof t.startTime === 'string') ? t.startTime : ((typeof t.start_time === 'string') ? t.start_time : '');
+        const endTime = (typeof t.endTime === 'string') ? t.endTime : ((typeof t.end_time === 'string') ? t.end_time : '');
+
         return {
           id: t.id || 'task-' + Date.now(),
           title: t.title || 'ไม่มีชื่องาน',
@@ -1410,6 +1459,9 @@
           color: color,
           date: t.date || getTodayStr(0),
           deadline: t.deadline || getTodayStr(2),
+          isAllDay: isAllDay,
+          startTime: startTime,
+          endTime: endTime,
           status: t.status || 'todo',
           priority: t.priority || 'normal',
           assigneeIds: ids,
@@ -2109,6 +2161,11 @@
         const deadlineStr = formatThaiDate(task.deadline) || task.deadline || 'ไม่มีกำหนด';
         const appUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.href : 'https://techmx-team-todo.pages.dev';
         const priorityText = task.priority === 'high' ? '🔥 ด่วนมาก' : (task.priority === 'low' ? 'ไม่รีบ' : 'ปกติ');
+        let timeInfo = '';
+        if (!task.isAllDay && (task.startTime || task.endTime)) {
+          const timeSpan = (task.startTime && task.endTime) ? `${task.startTime} - ${task.endTime} น.` : (task.startTime ? `เริ่ม ${task.startTime} น.` : `ถึง ${task.endTime} น.`);
+          timeInfo = `\n**⏰ ช่วงเวลาปฏิบัติงาน:** ${timeSpan}`;
+        }
         let noteSection = task.note ? `\n\n**📝 รายละเอียด:**\n${task.note}` : '';
 
         return {
@@ -2136,7 +2193,7 @@
               { tag: "hr" },
               {
                 tag: "div",
-                text: { tag: "lark_md", content: `**🔥 ความสำคัญ:** ${priorityText}\n**🎬 ลักษณะงาน:** ${optList}${noteSection}` }
+                text: { tag: "lark_md", content: `**🔥 ความสำคัญ:** ${priorityText}\n**🎬 ลักษณะงาน:** ${optList}${timeInfo}${noteSection}` }
               },
               {
                 tag: "action",
@@ -2193,6 +2250,10 @@
             ? t.options.map(o => (TASK_OPTIONS_CONFIG[o] ? `${TASK_OPTIONS_CONFIG[o].icon} ${TASK_OPTIONS_CONFIG[o].name}` : o)).join(', ')
             : 'งานทั่วไป';
           let line = `**${t.title}** [${opts}]`;
+          if (!t.isAllDay && (t.startTime || t.endTime)) {
+            const timeSpan = (t.startTime && t.endTime) ? `${t.startTime} - ${t.endTime}` : (t.startTime ? `เริ่ม ${t.startTime}` : `ถึง ${t.endTime}`);
+            line += ` (⏰ ${timeSpan} น.)`;
+          }
           const detail = getTaskDetail(t);
           if (detail) {
             const detailLines = detail.split('\n').map(l => l.trim()).filter(Boolean);
@@ -3058,9 +3119,15 @@
             ${renderTaskOptionBadges(task.options, false)}
             ${renderNoteWithLinks(task.note, 'detail')}
 
-            <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-              <div class="flex items-center space-x-1 text-slate-400" title="วันที่เริ่ม: ${task.date}">
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1.5 text-[11px]">
+              <div class="flex items-center space-x-1.5 flex-wrap gap-y-1 text-slate-400" title="วันที่เริ่ม: ${task.date}">
                 <span>📅 ${task.date}</span>
+                ${(!task.isAllDay && (task.startTime || task.endTime)) ? `
+                  <span class="inline-flex items-center space-x-0.5 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold text-[10px] border border-amber-200 dark:border-amber-800" title="ช่วงเวลาปฏิบัติงาน">
+                    <span>⏰</span>
+                    <span>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''} น.</span>
+                  </span>
+                ` : ''}
               </div>
               <div class="flex items-center space-x-1 px-2 py-0.5 rounded-full border text-[11px] ${deadlineInfo.badgeClass}">
                 <span>${deadlineInfo.label}</span>
@@ -3543,6 +3610,7 @@
                           const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
                           const optIcons = Array.isArray(task.options) ? task.options.map(o => (TASK_OPTIONS_CONFIG[o] ? TASK_OPTIONS_CONFIG[o].icon : '')).join('') : '';
                           const assigneeNames = assignees.map(a => a.name).join(', ');
+                          const timeChip = (!task.isAllDay && task.startTime) ? `<span class="text-[9px] px-1 py-0.2 rounded bg-black/25 dark:bg-white/20 font-mono shrink-0 leading-none mr-0.5">${task.startTime}</span>` : '';
 
                           return `
                             <div draggable="true" 
@@ -3550,8 +3618,9 @@
                                  ondragend="window.appActions.onCalendarTaskDragEnd(event)" 
                                  onclick="window.appActions.openTaskDetails('${task.id}')" 
                                  class="h-[23px] px-1.5 flex items-center space-x-1 cursor-grab active:cursor-grabbing select-none shadow-xs hover:brightness-110 active:scale-[0.99] transition ${shapeClass} ${colorClass}" 
-                                 title="${escapeHtml(task.title)}${assigneeNames ? ` (${escapeHtml(assigneeNames)})` : ''} • ลากเพื่อย้ายวันที่ในปฏิทิน (คลิกดูรายละเอียด)">
+                                 title="${escapeHtml(task.title)}${!task.isAllDay && (task.startTime || task.endTime) ? ' [⏰ ' + task.startTime + (task.endTime ? '-' + task.endTime : '') + ' น.]' : ''}${assigneeNames ? ' (' + escapeHtml(assigneeNames) + ')' : ''} • ลากเพื่อย้ายวันที่ในปฏิทิน (คลิกดูรายละเอียด)">
                               <span class="text-[9px] shrink-0 leading-none opacity-90">${prefix}</span>
+                              ${timeChip}
                               <span class="font-semibold truncate flex-1 leading-none text-[11px]">${escapeHtml(task.title)}</span>
                               ${optIcons ? `<span class="text-[9.5px] shrink-0 leading-none ml-0.5 tracking-tight" title="ลักษณะงาน: ${(task.options || []).join(', ')}">${optIcons}</span>` : ''}
                               ${task.status === 'done' ? '<span class="text-[9px] text-white bg-black/35 px-1 rounded font-bold shrink-0 leading-none">✓</span>' : ''}
@@ -3804,6 +3873,7 @@
 
                 <!-- Deadline & Color Tag -->
                 <div class="flex items-center space-x-2 text-slate-400 dark:text-slate-500 text-[10px]">
+                  ${(!task.isAllDay && (task.startTime || task.endTime)) ? `<span class="inline-flex items-center space-x-0.5 px-1.5 py-0.2 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold text-[9.5px] border border-amber-200 dark:border-amber-800"><span>⏰</span><span>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''} น.</span></span>` : ''}
                   <span>กำหนดส่ง: ${task.deadline}</span>
                   <span class="text-[9px] ${colConf.textAccent}">สี${colConf.name}</span>
                 </div>
@@ -3904,6 +3974,28 @@
         document.getElementById('formDeadline').value = task ? task.deadline : (defaultDeadline || getTodayStr(2));
         document.getElementById('formStatus').value = task ? task.status : 'todo';
         document.getElementById('formPriority').value = task ? task.priority : 'normal';
+
+        const isAllDay = (task && task.isAllDay !== undefined) ? Boolean(task.isAllDay) : true;
+        const startTime = (task && task.startTime) ? task.startTime : '09:00';
+        const endTime = (task && task.endTime) ? task.endTime : '18:00';
+
+        const radioAllDay = document.getElementById('timeTypeAllDay');
+        const radioCustom = document.getElementById('timeTypeCustom');
+        const timeContainer = document.getElementById('timeInputsContainer');
+        const inputStartTime = document.getElementById('formStartTime');
+        const inputEndTime = document.getElementById('formEndTime');
+
+        if (radioAllDay && radioCustom) {
+          if (isAllDay) {
+            radioAllDay.checked = true;
+            if (timeContainer) timeContainer.classList.add('hidden');
+          } else {
+            radioCustom.checked = true;
+            if (timeContainer) timeContainer.classList.remove('hidden');
+          }
+        }
+        if (inputStartTime) inputStartTime.value = startTime;
+        if (inputEndTime) inputEndTime.value = endTime;
 
         updateHolidayNotice(document.getElementById('formDate'), document.getElementById('formDateHolidayNotice'));
         updateHolidayNotice(document.getElementById('formDeadline'), document.getElementById('formDeadlineHolidayNotice'));
@@ -4014,22 +4106,43 @@
             </div>
           </div>
 
-          <!-- 4. Schedule / Dates -->
-          <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200/70 dark:border-slate-700/70">
-            <div>
-              <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-0.5">🚩 วันที่เริ่มงาน</div>
-              <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${formatThaiDate(task.date) || task.date}</div>
-              ${getThaiHoliday(task.date) ? `<div class="mt-1 text-[10.5px] font-semibold text-rose-600 dark:text-rose-400 inline-flex items-center space-x-1 bg-rose-50 dark:bg-rose-950/70 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900"><span class="text-[9.5px]">🇹🇭</span><span>วันหยุด: ${escapeHtml(getThaiHoliday(task.date))}</span></div>` : ''}
-            </div>
-            <div>
-              <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-0.5">🏁 กำหนดส่ง (Deadline)</div>
-              <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${formatThaiDate(task.deadline) || task.deadline}</div>
-              ${getThaiHoliday(task.deadline) ? `<div class="mt-1 text-[10.5px] font-semibold text-rose-600 dark:text-rose-400 inline-flex items-center space-x-1 bg-rose-50 dark:bg-rose-950/70 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900"><span class="text-[9.5px]">🇹🇭</span><span>วันหยุด: ${escapeHtml(getThaiHoliday(task.deadline))}</span></div>` : ''}
-              <div class="mt-1">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${deadlineInfo.badgeClass}">
-                  ${deadlineInfo.label} ${durationText}
-                </span>
+          <!-- 4. Schedule / Dates & Time -->
+          <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200/70 dark:border-slate-700/70 space-y-2.5">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-0.5">🚩 วันที่เริ่มงาน</div>
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${formatThaiDate(task.date) || task.date}</div>
+                ${getThaiHoliday(task.date) ? `<div class="mt-1 text-[10.5px] font-semibold text-rose-600 dark:text-rose-400 inline-flex items-center space-x-1 bg-rose-50 dark:bg-rose-950/70 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900"><span class="text-[9.5px]">🇹🇭</span><span>วันหยุด: ${escapeHtml(getThaiHoliday(task.date))}</span></div>` : ''}
               </div>
+              <div>
+                <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-0.5">🏁 กำหนดส่ง (Deadline)</div>
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${formatThaiDate(task.deadline) || task.deadline}</div>
+                ${getThaiHoliday(task.deadline) ? `<div class="mt-1 text-[10.5px] font-semibold text-rose-600 dark:text-rose-400 inline-flex items-center space-x-1 bg-rose-50 dark:bg-rose-950/70 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900"><span class="text-[9.5px]">🇹🇭</span><span>วันหยุด: ${escapeHtml(getThaiHoliday(task.deadline))}</span></div>` : ''}
+                <div class="mt-1">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${deadlineInfo.badgeClass}">
+                    ${deadlineInfo.label} ${durationText}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Row -->
+            <div class="pt-2 border-t border-slate-200/70 dark:border-slate-700/70 flex items-center justify-between text-xs">
+              <span class="text-slate-500 dark:text-slate-400 font-medium flex items-center space-x-1.5">
+                <span>⏰</span>
+                <span>ช่วงเวลาปฏิบัติงาน:</span>
+              </span>
+              ${(!task.isAllDay && (task.startTime || task.endTime)) ? `
+                <span class="font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/70 px-2.5 py-0.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center space-x-1">
+                  <span>🕒</span>
+                  <span>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''} น.</span>
+                </span>
+              ` : `
+                <span class="font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center space-x-1">
+                  <span>☀️</span>
+                  <span>งานตลอดทั้งวัน (All Day)</span>
+                </span>
+              `}
             </div>
           </div>
 
@@ -5114,6 +5227,18 @@ switchUser: (newUserId) => {
         };
       }
 
+      const timeTypeAllDay = document.getElementById('timeTypeAllDay');
+      const timeTypeCustom = document.getElementById('timeTypeCustom');
+      const timeInputsContainer = document.getElementById('timeInputsContainer');
+      if (timeTypeAllDay && timeTypeCustom && timeInputsContainer) {
+        timeTypeAllDay.addEventListener('change', () => {
+          if (timeTypeAllDay.checked) timeInputsContainer.classList.add('hidden');
+        });
+        timeTypeCustom.addEventListener('change', () => {
+          if (timeTypeCustom.checked) timeInputsContainer.classList.remove('hidden');
+        });
+      }
+
       document.getElementById('taskForm').onsubmit = (e) => {
         e.preventDefault();
         const title = document.getElementById('formTitle').value.trim();
@@ -5125,6 +5250,10 @@ switchUser: (newUserId) => {
         const selectedOpts = [...modalSelectedOptions];
         const descText = selectedOpts.join(', ') + (note ? (selectedOpts.length > 0 ? ` (${note})` : note) : '');
 
+        const isAllDay = document.getElementById('timeTypeCustom') ? !document.getElementById('timeTypeCustom').checked : true;
+        const startTime = !isAllDay && document.getElementById('formStartTime') ? document.getElementById('formStartTime').value.trim() : '';
+        const endTime = !isAllDay && document.getElementById('formEndTime') ? document.getElementById('formEndTime').value.trim() : '';
+
         const taskData = {
           title,
           options: selectedOpts,
@@ -5134,6 +5263,9 @@ switchUser: (newUserId) => {
           color: modalSelectedColor || 'blue',
           date: document.getElementById('formDate').value,
           deadline: document.getElementById('formDeadline').value,
+          isAllDay: isAllDay,
+          startTime: startTime,
+          endTime: endTime,
           status: document.getElementById('formStatus').value,
           priority: document.getElementById('formPriority').value
         };

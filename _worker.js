@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT DEFAULT '',
   date TEXT NOT NULL,
   deadline TEXT NOT NULL,
+  is_all_day INTEGER DEFAULT 1,
+  start_time TEXT DEFAULT '',
+  end_time TEXT DEFAULT '',
   status TEXT NOT NULL DEFAULT 'todo',
   assignee_ids TEXT NOT NULL DEFAULT '["non"]',
   priority TEXT NOT NULL DEFAULT 'normal',
@@ -58,6 +61,11 @@ async function ensureTable(db) {
     for (const sql of stmts) {
       await db.prepare(sql).run();
     }
+    try { await db.prepare("ALTER TABLE tasks ADD COLUMN archived INTEGER DEFAULT 0").run(); } catch(e) {}
+    try { await db.prepare("ALTER TABLE tasks ADD COLUMN archived_at TEXT").run(); } catch(e) {}
+    try { await db.prepare("ALTER TABLE tasks ADD COLUMN is_all_day INTEGER DEFAULT 1").run(); } catch(e) {}
+    try { await db.prepare("ALTER TABLE tasks ADD COLUMN start_time TEXT DEFAULT ''").run(); } catch(e) {}
+    try { await db.prepare("ALTER TABLE tasks ADD COLUMN end_time TEXT DEFAULT ''").run(); } catch(e) {}
   } catch (err) {
     console.error('Error ensuring table:', err);
   }
@@ -109,6 +117,9 @@ export default {
               description: row.description || '',
               date: row.date || '',
               deadline: row.deadline || '',
+              isAllDay: row.is_all_day === undefined || row.is_all_day === null ? true : Boolean(row.is_all_day),
+              startTime: row.start_time || '',
+              endTime: row.end_time || '',
               status: row.status || 'todo',
               assigneeIds: Array.isArray(assigneeIds) ? assigneeIds : ['non'],
               priority: row.priority || 'normal',
@@ -135,8 +146,8 @@ export default {
           const assigneeIdsJson = JSON.stringify(task.assigneeIds || task.assignee_ids || ['non']);
 
           const sql = `
-            INSERT INTO tasks (id, title, options, note, description, date, deadline, status, assignee_ids, priority, color, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            INSERT INTO tasks (id, title, options, note, description, date, deadline, is_all_day, start_time, end_time, status, assignee_ids, priority, color, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
             ON CONFLICT(id) DO UPDATE SET
               title = excluded.title,
               options = excluded.options,
@@ -144,6 +155,9 @@ export default {
               description = excluded.description,
               date = excluded.date,
               deadline = excluded.deadline,
+              is_all_day = excluded.is_all_day,
+              start_time = excluded.start_time,
+              end_time = excluded.end_time,
               status = excluded.status,
               assignee_ids = excluded.assignee_ids,
               priority = excluded.priority,
@@ -154,7 +168,10 @@ export default {
           try {
             await db.prepare(sql).bind(
               task.id, task.title, optionsJson, task.note || '', task.description || '',
-              task.date || '', task.deadline || '', task.status || 'todo',
+              task.date || '', task.deadline || '',
+              task.isAllDay !== false ? 1 : 0,
+              task.startTime || '', task.endTime || '',
+              task.status || 'todo',
               assigneeIdsJson, task.priority || 'normal', task.color || 'blue'
             ).run();
           } catch (insertErr) {
@@ -211,11 +228,12 @@ export default {
         if (shouldReplace) statements.push(db.prepare('DELETE FROM tasks'));
 
         const upsertSql = `
-          INSERT INTO tasks (id, title, options, note, description, date, deadline, status, assignee_ids, priority, color, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+          INSERT INTO tasks (id, title, options, note, description, date, deadline, is_all_day, start_time, end_time, status, assignee_ids, priority, color, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
           ON CONFLICT(id) DO UPDATE SET
             title = excluded.title, options = excluded.options, note = excluded.note,
             description = excluded.description, date = excluded.date, deadline = excluded.deadline,
+            is_all_day = excluded.is_all_day, start_time = excluded.start_time, end_time = excluded.end_time,
             status = excluded.status, assignee_ids = excluded.assignee_ids, priority = excluded.priority,
             color = excluded.color, updated_at = datetime('now')
         `;
@@ -224,7 +242,10 @@ export default {
           if (!task.id || !task.title) continue;
           statements.push(db.prepare(upsertSql).bind(
             task.id, task.title, JSON.stringify(task.options || []), task.note || '', task.description || '',
-            task.date || '', task.deadline || '', task.status || 'todo',
+            task.date || '', task.deadline || '',
+            task.isAllDay !== false ? 1 : 0,
+            task.startTime || '', task.endTime || '',
+            task.status || 'todo',
             JSON.stringify(task.assigneeIds || task.assignee_ids || ['non']), task.priority || 'normal', task.color || 'blue'
           ));
         }
