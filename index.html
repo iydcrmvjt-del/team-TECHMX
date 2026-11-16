@@ -2168,11 +2168,41 @@
         const memberSummaries = [];
         const dailyActiveTasks = new Map();
 
-        const formatLarkTaskItem = (t) => {
+        const getTaskDetail = (t) => {
+          if (!t) return '';
+          let detail = (typeof t.note === 'string' ? t.note : '').trim();
+          if (!detail && typeof t.description === 'string') {
+            const desc = t.description.trim();
+            const match = desc.match(/\((.*?)\)$/s);
+            if (match && match[1] && match[1].trim()) {
+              detail = match[1].trim();
+            } else {
+              const optKeys = Object.keys(TASK_OPTIONS_CONFIG);
+              const parts = desc.split(',').map(p => p.trim());
+              const isJustOpts = parts.length > 0 && parts.every(p => optKeys.includes(p));
+              if (!isJustOpts && desc) {
+                detail = desc;
+              }
+            }
+          }
+          return detail;
+        };
+
+        const formatLarkTaskItem = (t, indent = '      ') => {
           const opts = (Array.isArray(t.options) && t.options.length > 0)
             ? t.options.map(o => (TASK_OPTIONS_CONFIG[o] ? `${TASK_OPTIONS_CONFIG[o].icon} ${TASK_OPTIONS_CONFIG[o].name}` : o)).join(', ')
             : 'งานทั่วไป';
-          return `${t.title} [${opts}]`;
+          let line = `**${t.title}** [${opts}]`;
+          const detail = getTaskDetail(t);
+          if (detail) {
+            const detailLines = detail.split('\n').map(l => l.trim()).filter(Boolean);
+            if (detailLines.length === 1) {
+              line += `\n${indent}📝 *รายละเอียด:* ${detailLines[0]}`;
+            } else if (detailLines.length > 1) {
+              line += `\n${indent}📝 *รายละเอียด:*\n${indent}  ` + detailLines.join(`\n${indent}  `);
+            }
+          }
+          return line;
         };
 
         targetMembers.forEach(member => {
@@ -2204,30 +2234,30 @@
             let taskLines = [];
             if (dueToday.length > 0) {
               if (dueToday.length === 1) {
-                taskLines.push(`  • 🚨 **ส่งวันนี้:** ${formatLarkTaskItem(dueToday[0])}`);
+                taskLines.push(`  • 🚨 **ส่งวันนี้:** ${formatLarkTaskItem(dueToday[0], '    ')}`);
               } else {
-                taskLines.push(`  • 🚨 **ส่งวันนี้ (${dueToday.length} งาน):**\n    - ` + dueToday.map(formatLarkTaskItem).join('\n    - '));
+                taskLines.push(`  • 🚨 **ส่งวันนี้ (${dueToday.length} งาน):**\n    - ` + dueToday.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
               }
             }
             if (inProg.length > 0) {
               if (inProg.length === 1) {
-                taskLines.push(`  • ⚡ **กำลังทำ:** ${formatLarkTaskItem(inProg[0])}`);
+                taskLines.push(`  • ⚡ **กำลังทำ:** ${formatLarkTaskItem(inProg[0], '    ')}`);
               } else {
-                taskLines.push(`  • ⚡ **กำลังทำ (${inProg.length} งาน):**\n    - ` + inProg.map(formatLarkTaskItem).join('\n    - '));
+                taskLines.push(`  • ⚡ **กำลังทำ (${inProg.length} งาน):**\n    - ` + inProg.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
               }
             }
             if (overdue.length > 0) {
               if (overdue.length === 1) {
-                taskLines.push(`  • ⚠️ **เกินกำหนด:** ${formatLarkTaskItem(overdue[0])}`);
+                taskLines.push(`  • ⚠️ **เกินกำหนด:** ${formatLarkTaskItem(overdue[0], '    ')}`);
               } else {
-                taskLines.push(`  • ⚠️ **เกินกำหนด (${overdue.length} งาน):**\n    - ` + overdue.map(formatLarkTaskItem).join('\n    - '));
+                taskLines.push(`  • ⚠️ **เกินกำหนด (${overdue.length} งาน):**\n    - ` + overdue.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
               }
             }
             if (completed.length > 0) {
               if (completed.length === 1) {
-                taskLines.push(`  • ✅ **เสร็จแล้ว:** ${formatLarkTaskItem(completed[0])}`);
+                taskLines.push(`  • ✅ **เสร็จแล้ว:** ${formatLarkTaskItem(completed[0], '    ')}`);
               } else {
-                taskLines.push(`  • ✅ **เสร็จแล้ว (${completed.length} งาน):**\n    - ` + completed.map(formatLarkTaskItem).join('\n    - '));
+                taskLines.push(`  • ✅ **เสร็จแล้ว (${completed.length} งาน):**\n    - ` + completed.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
               }
             }
 
@@ -2289,7 +2319,7 @@
           { tag: "hr" },
           {
             tag: "div",
-            text: { tag: "lark_md", content: `**📋 รายละเอียดงานรายบุคคล (พร้อมลักษณะงาน):**\n\n${breakdownText}` }
+            text: { tag: "lark_md", content: `**📋 รายละเอียดงานรายบุคคล (พร้อมลักษณะงานและเนื้อหา):**\n\n${breakdownText}` }
           },
           {
             tag: "action",
