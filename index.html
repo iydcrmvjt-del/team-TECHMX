@@ -649,6 +649,18 @@
           </label>
 
           <label class="flex items-start space-x-2.5 cursor-pointer">
+            <input type="checkbox" id="larkCronEveningAlert" class="mt-0.5 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer" checked>
+            <div>
+              <div class="font-semibold text-slate-800 dark:text-slate-100 text-xs flex items-center space-x-1.5">
+                <span>🔔 เตือนเช็กสถานะงานประจำวันทุกเย็น 18:00 น.</span>
+                <span class="px-1.5 py-0.2 rounded text-[9.5px] bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800">จันทร์–ศุกร์</span>
+              </div>
+              <div class="text-[10.5px] text-slate-500 dark:text-slate-400">ระบบ Cloudflare Cron จะยิงการ์ดเตือนให้ทีมงานอัปเดตสถานะงาน (In Progress / Done) ทุก 18:00 น. วันจันทร์–ศุกร์ เพื่อสรุปงานค้างและปิดกอง</div>
+              <div id="larkCronEveningLastStatusText" class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium"></div>
+            </div>
+          </label>
+
+          <label class="flex items-start space-x-2.5 cursor-pointer">
             <input type="checkbox" id="larkNotifyOnDone" class="mt-0.5 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer">
             <div>
               <div class="font-semibold text-slate-800 dark:text-slate-100 text-xs">แจ้งเตือนเมื่องานเสร็จสิ้น (Task Done ✅)</div>
@@ -672,7 +684,7 @@
               <div class="font-semibold text-sky-900 dark:text-sky-200 text-xs">ทดสอบส่งเข้า Lark</div>
               <div id="larkTestStatusText" class="text-[10.5px] text-sky-700/80 dark:text-sky-300/80">กดปุ่มเพื่อทดสอบส่งการ์ดไปยังกลุ่มแชท</div>
             </div>
-            <div class="flex items-center space-x-1.5 shrink-0">
+            <div class="flex items-center space-x-1.5 shrink-0 flex-wrap gap-y-1">
               <button type="button" id="btnTestLarkWebhook" onclick="window.appActions.testLarkConnection()" class="px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-slate-700 text-sky-700 dark:text-sky-300 font-semibold text-xs rounded-xl shadow-2xs transition cursor-pointer flex items-center space-x-1">
                 <span>🔔</span>
                 <span class="hidden sm:inline">ทดสอบการ์ด</span>
@@ -680,7 +692,11 @@
               </button>
               <button type="button" id="btnTestLarkCron" onclick="window.appActions.testLarkCronDigest()" class="px-2.5 sm:px-3 py-1.5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center space-x-1">
                 <span>⏰</span>
-                <span>ทดสอบยิงสรุป 09:00 น.</span>
+                <span>ทดสอบ 09:00 น.</span>
+              </button>
+              <button type="button" id="btnTestLarkEvening" onclick="window.appActions.testLarkEveningAlert()" class="px-2.5 sm:px-3 py-1.5 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center space-x-1">
+                <span>🌇</span>
+                <span>ทดสอบ 18:00 น.</span>
               </button>
             </div>
           </div>
@@ -2054,7 +2070,8 @@
           webhookUrl: '',
           notifyOnDone: true,
           notifyOnCreate: true,
-          cronAutoDigest: true
+          cronAutoDigest: true,
+          cronEveningAlert: true
         };
       };
 
@@ -4911,6 +4928,8 @@ switchUser: (newUserId) => {
           if (chkCreate) chkCreate.checked = cfg.notifyOnCreate !== false;
           const chkCron = document.getElementById('larkCronAutoDigest');
           if (chkCron) chkCron.checked = cfg.cronAutoDigest !== false;
+          const chkEvening = document.getElementById('larkCronEveningAlert');
+          if (chkEvening) chkEvening.checked = cfg.cronEveningAlert !== false;
 
           const statusText = document.getElementById('larkTestStatusText');
           if (statusText) {
@@ -4932,16 +4951,24 @@ switchUser: (newUserId) => {
                   if (chkDone && c.notifyOnDone !== undefined) chkDone.checked = c.notifyOnDone;
                   if (chkCreate && c.notifyOnCreate !== undefined) chkCreate.checked = c.notifyOnCreate;
                   if (chkCron && c.cronAutoDigest !== undefined) chkCron.checked = c.cronAutoDigest;
+                  if (chkEvening && c.cronEveningAlert !== undefined) chkEvening.checked = c.cronEveningAlert;
                   setLarkConfig({
                     webhookUrl: input.value,
                     notifyOnDone: chkDone.checked,
                     notifyOnCreate: chkCreate.checked,
-                    cronAutoDigest: chkCron.checked
+                    cronAutoDigest: chkCron.checked,
+                    cronEveningAlert: chkEvening.checked
                   });
                   if (cloudData.lastCronDigest && cloudData.lastCronDigest.bkkDate) {
                     const cronStatusEl = document.getElementById('larkCronLastStatusText');
                     if (cronStatusEl) {
                       cronStatusEl.textContent = `⏰ ยิงสรุปอัตโนมัติล่าสุด: ${cloudData.lastCronDigest.bkkDate} (สำเร็จ ✅)`;
+                    }
+                  }
+                  if (cloudData.lastCronEveningDigest && cloudData.lastCronEveningDigest.bkkDate) {
+                    const eveningStatusEl = document.getElementById('larkCronEveningLastStatusText');
+                    if (eveningStatusEl) {
+                      eveningStatusEl.textContent = `⏰ ยิงเตือนเช็กงาน 18:00 น. ล่าสุด: ${cloudData.lastCronEveningDigest.bkkDate} (สำเร็จ ✅)`;
                     }
                   }
                 }
@@ -4959,6 +4986,7 @@ switchUser: (newUserId) => {
           const chkDone = document.getElementById('larkNotifyOnDone');
           const chkCreate = document.getElementById('larkNotifyOnCreate');
           const chkCron = document.getElementById('larkCronAutoDigest');
+          const chkEvening = document.getElementById('larkCronEveningAlert');
 
           if (webhookUrl && !webhookUrl.includes('open.larksuite.com') && !webhookUrl.includes('open.feishu.cn')) {
             alert('Webhook URL ต้องเป็น Lark Bot Webhook (เช่น https://open.larksuite.com/open-apis/bot/v2/hook/...)');
@@ -4969,7 +4997,8 @@ switchUser: (newUserId) => {
             webhookUrl: webhookUrl,
             notifyOnDone: chkDone ? chkDone.checked : true,
             notifyOnCreate: chkCreate ? chkCreate.checked : true,
-            cronAutoDigest: chkCron ? chkCron.checked : true
+            cronAutoDigest: chkCron ? chkCron.checked : true,
+            cronEveningAlert: chkEvening ? chkEvening.checked : true
           };
 
           setLarkConfig(newCfg);
@@ -4987,7 +5016,7 @@ switchUser: (newUserId) => {
             }
           }
 
-          showToast('บันทึกการตั้งค่า Lark และเปิดระบบ Cron 09:00 น. เรียบร้อยแล้ว! 🦜⏰', 'success');
+          showToast('บันทึกการตั้งค่า Lark และเปิดระบบเตือน 09:00 / 18:00 น. เรียบร้อยแล้ว! 🦜⏰', 'success');
           const modal = document.getElementById('larkSettingsModal');
           if (modal) modal.classList.add('hidden');
         },
@@ -5106,6 +5135,67 @@ switchUser: (newUserId) => {
               statusText.className = 'text-[10.5px] text-rose-600 font-bold';
             }
             alert(`ทดสอบส่งไม่สำเร็จ:\n${err}`);
+          }
+        },
+        testLarkEveningAlert: async () => {
+          const input = document.getElementById('larkWebhookInput');
+          const webhookUrl = input ? input.value.trim() : '';
+          const statusText = document.getElementById('larkTestStatusText');
+
+          if (!webhookUrl) {
+            alert('กรุณากรอก Lark Webhook URL ก่อนกดทดสอบ');
+            return;
+          }
+
+          if (statusText) {
+            statusText.textContent = 'กำลังทดสอบยิงแจ้งเตือน 18:00 น. เข้า Lark...';
+            statusText.className = 'text-[10.5px] text-amber-600 font-semibold animate-pulse';
+          }
+
+          const curCfg = getLarkConfig();
+          setLarkConfig({ ...curCfg, webhookUrl });
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              await fetch('/api/lark-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...curCfg, webhookUrl })
+              });
+            } catch(e) {}
+          }
+
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              const res = await fetch('/api/lark-trigger-cron?type=evening', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ webhookUrl, type: 'evening' })
+              });
+              const json = await res.json();
+              if (json && json.success) {
+                if (statusText) {
+                  statusText.textContent = '✅ ทดสอบยิงเตือน 18:00 น. สำเร็จแล้ว!';
+                  statusText.className = 'text-[10.5px] text-emerald-600 font-bold';
+                }
+                showToast('ยิงการ์ดเตือน 18:00 น. เข้า Lark เรียบร้อยแล้ว! 🦜🌇', 'lark');
+                return;
+              } else {
+                const errMsg = (json && (json.error || (json.result && json.result.error))) || 'เกิดข้อผิดพลาดในการยิงแจ้งเตือน';
+                if (statusText) {
+                  statusText.textContent = `❌ ${errMsg}`;
+                  statusText.className = 'text-[10.5px] text-rose-600 font-bold';
+                }
+                alert(`ทดสอบยิงเตือน 18:00 น. ไม่สำเร็จ:\n${errMsg}`);
+                return;
+              }
+            } catch(err) {
+              if (statusText) {
+                statusText.textContent = `❌ ไม่สามารถเชื่อมต่อ Worker API ได้: ${err.message}`;
+                statusText.className = 'text-[10.5px] text-rose-600 font-bold';
+              }
+              alert(`ข้อผิดพลาด: ${err.message}`);
+              return;
+            }
           }
         },
         sendDailyDigestToLark: async () => {
