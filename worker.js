@@ -425,33 +425,51 @@ async function handleScheduledDailyDigest(env, event, isManual = false) {
   const todayStr = getBangkokDate();
   const cardPayload = buildLarkCronDigestPayload(todayStr, tasks, true);
 
-  try {
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify(cardPayload)
-    });
-    const result = await res.json().catch(() => ({}));
+  let sendResult = null;
+  let sendError = null;
+  let isSuccess = false;
+  let httpStatus = 0;
 
-    // Record last cron run in meta table
-    if (db) {
-      try {
-        const record = JSON.stringify({
-          timestamp: new Date().toISOString(),
-          bkkDate: formatThaiDateBkk(todayStr),
-          totalTasks: tasks.length,
-          status: res.ok ? "success" : "failed"
-        });
-        await db.prepare("INSERT INTO meta (key, value) VALUES ('last_cron_digest', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(record).run();
-      } catch(e) {}
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify(cardPayload)
+      });
+      httpStatus = res.status;
+      const result = await res.json().catch(() => ({}));
+      sendResult = result;
+      // Lark success is HTTP 200 AND (code === 0 or StatusCode === 0)
+      isSuccess = res.ok && (!result || result.code === 0 || result.StatusCode === 0);
+      if (isSuccess) break;
+      console.warn(`[Lark 09:00 Cron] Attempt ${attempt} returned non-zero code:`, result);
+    } catch(err) {
+      sendError = err;
+      console.warn(`[Lark 09:00 Cron] Attempt ${attempt} network error:`, err);
     }
-
-    console.log("Automated 09:00 Lark daily digest dispatched:", res.status, result);
-    return { success: res.ok, status: res.status, result };
-  } catch(err) {
-    console.error("Error sending scheduled digest to Lark:", err);
-    return { success: false, error: err.message };
+    if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
   }
+
+  // Record last cron run in meta table
+  if (db) {
+    try {
+      const record = JSON.stringify({
+        timestamp: new Date().toISOString(),
+        bkkDate: formatThaiDateBkk(todayStr),
+        totalTasks: tasks.length,
+        status: isSuccess ? "success" : "failed",
+        code: (sendResult && (sendResult.code !== undefined ? sendResult.code : sendResult.StatusCode)) ?? (isSuccess ? 0 : -1),
+        msg: (sendResult && (sendResult.msg || sendResult.StatusMessage)) || (sendError ? sendError.message : (isSuccess ? "OK" : `HTTP ${httpStatus}`))
+      });
+      await db.prepare("INSERT INTO meta (key, value) VALUES ('last_cron_digest', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(record).run();
+    } catch(e) {
+      console.warn("Error recording last_cron_digest:", e);
+    }
+  }
+
+  console.log("Automated 09:00 Lark daily digest dispatched:", httpStatus, sendResult);
+  return { success: isSuccess, status: httpStatus, result: sendResult, error: sendError ? sendError.message : undefined };
 }
 
 
@@ -686,32 +704,49 @@ async function handleScheduledEveningDigest(env, event, isManual = false) {
   const todayStr = getBangkokDate();
   const cardPayload = buildLarkEveningEODPayload(todayStr, tasks, !isManual);
 
-  try {
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify(cardPayload)
-    });
-    const result = await res.json().catch(() => ({}));
+  let sendResult = null;
+  let sendError = null;
+  let isSuccess = false;
+  let httpStatus = 0;
 
-    if (db) {
-      try {
-        const record = JSON.stringify({
-          timestamp: new Date().toISOString(),
-          bkkDate: formatThaiDateBkk(todayStr),
-          totalTasks: tasks.length,
-          status: res.ok ? "success" : "failed"
-        });
-        await db.prepare("INSERT INTO meta (key, value) VALUES ('last_cron_evening_digest', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(record).run();
-      } catch(e) {}
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify(cardPayload)
+      });
+      httpStatus = res.status;
+      const result = await res.json().catch(() => ({}));
+      sendResult = result;
+      isSuccess = res.ok && (!result || result.code === 0 || result.StatusCode === 0);
+      if (isSuccess) break;
+      console.warn(`[Lark 18:00 Cron] Attempt ${attempt} returned non-zero code:`, result);
+    } catch(err) {
+      sendError = err;
+      console.warn(`[Lark 18:00 Cron] Attempt ${attempt} network error:`, err);
     }
-
-    console.log("Automated 18:00 Lark evening digest dispatched:", res.status, result);
-    return { success: res.ok, status: res.status, result };
-  } catch(err) {
-    console.error("Error sending evening digest to Lark:", err);
-    return { success: false, error: err.message };
+    if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
   }
+
+  if (db) {
+    try {
+      const record = JSON.stringify({
+        timestamp: new Date().toISOString(),
+        bkkDate: formatThaiDateBkk(todayStr),
+        totalTasks: tasks.length,
+        status: isSuccess ? "success" : "failed",
+        code: (sendResult && (sendResult.code !== undefined ? sendResult.code : sendResult.StatusCode)) ?? (isSuccess ? 0 : -1),
+        msg: (sendResult && (sendResult.msg || sendResult.StatusMessage)) || (sendError ? sendError.message : (isSuccess ? "OK" : `HTTP ${httpStatus}`))
+      });
+      await db.prepare("INSERT INTO meta (key, value) VALUES ('last_cron_evening_digest', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(record).run();
+    } catch(e) {
+      console.warn("Error recording last_cron_evening_digest:", e);
+    }
+  }
+
+  console.log("Automated 18:00 Lark evening digest dispatched:", httpStatus, sendResult);
+  return { success: isSuccess, status: httpStatus, result: sendResult, error: sendError ? sendError.message : undefined };
 }
 
 export default {
@@ -1121,9 +1156,9 @@ export default {
     // 11:00 UTC = 18:00 Bangkok time (or if trigger happened >= 15:00)
     const isEvening = cronStr.includes("11") || bkkHour >= 15;
     if (isEvening) {
-      ctx.waitUntil(handleScheduledEveningDigest(env, event, false));
+      return await handleScheduledEveningDigest(env, event, false);
     } else {
-      ctx.waitUntil(handleScheduledDailyDigest(env, event, false));
+      return await handleScheduledDailyDigest(env, event, false);
     }
   }
 };
