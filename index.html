@@ -2595,28 +2595,6 @@
 
         if (isManager) {
           /* ================= MANAGER VIEW ================= */
-          // 0. Overdue Alert Banner (เมื่อมีงานค้างเกินกำหนดส่ง)
-          if (overdueCount > 0) {
-            html += `
-              <div onclick="window.appActions.openOverdueModal()" class="cursor-pointer bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 hover:from-rose-600 hover:to-red-700 text-white p-3.5 sm:p-4 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between gap-3 group">
-                <div class="flex items-center space-x-3">
-                  <span class="p-2 bg-white/20 rounded-xl text-xl animate-pulse">🚨</span>
-                  <div>
-                    <div class="flex items-center space-x-2">
-                      <h4 class="font-bold text-sm sm:text-base">แจ้งเตือน: มีงานค้างเกินกำหนดส่ง ${overdueCount} รายการ!</h4>
-                      <span class="text-[10px] bg-white/25 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider hidden sm:inline-block">ต้องเร่งดำเนินการ</span>
-                    </div>
-                    <p class="text-xs text-rose-100 mt-0.5">มีงานที่ยังไม่เสร็จสิ้นและเลยกำหนดส่งแล้ว คลิกที่แถบนี้เพื่อดูรายละเอียดงานทั้งหมดและจัดการทันที</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-1.5 bg-white text-rose-600 group-hover:bg-rose-50 px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-xs transition shrink-0">
-                  <span>กดดูงานค้าง</span>
-                  <span class="transform group-hover:translate-x-0.5 transition-transform">➔</span>
-                </div>
-              </div>
-            `;
-          }
-
           // 1. Stats Summary
           html += `
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -2656,21 +2634,19 @@
                   <span class="text-xs text-slate-400">${total > 0 ? Math.round((doneCount / total) * 100) : 0}%</span>
                 </div>
               </div>
-              <div onclick="${overdueCount > 0 ? 'window.appActions.openOverdueModal()' : ''}" class="p-4 rounded-2xl border shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1 transition-all duration-200 group ${overdueCount > 0 ? 'bg-rose-50/70 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 cursor-pointer hover:border-rose-400 hover:shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}">
+              <div onclick="window.appActions.openOverdueModal()" title="คลิกเพื่อดูรายการงานที่เกินกำหนดส่ง" class="p-4 rounded-2xl border shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1 transition-all duration-200 group cursor-pointer ${overdueCount > 0 ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 hover:border-rose-400 hover:shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'}">
                 <div class="flex items-center justify-between text-xs font-medium">
                   <span class="${overdueCount > 0 ? 'text-rose-700 dark:text-rose-300 font-bold' : 'text-slate-500 dark:text-slate-400'}">เกินกำหนดส่ง (Overdue)</span>
-                  <span class="p-1.5 ${overdueCount > 0 ? 'bg-rose-100 dark:bg-rose-900/60 group-hover:scale-110 transition-transform' : 'bg-rose-100 dark:bg-rose-950'} rounded-lg">🚨</span>
+                  <span class="p-1.5 ${overdueCount > 0 ? 'bg-rose-100 dark:bg-rose-900/60 group-hover:scale-110 transition-transform' : 'bg-slate-100 dark:bg-slate-800'} rounded-lg">🚨</span>
                 </div>
                 <div class="mt-3 flex items-baseline justify-between">
                   <span class="text-2xl font-bold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}">${overdueCount}</span>
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
-                ${overdueCount > 0 ? `
-                  <div class="mt-2 pt-2 border-t border-rose-200/60 dark:border-rose-900/60 flex items-center justify-between text-[11px] font-semibold text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300">
-                    <span>กดดูงานค้างทั้งหมด</span>
-                    <span class="group-hover:translate-x-0.5 transition-transform">➔</span>
-                  </div>
-                ` : ''}
+                <div class="mt-2 pt-2 border-t ${overdueCount > 0 ? 'border-rose-200/60 dark:border-rose-900/60 text-rose-600 dark:text-rose-400' : 'border-slate-100 dark:border-slate-800 text-slate-400'} flex items-center justify-between text-[11px] font-semibold">
+                  <span>กดดูงานค้าง</span>
+                  <span class="group-hover:translate-x-0.5 transition-transform">➔</span>
+                </div>
               </div>
             </div>
           `;
@@ -2866,28 +2842,6 @@
             const d = parseDateLocal(t.deadline);
             return d && d < todayObj;
           }).length;
-
-          // 0. Overdue Alert Banner for Member (เมื่อมีงานของตนเองเกินกำหนดส่ง)
-          if (memberOverdueCount > 0) {
-            html += `
-              <div onclick="window.appActions.openOverdueModal()" class="cursor-pointer bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 hover:from-rose-600 hover:to-red-700 text-white p-3.5 sm:p-4 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between gap-3 group">
-                <div class="flex items-center space-x-3">
-                  <span class="p-2 bg-white/20 rounded-xl text-xl animate-pulse">🚨</span>
-                  <div>
-                    <div class="flex items-center space-x-2">
-                      <h4 class="font-bold text-sm sm:text-base">แจ้งเตือน: คุณมีงานค้างเกินกำหนดส่ง ${memberOverdueCount} รายการ!</h4>
-                      <span class="text-[10px] bg-white/25 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider hidden sm:inline-block">ต้องเร่งดำเนินการ</span>
-                    </div>
-                    <p class="text-xs text-rose-100 mt-0.5">มีงานที่คุณรับผิดชอบเลยกำหนดส่งแล้ว คลิกที่แถบนี้เพื่อดูงานและอัปเดตสถานะทันที</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-1.5 bg-white text-rose-600 group-hover:bg-rose-50 px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-xs transition shrink-0">
-                  <span>ดูงานของคุณ</span>
-                  <span class="transform group-hover:translate-x-0.5 transition-transform">➔</span>
-                </div>
-              </div>
-            `;
-          }
 
           // 1. Member Header & Quick Stats
           html += `
@@ -4432,150 +4386,162 @@
       let overdueMemberFilter = 'all';
 
       const renderOverdueModalContent = () => {
-        const container = document.getElementById('overdueModalContent');
-        const badge = document.getElementById('overdueModalBadge');
-        const summaryText = document.getElementById('overdueCountSummaryText');
-        if (!container) return;
+        try {
+          const container = document.getElementById('overdueModalContent');
+          const badge = document.getElementById('overdueModalBadge');
+          const summaryText = document.getElementById('overdueCountSummaryText');
+          if (!container) return;
 
-        const todayObj = new Date();
-        todayObj.setHours(0, 0, 0, 0);
+          const todayObj = new Date();
+          todayObj.setHours(0, 0, 0, 0);
 
-        // Filter all overdue active tasks (not archived, not done, has deadline < today)
-        const allOverdue = tasks.filter(t => {
-          if (t.archived || t.status === 'done' || !t.deadline) return false;
-          const d = parseDateLocal(t.deadline);
-          return d && d < todayObj;
-        });
+          // Filter all overdue active tasks (not archived, not done, has deadline < today)
+          const allOverdue = tasks.filter(t => {
+            if (t.archived || t.status === 'done' || !t.deadline) return false;
+            const d = parseDateLocal(t.deadline);
+            return d && d < todayObj;
+          });
 
-        // Filter by member
-        let list = allOverdue;
-        if (overdueMemberFilter !== 'all') {
-          list = list.filter(t => t.assigneeIds && t.assigneeIds.includes(overdueMemberFilter));
-        }
-
-        // Filter by search query
-        if (overdueSearchQuery.trim()) {
-          const q = overdueSearchQuery.toLowerCase().trim();
-          list = list.filter(t =>
-            (t.title && t.title.toLowerCase().includes(q)) ||
-            (t.note && t.note.toLowerCase().includes(q)) ||
-            (Array.isArray(t.options) && t.options.some(o => o.toLowerCase().includes(q))) ||
-            (typeof t.description === 'string' && t.description.toLowerCase().includes(q))
-          );
-        }
-
-        // Sort by earliest deadline (most overdue at top)
-        list.sort((a, b) => {
-          const da = parseDateLocal(a.deadline) || new Date(9999, 0, 1);
-          const db = parseDateLocal(b.deadline) || new Date(9999, 0, 1);
-          return da - db;
-        });
-
-        if (badge) {
-          badge.textContent = `${allOverdue.length} งาน`;
-        }
-
-        if (summaryText) {
-          summaryText.textContent = `แสดง ${list.length} จากทั้งหมด ${allOverdue.length} งานที่เกินกำหนดส่ง`;
-        }
-
-        if (list.length === 0) {
-          if (allOverdue.length === 0) {
-            container.innerHTML = `
-              <div class="py-12 flex flex-col items-center justify-center text-center space-y-2 text-slate-400 dark:text-slate-500">
-                <span class="text-4xl">🎉</span>
-                <p class="font-bold text-sm text-slate-700 dark:text-slate-200">ยอดเยี่ยมมาก! ไม่มีงานค้างเกินกำหนดส่งแล้ว</p>
-                <p class="text-xs max-w-sm">งานทั้งหมดได้รับการส่งมอบหรืออัปเดตสถานะเรียบร้อยแล้ว</p>
-              </div>
-            `;
-          } else {
-            container.innerHTML = `
-              <div class="py-12 flex flex-col items-center justify-center text-center space-y-2 text-slate-400 dark:text-slate-500">
-                <span class="text-4xl">🔍</span>
-                <p class="font-bold text-sm text-slate-700 dark:text-slate-200">ไม่พบงานที่ตรงกับเงื่อนไขการค้นหา</p>
-                <p class="text-xs max-w-sm">ลองเปลี่ยนคำค้นหาหรือเลือกดูงานของสมาชิกคนอื่น</p>
-              </div>
-            `;
+          // Filter by member
+          let list = allOverdue;
+          if (overdueMemberFilter !== 'all') {
+            list = list.filter(t => t.assigneeIds && t.assigneeIds.includes(overdueMemberFilter));
           }
-          return;
+
+          // Filter by search query
+          if (overdueSearchQuery.trim()) {
+            const q = overdueSearchQuery.toLowerCase().trim();
+            list = list.filter(t =>
+              (t.title && t.title.toLowerCase().includes(q)) ||
+              (t.note && t.note.toLowerCase().includes(q)) ||
+              (Array.isArray(t.options) && t.options.some(o => typeof o === 'string' && o.toLowerCase().includes(q))) ||
+              (typeof t.description === 'string' && t.description.toLowerCase().includes(q))
+            );
+          }
+
+          // Sort by earliest deadline (most overdue at top)
+          list.sort((a, b) => {
+            const da = parseDateLocal(a.deadline) || new Date(9999, 0, 1);
+            const db = parseDateLocal(b.deadline) || new Date(9999, 0, 1);
+            return da - db;
+          });
+
+          if (badge) {
+            badge.textContent = `${allOverdue.length} งาน`;
+          }
+
+          if (summaryText) {
+            summaryText.textContent = `แสดง ${list.length} จากทั้งหมด ${allOverdue.length} งานที่เกินกำหนดส่ง`;
+          }
+
+          if (list.length === 0) {
+            if (allOverdue.length === 0) {
+              container.innerHTML = `
+                <div class="py-12 flex flex-col items-center justify-center text-center space-y-2 text-slate-400 dark:text-slate-500">
+                  <span class="text-4xl">🎉</span>
+                  <p class="font-bold text-sm text-slate-700 dark:text-slate-200">ยอดเยี่ยมมาก! ไม่มีงานค้างเกินกำหนดส่งแล้ว</p>
+                  <p class="text-xs max-w-sm">งานทั้งหมดได้รับการส่งมอบหรืออัปเดตสถานะเรียบร้อยแล้ว</p>
+                </div>
+              `;
+            } else {
+              container.innerHTML = `
+                <div class="py-12 flex flex-col items-center justify-center text-center space-y-2 text-slate-400 dark:text-slate-500">
+                  <span class="text-4xl">🔍</span>
+                  <p class="font-bold text-sm text-slate-700 dark:text-slate-200">ไม่พบงานที่ตรงกับเงื่อนไขการค้นหา</p>
+                  <p class="text-xs max-w-sm">ลองเปลี่ยนคำค้นหาหรือเลือกดูงานของสมาชิกคนอื่น</p>
+                </div>
+              `;
+            }
+            return;
+          }
+
+          container.innerHTML = list.map(task => {
+            const d = parseDateLocal(task.deadline);
+            const diffDays = d ? Math.max(1, Math.round((todayObj - d) / (1000 * 60 * 60 * 24))) : 1;
+            const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
+            const assigneeNames = assignees.map(a => `${a.avatar} ${a.name}`).join(', ') || 'ไม่ได้ระบุ';
+            const deadlineText = formatThaiDate(task.deadline) || task.deadline || '-';
+
+            const priorityBadge = task.priority === 'urgent'
+              ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 font-bold shrink-0">🔥 ด่วนมาก</span>'
+              : (task.priority === 'high'
+                ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 font-bold shrink-0">⚡ ด่วน</span>'
+                : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 font-medium shrink-0">ปกติ</span>');
+
+            const statusBadge = task.status === 'in-progress'
+              ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 font-bold shrink-0">⚡ กำลังทำ</span>'
+              : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold shrink-0">⏳ รอดำเนินการ</span>';
+
+            const tagsBadges = renderTaskOptionBadges(task.options, true);
+
+            return `
+              <div class="p-3 sm:p-3.5 bg-rose-50/50 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/60 shadow-2xs hover:border-rose-300 dark:hover:border-rose-800 transition space-y-2.5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="flex items-center space-x-2 flex-1 min-w-0 flex-wrap sm:flex-nowrap gap-y-1">
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-bold shrink-0 shadow-xs">
+                      🚨 เกินกำหนด ${diffDays} วัน
+                    </span>
+                    ${statusBadge}
+                    ${priorityBadge}
+                    <h4 onclick="window.appActions.openTaskDetailsFromOverdue('${task.id}')" class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline" title="กดดูรายละเอียดงาน">
+                      ${escapeHtml(task.title || 'ไม่มีชื่องาน')}
+                    </h4>
+                  </div>
+                  <div class="flex items-center space-x-1.5 shrink-0 self-end sm:self-auto">
+                    <button type="button" onclick="window.appActions.markOverdueDone('${task.id}')" title="กดเพื่ออัปเดตงานเป็นเสร็จสิ้นทันที" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-lg transition flex items-center space-x-1 cursor-pointer shadow-2xs">
+                      <span>✅</span>
+                      <span>เสร็จแล้ว</span>
+                    </button>
+                    <button type="button" onclick="window.appActions.openEditModalFromOverdue('${task.id}')" title="เลื่อนกำหนดส่งหรือแก้ไขงาน" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-lg transition flex items-center space-x-1 cursor-pointer shadow-2xs">
+                      <span>✏️</span>
+                      <span class="hidden sm:inline">แก้ไข/เลื่อนวัน</span>
+                    </button>
+                    <button type="button" onclick="window.appActions.openTaskDetailsFromOverdue('${task.id}')" title="ดูรายละเอียดงานเต็ม" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium text-xs rounded-lg transition flex items-center space-x-1 cursor-pointer shadow-2xs">
+                      <span>🔍</span>
+                      <span class="hidden sm:inline">รายละเอียด</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-rose-100 dark:border-rose-950/60">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span>👤 ผู้รับผิดชอบ: <strong class="text-slate-700 dark:text-slate-200">${assigneeNames}</strong></span>
+                    ${tagsBadges ? `<span>${tagsBadges}</span>` : ''}
+                  </div>
+                  <div class="flex items-center space-x-1 text-rose-600 dark:text-rose-400 font-medium">
+                    <span>📅 กำหนดส่งเดิม:</span>
+                    <span class="underline font-bold">${deadlineText}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } catch(err) {
+          console.error('Error rendering overdue modal content:', err);
         }
-
-        container.innerHTML = list.map(task => {
-          const d = parseDateLocal(task.deadline);
-          const diffDays = Math.max(1, Math.round((todayObj - d) / (1000 * 60 * 60 * 24)));
-          const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
-          const assigneeNames = assignees.map(a => `${a.avatar} ${a.name}`).join(', ') || 'ไม่ได้ระบุ';
-          const deadlineText = formatThaiDate(task.deadline) || task.deadline || '-';
-
-          const priorityBadge = task.priority === 'urgent'
-            ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 font-bold">🔥 ด่วนมาก</span>'
-            : (task.priority === 'high'
-              ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 font-bold">⚡ ด่วน</span>'
-              : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 font-medium">ปกติ</span>');
-
-          const statusBadge = task.status === 'in-progress'
-            ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 font-bold">⚡ กำลังทำ</span>'
-            : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold">⏳ รอดำเนินการ</span>';
-
-          const tagsHtml = Array.isArray(task.options) && task.options.length > 0
-            ? task.options.map(opt => `<span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px]">${escapeHtml(opt)}</span>`).join(' ')
-            : '';
-
-          return `
-            <div class="p-3 sm:p-3.5 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/50 shadow-2xs hover:border-rose-300 dark:hover:border-rose-800 transition space-y-2.5">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div class="flex items-center space-x-2 flex-1 min-w-0">
-                  <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-600 text-white font-bold shrink-0 animate-pulse">
-                    🚨 เกินกำหนด ${diffDays} วัน
-                  </span>
-                  ${statusBadge}
-                  ${priorityBadge}
-                  <h4 onclick="window.appActions.openTaskDetailsFromOverdue('${task.id}')" class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline" title="กดดูรายละเอียดงาน">
-                    ${escapeHtml(task.title)}
-                  </h4>
-                </div>
-                <div class="flex items-center space-x-1.5 shrink-0 self-end sm:self-auto">
-                  <button type="button" onclick="window.appActions.markOverdueDone('${task.id}')" title="กดเพื่ออัปเดตงานเป็นเสร็จสิ้นทันที" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-lg transition flex items-center space-x-1 cursor-pointer shadow-2xs">
-                    <span>✅</span>
-                    <span>เสร็จแล้ว</span>
-                  </button>
-                  <button type="button" onclick="window.appActions.openEditModalFromOverdue('${task.id}')" title="เลื่อนกำหนดส่งหรือแก้ไขงาน" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-lg transition flex items-center space-x-1 cursor-pointer shadow-2xs">
-                    <span>✏️</span>
-                    <span class="hidden sm:inline">แก้ไข/เลื่อนวัน</span>
-                  </button>
-                  <button type="button" onclick="window.appActions.openTaskDetailsFromOverdue('${task.id}')" title="ดูรายละเอียดงานเต็ม" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium text-xs rounded-lg transition flex items-center space-x-1 cursor-pointer shadow-2xs">
-                    <span>🔍</span>
-                    <span class="hidden sm:inline">รายละเอียด</span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-rose-100 dark:border-rose-950/50">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span>👤 ผู้รับผิดชอบ: <strong class="text-slate-700 dark:text-slate-200">${assigneeNames}</strong></span>
-                  ${tagsHtml ? `<span>🏷️ ${tagsHtml}</span>` : ''}
-                </div>
-                <div class="flex items-center space-x-1 text-rose-600 dark:text-rose-400 font-medium">
-                  <span>📅 กำหนดส่งเดิม:</span>
-                  <span class="underline font-bold">${deadlineText}</span>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
       };
 
       window.appActions = {
         openOverdueModal: () => {
-          overdueSearchQuery = '';
-          overdueMemberFilter = isManager ? 'all' : (currentUserId || 'all');
-          const inp = document.getElementById('overdueSearchInput');
-          if (inp) inp.value = '';
-          const sel = document.getElementById('overdueMemberFilter');
-          if (sel) sel.value = overdueMemberFilter;
-          renderOverdueModalContent();
-          const modal = document.getElementById('overdueModal');
-          if (modal) modal.classList.remove('hidden');
+          try {
+            overdueSearchQuery = '';
+            const isMgr = (typeof currentUserId !== 'undefined' && currentUserId === 'manager');
+            overdueMemberFilter = isMgr ? 'all' : (currentUserId || 'all');
+            const inp = document.getElementById('overdueSearchInput');
+            if (inp) inp.value = '';
+            const sel = document.getElementById('overdueMemberFilter');
+            if (sel) sel.value = overdueMemberFilter;
+            renderOverdueModalContent();
+            const modal = document.getElementById('overdueModal');
+            if (modal) {
+              modal.classList.remove('hidden');
+            } else {
+              console.error('overdueModal element not found');
+            }
+          } catch(err) {
+            console.error('Error in openOverdueModal:', err);
+            alert('เกิดข้อผิดพลาดในการเปิดรายการงานเกินกำหนด: ' + err.message);
+          }
         },
         closeOverdueModal: () => {
           const modal = document.getElementById('overdueModal');
