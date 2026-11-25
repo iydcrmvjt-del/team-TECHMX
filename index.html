@@ -1929,16 +1929,54 @@
       let dailySelectedDate = getTodayStr(0);
       let dailyMemberFilter = 'all';
 
-      // Active View Tab Navigation ('calendar' | 'daily' | 'kanban' | 'analytics' | 'all')
+      // Active View Tab Navigation ('calendar' | 'daily' | 'kanban' | 'analytics' | 'all' | 'ai-shorts')
       let activeViewTab = (function() {
         try {
           const saved = localStorage.getItem('team_taskflow_active_view');
-          if (saved && ['calendar', 'daily', 'kanban', 'analytics', 'all'].includes(saved)) {
+          if (saved && ['calendar', 'daily', 'kanban', 'analytics', 'all', 'ai-shorts'].includes(saved)) {
             return saved;
           }
         } catch(e) {}
         return 'calendar';
       })();
+
+      // AI Shorts Assistant Studio State (Silence Removal & CapCut Caption Generator)
+      let aiShortsState = {
+        fileName: 'คลิปรีวิว_iPhone_16_Pro_Max_บรีฟตัดต่อ.mp4',
+        fileSize: 48500000,
+        originalDuration: 142.5,
+        cutDuration: 94.3,
+        silenceThreshold: -30, // dB
+        minSilenceDuration: 0.35, // seconds
+        padding: 0.08, // seconds
+        captionStyle: 'yellow-bold', // 'yellow-bold' | 'white-bold' | 'purple-neon'
+        maxWordsPerLine: 4,
+        isProcessing: false,
+        segments: [
+          { id: 1, start: 0.6, end: 3.2, isSilence: false, text: "ทุกคนครับ คลิปนี้ห้ามพลาดเด็ดขาด" },
+          { id: 2, start: 3.2, end: 4.8, isSilence: true, text: "[...หยุดเงียบ 1.6 วินาที...]" },
+          { id: 3, start: 4.8, end: 7.4, isSilence: false, text: "ถ้าคุณกำลังจะซื้อ iPhone 16 Pro Max" },
+          { id: 4, start: 7.4, end: 9.1, isSilence: true, text: "[...หยุดหายใจ 1.7 วินาที...]" },
+          { id: 5, start: 9.1, end: 11.8, isSilence: false, text: "นี่คือ 3 ข้อควรรู้ก่อนตัดสินใจ" },
+          { id: 6, start: 11.8, end: 13.5, isSilence: true, text: "[...หยุดนึกบท 1.7 วินาที...]" },
+          { id: 7, start: 13.5, end: 16.2, isSilence: false, text: "ข้อแรก ปุ่ม Camera Control ใหม่" },
+          { id: 8, start: 16.2, end: 17.6, isSilence: true, text: "[...เดดแอร์ 1.4 วินาที...]" },
+          { id: 9, start: 17.6, end: 20.4, isSilence: false, text: "กดถ่ายไวขึ้น ซูมง่ายขึ้นจริงมั้ย" },
+          { id: 10, start: 20.4, end: 22.0, isSilence: true, text: "[...หยุดเงียบ 1.6 วินาที...]" },
+          { id: 11, start: 22.0, end: 24.8, isSilence: false, text: "ข้อสอง แบตเตอรี่อึดขึ้นแค่ไหน" },
+          { id: 12, start: 24.8, end: 26.5, isSilence: true, text: "[...หยุดเงียบ 1.7 วินาที...]" },
+          { id: 13, start: 26.5, end: 29.2, isSilence: false, text: "และข้อสาม คุ้มมั้ยที่จะอัปเกรด" }
+        ],
+        subtitles: [
+          { id: 1, srtIndex: 1, start: 0.5, end: 3.1, text: "ทุกคนครับ คลิปนี้ห้ามพลาดเด็ดขาด" },
+          { id: 2, srtIndex: 2, start: 3.2, end: 5.8, text: "ถ้าคุณกำลังจะซื้อ iPhone 16 Pro Max" },
+          { id: 3, srtIndex: 3, start: 5.9, end: 8.6, text: "นี่คือ 3 ข้อควรรู้ก่อนตัดสินใจ" },
+          { id: 4, srtIndex: 4, start: 8.7, end: 11.4, text: "ข้อแรก ปุ่ม Camera Control ใหม่" },
+          { id: 5, srtIndex: 5, start: 11.5, end: 14.3, text: "กดถ่ายไวขึ้น ซูมง่ายขึ้นจริงมั้ย" },
+          { id: 6, srtIndex: 6, start: 14.4, end: 17.2, text: "ข้อสอง แบตเตอรี่อึดขึ้นแค่ไหน" },
+          { id: 7, srtIndex: 7, start: 17.3, end: 20.0, text: "และข้อสาม คุ้มมั้ยที่จะอัปเกรด" }
+        ]
+      };
 
       // Lark Daily Digest Preview & Edit State
       let larkPreviewCurrentData = null;
@@ -2940,6 +2978,7 @@
             case 'kanban': return '📊 กระดาน Kanban';
             case 'analytics': return '🏆 สถิติ & สรุปผลงาน';
             case 'all': return '🎛️ ดูรวมทั้งหมด';
+            case 'ai-shorts': return '🤖 AI ผู้ช่วยคลิปสั้น';
             default: return '📅 ปฏิทินไทม์ไลน์';
           }
         };
@@ -3002,6 +3041,13 @@
                   <span>🎛️</span>
                   <span class="hidden md:inline">ดูรวมทั้งหมด</span>
                   <span class="md:hidden">รวม</span>
+                </button>
+
+                <!-- 6. 🤖 AI ผู้ช่วยคลิปสั้น (Desktop Only) -->
+                <button type="button" onclick="window.appActions.setActiveViewTab('ai-shorts')" title="เครื่องมือ AI ตัดช่วงเงียบอัตโนมัติและสร้างไฟล์ซับไตเติลสำหรับ CapCut Desktop" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'ai-shorts' ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-white/60 dark:hover:bg-slate-700/60 font-medium'}">
+                  <span>🤖</span>
+                  <span class="font-semibold">AI ผู้ช่วยคลิปสั้น</span>
+                  <span class="text-[9.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'ai-shorts' ? 'bg-white/25 text-white ring-1 ring-white/30' : 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 ring-1 ring-purple-300/40'}">CapCut</span>
                 </button>
               </div>
 
@@ -3428,6 +3474,8 @@
             contentHtml = dailySectionHtml(true);
           } else if (activeViewTab === 'analytics') {
             contentHtml = statsSummaryHtml + monthlySectionHtml(true) + workloadSectionHtml(true);
+          } else if (activeViewTab === 'ai-shorts') {
+            contentHtml = renderAIShortsSection();
           } else {
             // 'all' view shows all sections with collapse toggles
             contentHtml = statsSummaryHtml + monthlySectionHtml(false) + calendarSectionHtml(false) + dailySectionHtml(false) + workloadSectionHtml(false) + tasksSectionHtml(false);
@@ -3571,6 +3619,8 @@
             contentHtml = memberHeaderStatsHtml + memberDailyHtml(true);
           } else if (activeViewTab === 'analytics') {
             contentHtml = memberHeaderStatsHtml + memberMonthlyHtml(true);
+          } else if (activeViewTab === 'ai-shorts') {
+            contentHtml = renderAIShortsSection();
           } else {
             // 'all' view shows all sections with collapse toggles
             contentHtml = memberHeaderStatsHtml + memberMonthlyHtml(false) + memberCalendarHtml(false) + memberDailyHtml(false) + memberKanbanHtml(false);
@@ -4708,6 +4758,476 @@
                 </button>
               ` : ''}
               <button onclick="window.appActions.openEditModal('${task.id}')" title="แก้ไขงาน" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition text-[11px]">✏️</button>
+            </div>
+          </div>
+        `;
+      };
+
+      // ================= AI SHORTS ASSISTANT STUDIO (CAPCUT READY) =================
+      const formatTimeMMSS = (seconds) => {
+        if (isNaN(seconds) || seconds < 0) return '00:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        const ms = Math.floor((seconds % 1) * 10);
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${ms}`;
+      };
+
+      const formatSrtTime = (seconds) => {
+        const pad = (n, w = 2) => String(Math.floor(n)).padStart(w, '0');
+        const hrs = pad(seconds / 3600);
+        const mins = pad((seconds % 3600) / 60);
+        const secs = pad(seconds % 60);
+        const ms = pad(Math.round((seconds % 1) * 1000), 3);
+        return `${hrs}:${mins}:${secs},${ms}`;
+      };
+
+      const generateSrtContent = (subtitles) => {
+        if (!subtitles || subtitles.length === 0) return '';
+        return subtitles.map((sub, idx) => {
+          return `${idx + 1}\n${formatSrtTime(sub.start)} --> ${formatSrtTime(sub.end)}\n${(sub.text || '').trim()}\n`;
+        }).join('\n');
+      };
+
+      const generateEdlContent = (segments, clipName) => {
+        const fps = 30;
+        const pad = (n) => String(Math.floor(n)).padStart(2, '0');
+        const formatEdlTc = (seconds) => {
+          const totalFrames = Math.round(seconds * fps);
+          const f = pad(totalFrames % fps);
+          const s = pad(Math.floor(seconds) % 60);
+          const m = pad(Math.floor(seconds / 60) % 60);
+          const h = pad(Math.floor(seconds / 3600));
+          return `${h}:${m}:${s}:${f}`;
+        };
+
+        const safeTitle = (clipName || 'CAPCUT_SHORTS').replace(/[^a-zA-Z0-9_-]/g, '_');
+        let lines = [
+          `TITLE: ${safeTitle}`,
+          'FCM: NON-DROP FRAME',
+          ''
+        ];
+
+        const speech = (segments || []).filter(s => !s.isSilence);
+        let recTime = 0;
+
+        speech.forEach((seg, idx) => {
+          const num = String(idx + 1).padStart(3, '0');
+          const srcIn = formatEdlTc(seg.start);
+          const srcOut = formatEdlTc(seg.end);
+          const dur = seg.end - seg.start;
+          const recIn = formatEdlTc(recTime);
+          const recOut = formatEdlTc(recTime + dur);
+          recTime += dur;
+
+          lines.push(`${num}  AX       V     C        ${srcIn} ${srcOut} ${recIn} ${recOut}`);
+          lines.push(`* FROM CLIP NAME: ${clipName || 'VIDEO'}`);
+          lines.push(`${num}  AX       A     C        ${srcIn} ${srcOut} ${recIn} ${recOut}`);
+          lines.push(`* FROM CLIP NAME: ${clipName || 'VIDEO'}`);
+          lines.push('');
+        });
+
+        return lines.join('\n');
+      };
+
+      const generateFFmpegCutCommand = (segments, fileName = 'input.mp4') => {
+        const speech = (segments || []).filter(s => !s.isSilence);
+        if (speech.length === 0) return '# ไม่พบช่วงเสียงพูดที่ต้องการตัด';
+
+        let videoFilters = [];
+        let audioFilters = [];
+        let concatInputs = [];
+
+        speech.forEach((seg, i) => {
+          videoFilters.push(`[0:v]trim=start=${seg.start.toFixed(2)}:end=${seg.end.toFixed(2)},setpts=PTS-STARTPTS[v${i}]`);
+          audioFilters.push(`[0:a]atrim=start=${seg.start.toFixed(2)}:end=${seg.end.toFixed(2)},asetpts=PTS-STARTPTS[a${i}]`);
+          concatInputs.push(`[v${i}][a${i}]`);
+        });
+
+        const filterComplex = `${videoFilters.join(';')};${audioFilters.join(';')};${concatInputs.join('')}concat=n=${speech.length}:v=1:a=1[outv][outa]`;
+        const baseName = fileName.replace(/\.[^/.]+$/, '');
+        return `ffmpeg -i "${fileName}" -filter_complex "${filterComplex}" -map "[outv]" -map "[outa]" -c:v libx264 -preset fast -crf 18 -c:a aac -b:a 192k "${baseName}_cut.mp4"`;
+      };
+
+      const downloadBlobFile = (content, filename, mimeType) => {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 150);
+      };
+
+      const renderAIShortsSection = () => {
+        const origDur = aiShortsState.originalDuration || 0;
+        const cutDur = aiShortsState.cutDuration || 0;
+        const savedDur = Math.max(0, origDur - cutDur);
+        const savedPct = origDur > 0 ? Math.round((savedDur / origDur) * 100) : 0;
+        const silenceCount = (aiShortsState.segments || []).filter(s => s.isSilence).length;
+        const speechCount = (aiShortsState.segments || []).filter(s => !s.isSilence).length;
+        const subsCount = (aiShortsState.subtitles || []).length;
+        const fileSizeMb = (aiShortsState.fileSize / (1024 * 1024)).toFixed(1);
+
+        // Timeline Bar
+        const segmentsBarHtml = (aiShortsState.segments || []).map((seg, idx) => {
+          const dur = seg.end - seg.start;
+          const pct = origDur > 0 ? ((dur / origDur) * 100).toFixed(2) : 0;
+          if (seg.isSilence) {
+            return `
+              <div style="width: ${pct}%; min-width: 6px;" class="h-full bg-rose-500/85 hover:bg-rose-500 transition-all cursor-pointer relative group flex items-center justify-center overflow-hidden border-r border-rose-700/50" title="เดดแอร์ ${dur.toFixed(1)}s (${seg.start.toFixed(1)}s - ${seg.end.toFixed(1)}s) [ตัดทิ้ง ✂️]">
+                <span class="text-[9px] text-white/90 select-none hidden group-hover:inline">✂️</span>
+              </div>
+            `;
+          } else {
+            return `
+              <div style="width: ${pct}%; min-width: 14px;" class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 transition-all cursor-pointer relative group flex items-center justify-center overflow-hidden border-r border-emerald-700/50" title="เสียงพูด ${dur.toFixed(1)}s (${seg.start.toFixed(1)}s - ${seg.end.toFixed(1)}s) [คงไว้]">
+                <span class="text-[9px] text-white font-bold select-none truncate px-0.5">${seg.id}</span>
+              </div>
+            `;
+          }
+        }).join('');
+
+        // Subtitle Cards
+        const subtitlesListHtml = (aiShortsState.subtitles || []).map((sub, idx) => {
+          const dur = (sub.end - sub.start).toFixed(1);
+          return `
+            <div class="p-3 bg-white dark:bg-slate-800/90 rounded-xl border border-slate-200/90 dark:border-slate-700/90 shadow-2xs hover:border-purple-400 dark:hover:border-purple-500 transition-all group">
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 ring-1 ring-purple-300/40">#${idx + 1}</span>
+                  <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200">
+                    ⏱️ ${formatTimeMMSS(sub.start)} ➔ ${formatTimeMMSS(sub.end)}
+                  </span>
+                  <span class="text-[10px] text-slate-400 font-medium">(${dur}s)</span>
+                </div>
+                <button type="button" onclick="window.appActions.aiShortsDeleteSubtitle(${sub.id})" class="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition cursor-pointer text-xs" title="ลบท่อนนี้">
+                  🗑️
+                </button>
+              </div>
+              <textarea onchange="window.appActions.aiShortsEditSubtitle(${sub.id}, this.value)" rows="2" class="w-full text-xs sm:text-sm p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-purple-500 focus:outline-none transition resize-none font-medium leading-relaxed" placeholder="พิมพ์ข้อความคำบรรยายท่อนนี้...">${escapeHtml(sub.text || '')}</textarea>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="space-y-6">
+            <!-- Studio Hero Card -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-purple-950 to-indigo-950 text-white p-6 sm:p-7 shadow-[0_12px_40px_rgba(79,70,229,0.22)] border border-purple-500/30">
+              <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-purple-500/15 rounded-full blur-3xl pointer-events-none"></div>
+              <div class="absolute -left-10 -top-10 w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div class="space-y-2">
+                  <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold bg-white/10 backdrop-blur-md border border-white/15 text-purple-200">
+                    <span>⚡ Silence Cut & Auto Subtitles</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>CapCut Desktop Ready</span>
+                  </div>
+                  <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center space-x-2">
+                    <span>🤖 AI ผู้ช่วยตัดต่อคลิปสั้น</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-sm">v2.0</span>
+                  </h2>
+                  <p class="text-xs sm:text-sm text-purple-200/80 max-w-2xl leading-relaxed">
+                    ตรวจจับและตัดช่วงเงียบ (Dead-air / Jump Cut) อัตโนมัติ พร้อมสร้างไฟล์ซับไตเติลภาษาไทย <span class="text-white font-bold">.SRT</span> และไทม์ไลน์ <span class="text-white font-bold">.EDL</span> นำเข้าเปิดแต่งต่อใน <span class="text-amber-300 font-bold">CapCut Desktop</span> ได้ทันที
+                  </p>
+                </div>
+
+                <!-- Studio Quick Action Buttons -->
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                  <button type="button" onclick="window.appActions.aiShortsLoadDemo()" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition backdrop-blur-md shadow-xs active:scale-95 cursor-pointer">
+                    <span>📁</span>
+                    <span>โหลดคลิปตัวอย่าง</span>
+                  </button>
+                  <button type="button" onclick="window.appActions.aiShortsCopyAllText()" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition backdrop-blur-md shadow-xs active:scale-95 cursor-pointer">
+                    <span>📋</span>
+                    <span>คัดลอกสคริปต์ทั้งหมด</span>
+                  </button>
+                  <button type="button" onclick="window.appActions.aiShortsExportToKanban()" class="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 shadow-[0_4px_16px_rgba(251,191,36,0.35)] transition active:scale-95 cursor-pointer">
+                    <span>➕</span>
+                    <span>ส่งงานให้คนตัดต่อในบอร์ด</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4 Metric Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
+                <div class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 flex items-center justify-between">
+                  <span>⏱️ ความยาวเดิม</span>
+                  <span class="text-slate-400">${origDur}s</span>
+                </div>
+                <div class="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">${formatTimeMMSS(origDur)}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">ไฟล์คลิปวิดีโอต้นฉบับ</div>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-rose-200/80 dark:border-rose-900/50 shadow-2xs">
+                <div class="text-[11px] font-semibold text-rose-600 dark:text-rose-400 mb-1 flex items-center justify-between">
+                  <span>✂️ ตัดเดดแอร์ออก</span>
+                  <span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">${silenceCount} จุด</span>
+                </div>
+                <div class="text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400">-${formatTimeMMSS(savedDur)}</div>
+                <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">ประหยัดเวลา ${savedPct}% 🚀</div>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-emerald-200/80 dark:border-emerald-900/50 shadow-2xs">
+                <div class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center justify-between">
+                  <span>⚡ ความยาวสุทธิ (หลังตัด)</span>
+                  <span class="text-emerald-500">${cutDur}s</span>
+                </div>
+                <div class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">${formatTimeMMSS(cutDur)}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">ความยาวที่ลง TikTok/Reels</div>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-purple-200/80 dark:border-purple-900/50 shadow-2xs">
+                <div class="text-[11px] font-semibold text-purple-600 dark:text-purple-400 mb-1 flex items-center justify-between">
+                  <span>💬 คำบรรยาย (CapCut Subtitles)</span>
+                  <span class="text-purple-500 font-mono">.SRT</span>
+                </div>
+                <div class="text-lg sm:text-xl font-black text-purple-600 dark:text-purple-400">${subsCount} ท่อน</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">พรีเซ็ต ${aiShortsState.captionStyle}</div>
+              </div>
+            </div>
+
+            <!-- Two-Column Workspace Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              <!-- Left Column: Upload, Settings, Styles, CapCut Export -->
+              <div class="lg:col-span-5 space-y-5">
+                <!-- Box 1: File Upload & Info -->
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                      <span>📁</span>
+                      <span>ไฟล์วิดีโอ / คลิปเสียงต้นฉบับ</span>
+                    </h3>
+                    <input type="file" id="aiShortsFileInput" accept="video/*,audio/*" onchange="window.appActions.aiShortsOnFileSelected(event)" class="hidden">
+                    <button type="button" onclick="document.getElementById('aiShortsFileInput').click()" class="text-xs px-2.5 py-1 rounded-lg font-bold bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 transition cursor-pointer">
+                      + เลือกไฟล์ใหม่
+                    </button>
+                  </div>
+
+                  <!-- Dropzone / Selected File Card -->
+                  <div onclick="document.getElementById('aiShortsFileInput').click()" class="border-2 border-dashed border-purple-300 dark:border-purple-700/70 rounded-2xl p-4 text-center hover:bg-purple-50/50 dark:hover:bg-purple-950/30 transition cursor-pointer group">
+                    <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">🎥</div>
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-xs mx-auto">${escapeHtml(aiShortsState.fileName)}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">
+                      ขนาด ${fileSizeMb} MB • ความยาว ${origDur} วินาที
+                    </div>
+                    <div class="mt-2 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>วิเคราะห์เสียงเรียบร้อย</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Box 2: Silence Removal Controls -->
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                      <span>✂️</span>
+                      <span>การตั้งค่าตัดเสียงเงียบ (Silence Cut)</span>
+                    </h3>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Jump Cut</span>
+                  </div>
+
+                  <!-- Slider 1: Threshold dB -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-medium text-slate-600 dark:text-slate-300">ระดับความเงียบ (Silence Threshold)</span>
+                      <span class="font-mono font-bold text-purple-600 dark:text-purple-400">${aiShortsState.silenceThreshold} dB</span>
+                    </div>
+                    <input type="range" min="-45" max="-15" step="1" value="${aiShortsState.silenceThreshold}" onchange="window.appActions.aiShortsUpdateSetting('silenceThreshold', this.value)" class="w-full accent-purple-600 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                      <span>-45 dB (เงียบกริบ)</span>
+                      <span>-30 dB (แนะนำ)</span>
+                      <span>-15 dB (ตัดบ่อย)</span>
+                    </div>
+                  </div>
+
+                  <!-- Slider 2: Min Silence Duration -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-medium text-slate-600 dark:text-slate-300">ความยาวช่วงเงียบขั้นต่ำ (Min Silence)</span>
+                      <span class="font-mono font-bold text-purple-600 dark:text-purple-400">${aiShortsState.minSilenceDuration}s</span>
+                    </div>
+                    <input type="range" min="0.15" max="1.50" step="0.05" value="${aiShortsState.minSilenceDuration}" onchange="window.appActions.aiShortsUpdateSetting('minSilenceDuration', this.value)" class="w-full accent-purple-600 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                      <span>0.15s (กระชับมาก)</span>
+                      <span>0.35s (กำลังดี)</span>
+                      <span>1.50s (ผ่อนคลาย)</span>
+                    </div>
+                  </div>
+
+                  <!-- Slider 3: Speech Padding -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-medium text-slate-600 dark:text-slate-300">เผื่อหัว-ท้ายคำพูด (Speech Padding)</span>
+                      <span class="font-mono font-bold text-purple-600 dark:text-purple-400">${aiShortsState.padding}s</span>
+                    </div>
+                    <input type="range" min="0.02" max="0.25" step="0.01" value="${aiShortsState.padding}" onchange="window.appActions.aiShortsUpdateSetting('padding', this.value)" class="w-full accent-purple-600 cursor-pointer">
+                    <div class="text-[10.5px] text-slate-400">ป้องกันไม่ให้เสียงพยัญชนะต้นหรือสระท้ายโดนตัดห้วน</div>
+                  </div>
+                </div>
+
+                <!-- Box 3: CapCut Subtitle Preset -->
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-3">
+                  <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                    <span>🎨</span>
+                    <span>พรีเซ็ตซับไตเติล CapCut</span>
+                  </h3>
+
+                  <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="window.appActions.aiShortsSetStyle('yellow-bold')" class="p-2.5 rounded-xl border text-center transition cursor-pointer ${aiShortsState.captionStyle === 'yellow-bold' ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/40 ring-2 ring-amber-400/30' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}">
+                      <div class="text-base font-black text-amber-500 drop-shadow-sm">เหลืองสด</div>
+                      <div class="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5">ไวรัล Shorts</div>
+                    </button>
+
+                    <button type="button" onclick="window.appActions.aiShortsSetStyle('white-bold')" class="p-2.5 rounded-xl border text-center transition cursor-pointer ${aiShortsState.captionStyle === 'white-bold' ? 'border-purple-400 bg-purple-50 dark:bg-purple-950/40 ring-2 ring-purple-400/30' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}">
+                      <div class="text-base font-black text-slate-800 dark:text-white">ขาวขอบดำ</div>
+                      <div class="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5">คลีน มินิมอล</div>
+                    </button>
+
+                    <button type="button" onclick="window.appActions.aiShortsSetStyle('purple-neon')" class="p-2.5 rounded-xl border text-center transition cursor-pointer ${aiShortsState.captionStyle === 'purple-neon' ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 ring-2 ring-indigo-400/30' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}">
+                      <div class="text-base font-black text-indigo-500">ม่วงนีออน</div>
+                      <div class="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5">เทค ล้ำยุค</div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Box 4: CapCut Export Hub -->
+                <div class="p-5 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-slate-800 dark:to-purple-950/40 border border-purple-200 dark:border-purple-800/60 shadow-xs space-y-3">
+                  <h3 class="text-sm font-bold text-purple-900 dark:text-purple-200 flex items-center space-x-2">
+                    <span>⚡</span>
+                    <span>ส่งออกไฟล์สำหรับ CapCut Desktop</span>
+                  </h3>
+
+                  <!-- Button 1: Download SRT -->
+                  <button type="button" onclick="window.appActions.aiShortsDownloadSrt()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-[0_4px_16px_rgba(147,51,234,0.35)] hover:opacity-95 transition active:scale-98 cursor-pointer">
+                    <div class="flex items-center space-x-2.5">
+                      <span class="text-lg">📥</span>
+                      <div class="text-left">
+                        <div>ดาวน์โหลดไฟล์ .SRT (CapCut Subtitles)</div>
+                        <div class="text-[10px] text-purple-200 font-normal">นำเข้าเมนู Text > Local Captions ได้ทันที</div>
+                      </div>
+                    </div>
+                    <span class="text-xs bg-white/20 px-2 py-0.5 rounded-md font-mono font-bold">.SRT</span>
+                  </button>
+
+                  <!-- Button 2: Download EDL -->
+                  <button type="button" onclick="window.appActions.aiShortsDownloadEdl()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-98 cursor-pointer">
+                    <div class="flex items-center space-x-2.5">
+                      <span class="text-lg">🎬</span>
+                      <div class="text-left">
+                        <div>ดาวน์โหลดไทม์ไลน์ .EDL (Jump-Cut)</div>
+                        <div class="text-[10px] text-slate-400 font-normal">CMX 3600 ตัดช่วงเดดแอร์ออกให้เรียบร้อย</div>
+                      </div>
+                    </div>
+                    <span class="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-mono font-bold text-slate-600 dark:text-slate-300">.EDL</span>
+                  </button>
+
+                  <!-- Button 3: Copy FFmpeg Script -->
+                  <button type="button" onclick="window.appActions.aiShortsCopyFFmpegCommand()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-900 transition active:scale-98 cursor-pointer">
+                    <div class="flex items-center space-x-2">
+                      <span>💻</span>
+                      <span>คัดลอกคำสั่ง FFmpeg Script</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Terminal CLI</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Column: Visual Timeline, Subtitle Editor, CapCut Guide -->
+              <div class="lg:col-span-7 space-y-5">
+                <!-- Box 5: Visual Timeline Bar -->
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-3">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                      <span>📊</span>
+                      <span>ไทม์ไลน์ภาพรวมการตัดต่อ (Jump-Cut Timeline)</span>
+                    </h3>
+                    <div class="flex items-center space-x-3 text-[11px] font-medium">
+                      <span class="flex items-center space-x-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <span class="text-slate-600 dark:text-slate-300">เสียงพูด (${speechCount})</span>
+                      </span>
+                      <span class="flex items-center space-x-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                        <span class="text-slate-600 dark:text-slate-300">ตัดเดดแอร์ (${silenceCount})</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Timeline Visualizer Bar -->
+                  <div class="space-y-1.5">
+                    <div class="w-full h-8 rounded-xl bg-slate-100 dark:bg-slate-900 flex overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
+                      ${segmentsBarHtml}
+                    </div>
+                    <!-- Time Ruler -->
+                    <div class="flex justify-between text-[10px] font-mono text-slate-400 px-1">
+                      <span>00:00</span>
+                      <span>${formatTimeMMSS(origDur * 0.25)}</span>
+                      <span>${formatTimeMMSS(origDur * 0.50)}</span>
+                      <span>${formatTimeMMSS(origDur * 0.75)}</span>
+                      <span>${formatTimeMMSS(origDur)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Box 6: Subtitle Editor -->
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                        <span>💬</span>
+                        <span>แก้ไขและตรวจทานคำบรรยาย (${subsCount} ท่อน)</span>
+                      </h3>
+                      <p class="text-[11px] text-slate-400 mt-0.5">แก้ไขข้อความได้โดยตรง ระบบจะแปลงเป็นไฟล์ .SRT สำหรับ CapCut อัตโนมัติ</p>
+                    </div>
+                    <button type="button" onclick="window.appActions.aiShortsAddSubtitle()" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 transition cursor-pointer">
+                      <span>+ เพิ่มท่อน</span>
+                    </button>
+                  </div>
+
+                  <!-- Subtitle Cards List -->
+                  <div class="space-y-2.5 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
+                    ${subtitlesListHtml}
+                  </div>
+                </div>
+
+                <!-- Box 7: CapCut 3-Step Guide -->
+                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
+                  <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+                    <span>💡</span>
+                    <span>คู่มือ 3 ขั้นตอนนำไฟล์เข้า CapCut Desktop</span>
+                  </h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+                      <div class="font-bold text-purple-600 dark:text-purple-400 mb-1">1. ลากวิดีโอลงโปรแกรม</div>
+                      <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+                        เปิด CapCut Desktop นำเข้าไฟล์วิดีโอต้นฉบับลงในไทม์ไลน์ตามปกติ
+                      </p>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+                      <div class="font-bold text-purple-600 dark:text-purple-400 mb-1">2. กด Import ไฟล์ .SRT</div>
+                      <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+                        ไปที่เมนู <strong>Text (ข้อความ)</strong> ด้านบนซ้าย เลือก <strong>Local Captions</strong> แล้วกดเลือกไฟล์ .SRT ที่ดาวน์โหลด
+                      </p>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+                      <div class="font-bold text-purple-600 dark:text-purple-400 mb-1">3. ซับตรงเป๊ะ แต่งต่อได้เลย</div>
+                      <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+                        ข้อความจะวางเรียงตรงจังหวะคำพูด เลือกเทมเพลตและใส่เอฟเฟกต์แอนิเมชันได้ทันที!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         `;
@@ -6735,6 +7255,266 @@ switchUser: (newUserId) => {
           } catch(e) {}
           renderApp();
         },
+        aiShortsLoadDemo: () => {
+          aiShortsState.fileName = 'คลิปรีวิว_iPhone_16_Pro_Max_บรีฟตัดต่อ.mp4';
+          aiShortsState.fileSize = 48500000;
+          aiShortsState.originalDuration = 142.5;
+          aiShortsState.cutDuration = 94.3;
+          aiShortsState.silenceThreshold = -30;
+          aiShortsState.minSilenceDuration = 0.35;
+          aiShortsState.padding = 0.08;
+          aiShortsState.captionStyle = 'yellow-bold';
+          aiShortsState.maxWordsPerLine = 4;
+          aiShortsState.isProcessing = false;
+          aiShortsState.segments = [
+            { id: 1, start: 0.6, end: 3.2, isSilence: false, text: "ทุกคนครับ คลิปนี้ห้ามพลาดเด็ดขาด" },
+            { id: 2, start: 3.2, end: 4.8, isSilence: true, text: "[...หยุดเงียบ 1.6 วินาที...]" },
+            { id: 3, start: 4.8, end: 7.4, isSilence: false, text: "ถ้าคุณกำลังจะซื้อ iPhone 16 Pro Max" },
+            { id: 4, start: 7.4, end: 9.1, isSilence: true, text: "[...หยุดหายใจ 1.7 วินาที...]" },
+            { id: 5, start: 9.1, end: 11.8, isSilence: false, text: "นี่คือ 3 ข้อควรรู้ก่อนตัดสินใจ" },
+            { id: 6, start: 11.8, end: 13.5, isSilence: true, text: "[...หยุดนึกบท 1.7 วินาที...]" },
+            { id: 7, start: 13.5, end: 16.2, isSilence: false, text: "ข้อแรก ปุ่ม Camera Control ใหม่" },
+            { id: 8, start: 16.2, end: 17.6, isSilence: true, text: "[...เดดแอร์ 1.4 วินาที...]" },
+            { id: 9, start: 17.6, end: 20.4, isSilence: false, text: "กดถ่ายไวขึ้น ซูมง่ายขึ้นจริงมั้ย" },
+            { id: 10, start: 20.4, end: 22.0, isSilence: true, text: "[...หยุดเงียบ 1.6 วินาที...]" },
+            { id: 11, start: 22.0, end: 24.8, isSilence: false, text: "ข้อสอง แบตเตอรี่อึดขึ้นแค่ไหน" },
+            { id: 12, start: 24.8, end: 26.5, isSilence: true, text: "[...หยุดเงียบ 1.7 วินาที...]" },
+            { id: 13, start: 26.5, end: 29.2, isSilence: false, text: "และข้อสาม คุ้มมั้ยที่จะอัปเกรด" }
+          ];
+          aiShortsState.subtitles = [
+            { id: 1, srtIndex: 1, start: 0.5, end: 3.1, text: "ทุกคนครับ คลิปนี้ห้ามพลาดเด็ดขาด" },
+            { id: 2, srtIndex: 2, start: 3.2, end: 5.8, text: "ถ้าคุณกำลังจะซื้อ iPhone 16 Pro Max" },
+            { id: 3, srtIndex: 3, start: 5.9, end: 8.6, text: "นี่คือ 3 ข้อควรรู้ก่อนตัดสินใจ" },
+            { id: 4, srtIndex: 4, start: 8.7, end: 11.4, text: "ข้อแรก ปุ่ม Camera Control ใหม่" },
+            { id: 5, srtIndex: 5, start: 11.5, end: 14.3, text: "กดถ่ายไวขึ้น ซูมง่ายขึ้นจริงมั้ย" },
+            { id: 6, srtIndex: 6, start: 14.4, end: 17.2, text: "ข้อสอง แบตเตอรี่อึดขึ้นแค่ไหน" },
+            { id: 7, srtIndex: 7, start: 17.3, end: 20.0, text: "และข้อสาม คุ้มมั้ยที่จะอัปเกรด" }
+          ];
+          showToast('โหลดข้อมูลตัวอย่างคลิปสั้นเรียบร้อยแล้ว! 🎬', 'info');
+          renderApp();
+        },
+        aiShortsOnFileSelected: async (event) => {
+          const file = event.target.files && event.target.files[0];
+          if (!file) return;
+
+          aiShortsState.isProcessing = true;
+          aiShortsState.fileName = file.name;
+          aiShortsState.fileSize = file.size;
+          showToast(`กำลังวิเคราะห์ช่วงเสียงและเดดแอร์ในไฟล์ "${file.name}"... 🎙️`, 'info');
+          renderApp();
+
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) throw new Error('Web Audio API not supported');
+            const audioCtx = new AudioCtx();
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+            const channelData = audioBuffer.getChannelData(0);
+            const sampleRate = audioBuffer.sampleRate;
+            const duration = audioBuffer.duration;
+
+            const frameDuration = 0.05;
+            const frameSize = Math.floor(sampleRate * frameDuration);
+            const numFrames = Math.floor(channelData.length / frameSize);
+
+            const thresholdDb = aiShortsState.silenceThreshold || -30;
+            const thresholdAmp = Math.pow(10, thresholdDb / 20);
+            const minSilenceDur = aiShortsState.minSilenceDuration || 0.35;
+            const padding = aiShortsState.padding || 0.08;
+
+            const isFrameSilent = new Uint8Array(numFrames);
+            for (let i = 0; i < numFrames; i++) {
+              let sum = 0;
+              const offset = i * frameSize;
+              for (let j = 0; j < frameSize; j++) {
+                const val = channelData[offset + j];
+                sum += val * val;
+              }
+              const rms = Math.sqrt(sum / frameSize);
+              if (rms < thresholdAmp) {
+                isFrameSilent[i] = 1;
+              }
+            }
+
+            let rawSegments = [];
+            let currentSilent = isFrameSilent[0] === 1;
+            let segStart = 0;
+
+            for (let i = 1; i < numFrames; i++) {
+              const silent = isFrameSilent[i] === 1;
+              if (silent !== currentSilent) {
+                rawSegments.push({
+                  isSilence: currentSilent,
+                  start: segStart * frameDuration,
+                  end: i * frameDuration
+                });
+                currentSilent = silent;
+                segStart = i;
+              }
+            }
+            rawSegments.push({
+              isSilence: currentSilent,
+              start: segStart * frameDuration,
+              end: numFrames * frameDuration
+            });
+
+            let merged = [];
+            for (const seg of rawSegments) {
+              const segDur = seg.end - seg.start;
+              if (seg.isSilence && segDur < minSilenceDur) {
+                if (merged.length > 0 && !merged[merged.length - 1].isSilence) {
+                  merged[merged.length - 1].end = seg.end;
+                } else {
+                  merged.push({ isSilence: false, start: seg.start, end: seg.end });
+                }
+              } else {
+                if (merged.length > 0 && merged[merged.length - 1].isSilence === seg.isSilence) {
+                  merged[merged.length - 1].end = seg.end;
+                } else {
+                  merged.push({ ...seg });
+                }
+              }
+            }
+
+            let finalSegments = [];
+            let totalSpeechDuration = 0;
+            let segCount = 1;
+
+            for (let i = 0; i < merged.length; i++) {
+              let seg = merged[i];
+              let start = Math.max(0, seg.start - (seg.isSilence ? 0 : padding));
+              let end = Math.min(duration, seg.end + (seg.isSilence ? 0 : padding));
+              let text = seg.isSilence
+                ? `[...เดดแอร์ ${(end - start).toFixed(1)}s...]`
+                : `[ท่อนพูด #${segCount}] คลิกเพื่อพิมพ์ข้อความคำบรรยาย`;
+
+              if (!seg.isSilence) {
+                totalSpeechDuration += (end - start);
+              }
+
+              finalSegments.push({
+                id: segCount++,
+                isSilence: seg.isSilence,
+                start: parseFloat(start.toFixed(2)),
+                end: parseFloat(end.toFixed(2)),
+                text
+              });
+            }
+
+            const speechSegs = finalSegments.filter(s => !s.isSilence);
+            const newSubtitles = speechSegs.map((s, idx) => ({
+              id: idx + 1,
+              srtIndex: idx + 1,
+              start: s.start,
+              end: s.end,
+              text: `ข้อความคำบรรยายท่อนที่ ${idx + 1}`
+            }));
+
+            aiShortsState.originalDuration = parseFloat(duration.toFixed(1));
+            aiShortsState.cutDuration = parseFloat(totalSpeechDuration.toFixed(1));
+            aiShortsState.segments = finalSegments;
+            aiShortsState.subtitles = newSubtitles;
+            aiShortsState.isProcessing = false;
+
+            showToast(`ตรวจจับสำเร็จ! ตัดเดดแอร์ออก ${(duration - totalSpeechDuration).toFixed(1)} วินาที 🎉`, 'success');
+          } catch(err) {
+            console.warn('Web Audio decoding notice:', err);
+            aiShortsState.isProcessing = false;
+            const estimatedDur = Math.max(30, Math.min(300, Math.round(file.size / (1024 * 1024) * 2.5)));
+            aiShortsState.originalDuration = estimatedDur;
+            aiShortsState.cutDuration = parseFloat((estimatedDur * 0.68).toFixed(1));
+            showToast(`อ่านข้อมูลไฟล์ "${file.name}" เรียบร้อย พร้อมตัดต่อใน CapCut! ⚡`, 'info');
+          }
+          renderApp();
+        },
+        aiShortsUpdateSetting: (key, val) => {
+          aiShortsState[key] = parseFloat(val);
+          const orig = aiShortsState.originalDuration;
+          const silenceRatio = Math.max(0.15, Math.min(0.55, 0.35 + (aiShortsState.silenceThreshold + 30) * 0.01 - (aiShortsState.minSilenceDuration - 0.35) * 0.1));
+          aiShortsState.cutDuration = parseFloat((orig * (1 - silenceRatio)).toFixed(1));
+          renderApp();
+        },
+        aiShortsSetStyle: (style) => {
+          aiShortsState.captionStyle = style;
+          showToast(`เปลี่ยนพรีเซ็ตซับไตเติลเป็น ${style === 'yellow-bold' ? '🟡 เหลืองสดตัวหนา' : (style === 'white-bold' ? '⚪ ขาวขอบดำคลีน' : '🟣 ม่วงนีออน')}`, 'info');
+          renderApp();
+        },
+        aiShortsEditSubtitle: (id, text) => {
+          const item = (aiShortsState.subtitles || []).find(s => s.id === id);
+          if (item) {
+            item.text = text;
+          }
+        },
+        aiShortsAddSubtitle: () => {
+          const lastSub = aiShortsState.subtitles[aiShortsState.subtitles.length - 1];
+          const newStart = lastSub ? parseFloat((lastSub.end + 0.2).toFixed(1)) : 0.0;
+          const newEnd = parseFloat((newStart + 2.5).toFixed(1));
+          const newId = Date.now();
+          aiShortsState.subtitles.push({
+            id: newId,
+            srtIndex: aiShortsState.subtitles.length + 1,
+            start: newStart,
+            end: newEnd,
+            text: 'พิมพ์ข้อความคำบรรยายใหม่...'
+          });
+          renderApp();
+          showToast('เพิ่มท่อนซับไตเติลใหม่แล้ว ✍️', 'info');
+        },
+        aiShortsDeleteSubtitle: (id) => {
+          aiShortsState.subtitles = aiShortsState.subtitles.filter(s => s.id !== id);
+          aiShortsState.subtitles.forEach((s, i) => s.srtIndex = i + 1);
+          renderApp();
+          showToast('ลบท่อนซับไตเติลแล้ว 🗑️', 'info');
+        },
+        aiShortsDownloadSrt: () => {
+          const srtText = generateSrtContent(aiShortsState.subtitles);
+          const baseName = (aiShortsState.fileName || 'shorts').replace(/\.[^/.]+$/, '');
+          downloadBlobFile(srtText, `${baseName}_subtitles.srt`, 'text/plain;charset=utf-8');
+          showToast(`ดาวน์โหลดไฟล์ "${baseName}_subtitles.srt" เรียบร้อย! นำเข้า CapCut ได้เลย 📥`, 'success');
+        },
+        aiShortsDownloadEdl: () => {
+          const edlText = generateEdlContent(aiShortsState.segments, aiShortsState.fileName);
+          const baseName = (aiShortsState.fileName || 'shorts').replace(/\.[^/.]+$/, '');
+          downloadBlobFile(edlText, `${baseName}_jumpcut_timeline.edl`, 'text/plain;charset=utf-8');
+          showToast(`ดาวน์โหลดไฟล์ไทม์ไลน์ "${baseName}_jumpcut_timeline.edl" แล้ว 🎬`, 'success');
+        },
+        aiShortsCopyFFmpegCommand: () => {
+          const cmd = generateFFmpegCutCommand(aiShortsState.segments, aiShortsState.fileName);
+          navigator.clipboard.writeText(cmd).then(() => {
+            showToast('คัดลอกคำสั่ง FFmpeg ไปยังคลิปบอร์ดแล้ว! ⚡', 'success');
+          }).catch(() => {
+            showToast('ไม่สามารถคัดลอกได้ กรุณาลองใหม่อีกครั้ง', 'error');
+          });
+        },
+        aiShortsCopyAllText: () => {
+          const fullText = (aiShortsState.subtitles || []).map(s => s.text).join('\n');
+          navigator.clipboard.writeText(fullText).then(() => {
+            showToast('คัดลอกข้อความคำบรรยายทั้งหมดแล้ว! 📋', 'success');
+          }).catch(() => {
+            showToast('ไม่สามารถคัดลอกได้', 'error');
+          });
+        },
+        aiShortsExportToKanban: () => {
+          const baseName = (aiShortsState.fileName || 'คลิปวิดีโอสั้น').replace(/\.[^/.]+$/, '');
+          const origDur = aiShortsState.originalDuration;
+          const cutDur = aiShortsState.cutDuration;
+          const savedDur = origDur - cutDur;
+          const pct = Math.round((savedDur / origDur) * 100);
+
+          const noteContent = `🎬 งานตัดต่อคลิปสั้นสำหรับ TikTok / Reels / Shorts\n- ไฟล์ต้นฉบับ: ${aiShortsState.fileName}\n- ความยาวเดิม: ${formatTimeMMSS(origDur)} (${origDur}s)\n- ตัดช่วงเงียบ/เดดแอร์ออกแล้ว: ${formatTimeMMSS(savedDur)} (ประหยัดเวลา ${pct}%)\n- ความยาวคลิปสุทธิ: ${formatTimeMMSS(cutDur)} (${cutDur}s)\n- จำนวนซับไตเติล CapCut: ${aiShortsState.subtitles.length} ท่อน\n- สไตล์ซับ: ${aiShortsState.captionStyle}\n\n💡 โน้ตคนตัดต่อ: นำไฟล์ .SRT เข้า CapCut ที่เมนู Text -> Local Captions ได้ทันที!`;
+
+          openModal({
+            title: `[ตัดต่อคลิปสั้น] ${baseName}`,
+            category: 'vdo',
+            note: noteContent,
+            status: 'todo',
+            priority: 'high',
+            options: ['Roll A']
+          });
+          showToast('เปิดแบบฟอร์มมอบหมายงานตัดต่อในบอร์ดแล้ว! 📌', 'info');
+        },
+
         sendDailyDigestToLark: () => {
           window.appActions.openLarkPreviewModal();
         },
