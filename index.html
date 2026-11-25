@@ -291,32 +291,32 @@
         <!-- Role / User Switcher & Tools -->
         <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 shrink-0">
           <!-- Cloudflare D1 Sync Status Badge -->
-          <button type="button" id="btnCloudSync" title="สถานะ Cloudflare D1 (คลิกเพื่อเชื่อมต่อหรือซิงค์ข้อมูล)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
+          <button type="button" id="btnCloudSync" title="สถานะ Cloudflare D1 (คลิกเพื่อเชื่อมต่อหรือซิงค์ข้อมูล)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs hover:border-purple-300/80 dark:hover:border-purple-700/80 hover:shadow-[0_2px_12px_rgba(147,51,234,0.15)] cursor-pointer shrink-0">
             <span id="cloudSyncDot" class="inline-block w-2 h-2 rounded-full bg-slate-400"></span>
             <span id="cloudSyncText" class="text-[10px] sm:text-xs">Local</span>
           </button>
 
           <!-- Dark / Light Mode Toggle Button -->
-          <button type="button" id="btnThemeToggle" title="สลับโหมดมืด / สว่าง (Toggle Dark/Light Mode)" class="flex items-center space-x-1 px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
+          <button type="button" id="btnThemeToggle" title="สลับโหมดมืด / สว่าง (Toggle Dark/Light Mode)" class="flex items-center space-x-1 px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition shadow-xs hover:border-purple-300/80 dark:hover:border-purple-700/80 hover:shadow-[0_2px_12px_rgba(147,51,234,0.15)] cursor-pointer shrink-0">
             <span id="themeToggleIcon" class="text-xs sm:text-sm">🌙</span>
             <span id="themeToggleText" class="hidden md:inline">โหมดมืด</span>
           </button>
 
           <!-- Lark Bot Settings Button -->
-          <button type="button" id="btnOpenLarkSettings" onclick="window.appActions.openLarkSettings()" title="ตั้งค่าการแจ้งเตือนเข้า Lark (Bot Webhook)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
+          <button type="button" id="btnOpenLarkSettings" onclick="window.appActions.openLarkSettings()" title="ตั้งค่าการแจ้งเตือนเข้า Lark (Bot Webhook)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 font-semibold text-xs transition shadow-xs hover:shadow-[0_2px_12px_rgba(14,165,233,0.25)] cursor-pointer shrink-0">
             <span class="text-xs">🦜</span>
             <span class="hidden md:inline text-xs">Lark</span>
           </button>
 
           <!-- PWA Install Button (Dynamic) -->
-          <button type="button" id="btnPWAInstall" onclick="window.appActions.triggerPWAInstall()" title="ติดตั้งเป็นแอปบนอุปกรณ์ (Install App)" class="hidden items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold text-xs transition shadow-xs cursor-pointer shrink-0">
+          <button type="button" id="btnPWAInstall" onclick="window.appActions.triggerPWAInstall()" title="ติดตั้งเป็นแอปบนอุปกรณ์ (Install App)" class="hidden items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold text-xs transition shadow-xs hover:shadow-[0_2px_12px_rgba(99,102,241,0.25)] cursor-pointer shrink-0">
             <span class="text-xs">📲</span>
             <span class="hidden md:inline text-xs">ติดตั้งแอป</span>
           </button>
 
-          <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+          <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs">
             <span class="text-xs text-slate-500 dark:text-slate-400 font-medium pl-1 hidden lg:inline">สลับมุมมอง:</span>
-            <select id="userSelector" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-[11px] sm:text-sm font-semibold py-1 sm:py-1.5 pl-1.5 sm:pl-2 pr-5 sm:pr-8 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer max-w-[110px] sm:max-w-[200px]">
+            <select id="userSelector" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-[11px] sm:text-sm font-semibold py-1 sm:py-1.5 pl-1.5 sm:pl-2 pr-5 sm:pr-8 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 hover:border-purple-300 dark:hover:border-purple-700 cursor-pointer max-w-[110px] sm:max-w-[200px]">
               <option value="manager">👑 ภาพรวม</option>
               <optgroup label="── บอร์ดทีม ──">
                 <option value="non">👨‍💻 นนท์</option>
@@ -377,6 +377,10 @@
       </button>
     </div>
   </div>
+
+  <!-- Ambient Purple Light Orbs for Desktop / Web View (Fixed Background Glow) -->
+  <div class="fixed top-24 right-[-12rem] w-[38rem] h-[38rem] bg-gradient-to-bl from-purple-500/10 via-violet-500/5 to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="fixed bottom-12 left-[-12rem] w-[34rem] h-[34rem] bg-gradient-to-tr from-indigo-500/10 via-purple-500/5 to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
 
   <!-- Main Container -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 pt-3 sm:pt-6 pb-28 md:pb-6 space-y-3.5 sm:space-y-6 overflow-x-hidden">
@@ -2934,38 +2938,38 @@
           </div>
 
           <!-- Desktop / Tablet Segmented Docked Card (hidden md:block) -->
-          <div id="viewSwitcherNav" class="hidden md:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 sm:p-2.5 shadow-xs transition-colors">
+          <div id="viewSwitcherNav" class="hidden md:block bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-purple-200/50 dark:border-purple-900/40 p-2 sm:p-2.5 shadow-[0_10px_30px_-5px_rgba(147,51,234,0.12),0_4px_10px_-2px_rgba(0,0,0,0.04)] transition-all">
             <div class="flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar no-scrollbar py-0.5">
               <!-- View Tabs Group (Segmented Pill Style) -->
-              <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/60 text-xs sm:text-sm font-semibold gap-1 shrink-0">
+              <div class="inline-flex p-1 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/60 text-xs sm:text-sm font-semibold gap-1 shrink-0">
                 <!-- 1. ปฏิทินไทม์ไลน์ -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'calendar' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'calendar' ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-white/60 dark:hover:bg-slate-700/60 font-medium'}">
                   <span>📅</span>
                   <span>ปฏิทิน<span class="hidden sm:inline">ไทม์ไลน์</span></span>
                 </button>
 
                 <!-- 2. สรุปงานประจำวัน -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'daily' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'daily' ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-white/60 dark:hover:bg-slate-700/60 font-medium'}">
                   <span>☀️</span>
                   <span>สรุป<span class="hidden sm:inline">งานประจำวัน</span><span class="sm:hidden">รายวัน</span></span>
-                  ${todayDueCount > 0 ? `<span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 ring-1 ring-amber-300/40">${todayDueCount}</span>` : ''}
+                  ${todayDueCount > 0 ? `<span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'daily' ? 'bg-white/25 text-white ring-1 ring-white/30' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 ring-1 ring-amber-300/40'}">${todayDueCount}</span>` : ''}
                 </button>
 
                 <!-- 3. กระดาน Kanban -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'kanban' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'kanban' ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-white/60 dark:hover:bg-slate-700/60 font-medium'}">
                   <span>📊</span>
                   <span><span class="hidden sm:inline">กระดาน </span>Kanban</span>
-                  <span class="ml-1 text-[10.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'kanban' ? 'bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300/40' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">${tasksCount}</span>
+                  <span class="ml-1 text-[10.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'kanban' ? 'bg-white/25 text-white ring-1 ring-white/30' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">${tasksCount}</span>
                 </button>
 
                 <!-- 4. สถิติ & สรุปผลงาน -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'analytics' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'analytics' ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-white/60 dark:hover:bg-slate-700/60 font-medium'}">
                   <span>🏆</span>
                   <span>สถิติ<span class="hidden sm:inline"> & สรุปผลงาน</span></span>
                 </button>
 
                 <!-- 5. ดูรวมทั้งหมด -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('all')" title="แสดงทุกส่วนรวมกันในหน้าเดียวแบบเดิม" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'all' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('all')" title="แสดงทุกส่วนรวมกันในหน้าเดียวแบบเดิม" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'all' ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/40 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-white/60 dark:hover:bg-slate-700/60 font-medium'}">
                   <span>🎛️</span>
                   <span class="hidden md:inline">ดูรวมทั้งหมด</span>
                   <span class="md:hidden">รวม</span>
@@ -2975,14 +2979,14 @@
               <!-- Quick Action Shortcuts -->
               <div class="flex items-center space-x-1.5 shrink-0">
                 ${overdueCount > 0 ? `
-                  <button type="button" onclick="window.appActions.openOverdueModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/70 hover:bg-rose-100 dark:hover:bg-rose-900 transition shadow-2xs cursor-pointer animate-pulse" title="มีงานค้างเกินกำหนด ${overdueCount} รายการ คลิกเพื่อดู">
+                  <button type="button" onclick="window.appActions.openOverdueModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/70 hover:bg-rose-100 dark:hover:bg-rose-900 transition shadow-[0_2px_12px_rgba(244,63,94,0.3)] cursor-pointer animate-pulse" title="มีงานค้างเกินกำหนด ${overdueCount} รายการ คลิกเพื่อดู">
                     <span>🚨</span>
                     <span class="hidden sm:inline">ค้างส่ง</span>
                     <span>${overdueCount}</span>
                   </button>
                 ` : ''}
 
-                <button type="button" onclick="window.appActions.openArchiveModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition shadow-2xs cursor-pointer" title="ดูคลังประวัติงานที่ทำเสร็จแล้ว">
+                <button type="button" onclick="window.appActions.openArchiveModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:border-purple-300/60 transition shadow-2xs cursor-pointer" title="ดูคลังประวัติงานที่ทำเสร็จแล้ว">
                   <span>📦</span>
                   <span class="hidden sm:inline">คลังงาน</span>
                   <span class="text-[10px] px-1.5 py-0.2 rounded-full ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
@@ -3172,10 +3176,10 @@
           const monthlySectionHtml = (forceOpen = false) => {
             const isCollapsed = forceOpen ? false : isMonthlyCollapsed;
             return `
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+              <div class="bg-white/95 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-3 sm:p-5 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.06),0_2px_8px_-2px_rgba(147,51,234,0.05)] hover:border-purple-300/50 dark:hover:border-purple-800/50 transition-all ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
                   <div class="flex items-center space-x-2.5">
-                    <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
+                    <span class="p-2 bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-600 text-white rounded-xl text-lg shadow-[0_4px_14px_rgba(99,102,241,0.4)] ring-1 ring-white/20">🏆</span>
                     <div>
                       <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} (ภาพรวมทั้งทีม)</h3>
                       <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ติดตามยอดส่งมอบคอนเทนต์หลักประจำเดือน: Long Form 🎬, คลิปสั้น (Short) 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
@@ -3195,10 +3199,10 @@
           const calendarSectionHtml = (forceOpen = false) => {
             const isCollapsed = forceOpen ? false : isCalendarCollapsed;
             return `
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
+              <div class="bg-white/95 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-3 sm:p-5 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.06),0_2px_8px_-2px_rgba(147,51,234,0.05)] hover:border-purple-300/50 dark:hover:border-purple-800/50 transition-all space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                   <div class="flex items-center space-x-2.5">
-                    <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📅</span>
+                    <span class="p-2 bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 text-white rounded-xl text-lg shadow-[0_4px_14px_rgba(147,51,234,0.4)] ring-1 ring-white/20">📅</span>
                     <div>
                       <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ปฏิทินไทม์ไลน์ภาพรวมทีม (Team Timeline Calendar)</h3>
                       <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">แสดงแผนงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁) • กรองดูตามประเภทงาน & ปรับสีกำกับงานได้ 15 สี (แยกกันชัดเจน)</p>
@@ -3218,10 +3222,10 @@
           const dailySectionHtml = (forceOpen = false) => {
             const isCollapsed = forceOpen ? false : isDailyCollapsed;
             return `
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+              <div class="bg-white/95 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-3 sm:p-5 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.06),0_2px_8px_-2px_rgba(147,51,234,0.05)] hover:border-purple-300/50 dark:hover:border-purple-800/50 transition-all space-y-3.5 sm:space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                   <div class="flex items-center space-x-2.5">
-                    <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
+                    <span class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl text-lg shadow-[0_4px_14px_rgba(245,158,11,0.4)] ring-1 ring-white/20">☀️</span>
                     <div>
                       <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของแต่ละคน (Daily Summary & Agenda)</h3>
                       <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • ลากเพื่อปรับลำดับความสำคัญ (บน-ล่าง) ⇅ • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
@@ -3241,13 +3245,24 @@
           const workloadSectionHtml = (forceOpen = false) => {
             const isCollapsed = forceOpen ? false : isWorkloadCollapsed;
             return `
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+              <div class="bg-white/95 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-3 sm:p-5 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.06),0_2px_8px_-2px_rgba(147,51,234,0.05)] hover:border-purple-300/50 dark:hover:border-purple-800/50 transition-all ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
-                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ภาระงานรายบุคคล (Team Workload)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">นับรวมทั้งงานเดี่ยวและงานกลุ่ม • คลิกเพื่อสลับไปดูบอร์ดของคนนั้น</p>
+                  <div class="flex items-center space-x-2.5">
+                    <span class="p-2 bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-600 text-white rounded-xl text-lg shadow-[0_4px_14px_rgba(147,51,234,0.4)] ring-1 ring-white/20">👥</span>
+                    <div>
+                      <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ภาระงานรายบุคคล (Team Workload)</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">นับรวมทั้งงานเดี่ยวและงานกลุ่ม • คลิกเพื่อสลับไปดูบอร์ดของคนนั้น</p>
+                    </div>
                   </div>
                   <div class="flex items-center space-x-2 self-start sm:self-auto">
+                    <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">สมาชิก ${TEAM_MEMBERS.length} คน</span>
+                    ${!forceOpen ? `
+                      <button onclick="window.appActions.toggleWorkloadCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isCollapsed ? 'คลิกเพื่อแสดงภาระงานรายบุคคล' : 'คลิกเพื่อซ่อนภาระงานรายบุคคล'}">
+                        <span>${isCollapsed ? '▼ แสดงภาระงาน' : '▲ ซ่อนภาระงาน'}</span>
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
                     <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">สมาชิก ${TEAM_MEMBERS.length} คน</span>
                     ${!forceOpen ? `
                       <button onclick="window.appActions.toggleWorkloadCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isCollapsed ? 'คลิกเพื่อแสดงภาระงานรายบุคคล' : 'คลิกเพื่อซ่อนภาระงานรายบุคคล'}">
@@ -3309,28 +3324,31 @@
           const tasksSectionHtml = (forceOpen = false) => {
             const isCollapsed = forceOpen ? false : isAllTasksCollapsed;
             return `
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+              <div class="bg-white/95 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-3 sm:p-5 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.06),0_2px_8px_-2px_rgba(147,51,234,0.05)] hover:border-purple-300/50 dark:hover:border-purple-800/50 transition-all ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
-                  <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">รายการงานทั้งหมดในทีม</h3>
-                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${displayedTasks.length} รายการ</span>
-                    ${!isCollapsed ? `
-                      <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center space-x-1">
-                        <span>📅 เรียงตามกำหนดส่ง (Deadline)</span>
-                      </span>
-                    ` : ''}
+                  <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
+                    <span class="p-2 bg-gradient-to-br from-indigo-500 via-purple-600 to-violet-600 text-white rounded-xl text-lg shadow-[0_4px_14px_rgba(147,51,234,0.4)] ring-1 ring-white/20">📊</span>
+                    <div>
+                      <div class="flex items-center space-x-2">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">รายการงานทั้งหมดในทีม</h3>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">${displayedTasks.length} รายการ</span>
+                      </div>
+                      ${!isCollapsed ? `
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">📅 เรียงตามกำหนดส่ง (Deadline) • จัดการงานผ่านมุมมอง Kanban หรือตารางข้อมูล</p>
+                      ` : ''}
+                    </div>
                   </div>
                   <div class="flex items-center space-x-1.5 flex-wrap gap-y-1 w-full sm:w-auto justify-between sm:justify-start">
-                    <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer">
+                    <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs hover:border-purple-300/60 transition cursor-pointer">
                       <span>📦</span>
                       <span>คลังงานที่ทำแล้ว</span>
                       <span class="px-1.5 py-0.2 rounded-full text-[10px] ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
                     </button>
-                    <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl space-x-1">
-                      <button onclick="window.appActions.setManagerTaskView('kanban')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
+                    <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl space-x-1 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                      <button onclick="window.appActions.setManagerTaskView('kanban')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${managerTaskView === 'kanban' ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_2px_10px_rgba(147,51,234,0.35)] font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
                         📊 Kanban รวม
                       </button>
-                      <button onclick="window.appActions.setManagerTaskView('list')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
+                      <button onclick="window.appActions.setManagerTaskView('list')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${managerTaskView === 'list' ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_2px_10px_rgba(147,51,234,0.35)] font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
                         📋 ตารางงาน
                       </button>
                     </div>
@@ -3344,18 +3362,18 @@
 
                 ${!isCollapsed ? `
                   <!-- Filter Bar -->
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-gradient-to-r from-purple-50/40 via-slate-50 to-indigo-50/40 dark:from-purple-950/20 dark:via-slate-850 dark:to-indigo-950/20 rounded-xl border border-purple-200/40 dark:border-purple-900/30 shadow-xs">
                     <div class="relative">
-                      <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ค้นหาชื่องาน หรือรายละเอียด..." class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs">
+                      <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ค้นหาชื่องาน หรือรายละเอียด..." class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 shadow-xs">
                     </div>
                     <div>
-                      <select id="filterAssigneeSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                      <select id="filterAssigneeSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 shadow-xs cursor-pointer">
                         <option value="all" ${filterAssignee === 'all' ? 'selected' : ''}>👥 กรองตามผู้รับผิดชอบ: ทุกคน</option>
                         ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${filterAssignee === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
                       </select>
                     </div>
                     <div>
-                      <select id="filterStatusSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                      <select id="filterStatusSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 shadow-xs cursor-pointer">
                         <option value="all" ${filterStatus === 'all' ? 'selected' : ''}>📌 กรองตามสถานะ: ทั้งหมด</option>
                         <option value="todo" ${filterStatus === 'todo' ? 'selected' : ''}>รอดำเนินการ (To Do)</option>
                         <option value="in-progress" ${filterStatus === 'in-progress' ? 'selected' : ''}>กำลังทำ (In Progress)</option>
@@ -3718,9 +3736,33 @@
       // 4. Render Components (Kanban, Table, Calendar, Daily)
       const renderKanban = (taskList, isManager) => {
         const columns = [
-          { id: 'todo', title: 'To Do (รอดำเนินการ)', icon: '📋', bg: 'bg-slate-100/70', border: 'border-slate-300' },
-          { id: 'in-progress', title: 'In Progress (กำลังทำ)', icon: '⚡', bg: 'bg-amber-50/70', border: 'border-amber-300' },
-          { id: 'done', title: 'Done (เสร็จสิ้น)', icon: '✅', bg: 'bg-emerald-50/70', border: 'border-emerald-300' }
+          { 
+            id: 'todo', 
+            title: 'To Do (รอดำเนินการ)', 
+            icon: '📋', 
+            bg: 'bg-slate-100/70 dark:bg-slate-900/40', 
+            border: 'border-slate-300/80 dark:border-slate-800',
+            shadow: 'shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)]',
+            badgeBg: 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+          },
+          { 
+            id: 'in-progress', 
+            title: 'In Progress (กำลังทำ)', 
+            icon: '⚡', 
+            bg: 'bg-amber-50/60 dark:bg-amber-950/20', 
+            border: 'border-amber-300/80 dark:border-amber-900/60',
+            shadow: 'shadow-[0_4px_20px_-4px_rgba(245,158,11,0.08)]',
+            badgeBg: 'bg-amber-100/90 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800'
+          },
+          { 
+            id: 'done', 
+            title: 'Done (เสร็จสิ้น)', 
+            icon: '✅', 
+            bg: 'bg-emerald-50/60 dark:bg-emerald-950/20', 
+            border: 'border-emerald-300/80 dark:border-emerald-900/60',
+            shadow: 'shadow-[0_4px_20px_-4px_rgba(16,185,129,0.08)]',
+            badgeBg: 'bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800'
+          }
         ];
 
         return `
@@ -3728,11 +3770,11 @@
             ${columns.map(col => {
               const colTasks = taskList.filter(t => t.status === col.id);
               return `
-                <div ondragover="window.appActions.onDragOver(event)" ondrop="window.appActions.onDrop(event, '${col.id}')" class="rounded-2xl p-3 sm:p-4 border ${col.border} ${col.bg} kanban-col flex flex-col">
-                  <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+                <div ondragover="window.appActions.onDragOver(event)" ondrop="window.appActions.onDrop(event, '${col.id}')" class="rounded-2xl p-3 sm:p-4 border ${col.border} ${col.bg} ${col.shadow} kanban-col flex flex-col">
+                  <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80 dark:border-slate-800">
                     <div class="flex items-center space-x-2">
                       <span class="text-base">${col.icon}</span>
-                      <h4 class="font-bold text-slate-800 text-sm">${col.title}</h4>
+                      <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">${col.title}</h4>
                     </div>
                     <div class="flex items-center space-x-1.5">
                       ${col.id === 'done' && colTasks.length > 0 ? `
@@ -3741,7 +3783,7 @@
                           <span>จัดเก็บทั้งหมด</span>
                         </button>
                       ` : ''}
-                      <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white text-slate-700 shadow-xs border border-slate-200">${colTasks.length}</span>
+                      <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${col.badgeBg} shadow-xs border">${colTasks.length}</span>
                     </div>
                   </div>
 
@@ -4187,7 +4229,7 @@
                   <span>🏷️</span>
                   <span class="hidden sm:inline">ตัวกรองประเภทงาน:</span>
                 </span>
-                <button type="button" onclick="window.appActions.resetCalendarTypeFilter()" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${currentSelectedTypes.length === 0 ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
+                <button type="button" onclick="window.appActions.resetCalendarTypeFilter()" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${currentSelectedTypes.length === 0 ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white border-purple-500 shadow-[0_2px_10px_rgba(147,51,234,0.35)] ring-1 ring-purple-300/40' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
                   ${currentSelectedTypes.length === 0 ? `ทุกประเภท (${taskList.length})` : `🔄 แสดงทุกประเภท (${taskList.length})`}
                 </button>
                 ${TASK_OPTIONS_LIST.map(opt => {
@@ -4195,11 +4237,11 @@
                   const count = taskList.filter(t => Array.isArray(t.options) && t.options.includes(opt)).length;
                   const isSelected = currentSelectedTypes.includes(opt);
                   return `
-                    <button type="button" onclick="window.appActions.toggleCalendarTypeFilter('${opt}')" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center space-x-1.5 transition cursor-pointer select-none ${isSelected ? 'bg-indigo-50 text-indigo-900 border-indigo-500 ring-2 ring-indigo-500/25 shadow-xs font-bold dark:bg-indigo-950/70 dark:text-indigo-200 dark:border-indigo-500' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
+                    <button type="button" onclick="window.appActions.toggleCalendarTypeFilter('${opt}')" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold flex items-center space-x-1.5 transition cursor-pointer select-none ${isSelected ? 'bg-gradient-to-r from-purple-500/20 to-violet-500/20 text-purple-900 dark:text-purple-200 border-purple-400 dark:border-purple-600 ring-2 ring-purple-400/35 shadow-[0_2px_8px_rgba(147,51,234,0.2)] font-bold' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
                       <span class="text-xs">${conf.icon}</span>
                       <span>${conf.name}</span>
                       <span class="text-[10px] opacity-75 font-normal">(${count})</span>
-                      ${isSelected ? `<span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold bg-indigo-600 text-white ml-0.5">✓</span>` : ''}
+                      ${isSelected ? `<span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white ml-0.5 shadow-2xs">✓</span>` : ''}
                     </button>
                   `;
                 }).join('')}
@@ -4337,7 +4379,7 @@
         return `
           <div class="space-y-6">
             <!-- Date Navigator -->
-            <div class="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 space-y-3">
+            <div class="bg-gradient-to-r from-purple-50/30 via-slate-50 to-indigo-50/30 dark:from-purple-950/20 dark:via-slate-900/60 dark:to-indigo-950/20 rounded-2xl p-3 sm:p-4 border border-purple-200/40 dark:border-purple-900/40 shadow-[0_4px_20px_-4px_rgba(147,51,234,0.06)] space-y-3">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <!-- Top Row on Mobile: Prev, Date Display, Next -->
                 <div class="flex items-center justify-between space-x-2 w-full md:w-auto">
@@ -4345,13 +4387,13 @@
                     <span>◀</span>
                     <span class="text-xs font-normal text-slate-500 dark:text-slate-400 hidden sm:inline">ก่อนหน้า</span>
                   </button>
-                  <div class="flex-1 md:flex-initial flex items-center justify-center space-x-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl shadow-xs text-center">
+                  <div class="flex-1 md:flex-initial flex items-center justify-center space-x-2 bg-white dark:bg-slate-800 border border-purple-200/60 dark:border-purple-900/60 px-3 py-1.5 rounded-xl shadow-[0_2px_12px_rgba(147,51,234,0.08)] text-center">
                     <span class="text-base shrink-0">📅</span>
                     <div class="truncate">
                       <div class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">วันที่เลือกดูงาน:</div>
                       <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
                         ${formatThaiDate(dailySelectedDate)}
-                        ${isToday ? `<span class="ml-1 text-[9px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold">วันนี้</span>` : ''}
+                        ${isToday ? `<span class="ml-1 text-[9px] px-1.5 py-0.2 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-2xs">วันนี้</span>` : ''}
                         ${dailyHoliday ? `<span class="ml-1 text-[9px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold" title="วันหยุด: ${escapeHtml(dailyHoliday)}">🇹🇭 ${escapeHtml(dailyHoliday)}</span>` : ''}
                       </div>
                     </div>
@@ -4364,7 +4406,7 @@
 
                 <!-- Bottom Row on Mobile: Jump to Today, Date Picker, Member Filter -->
                 <div class="flex items-center gap-2 w-full md:w-auto flex-wrap">
-                  ${!isToday ? `<button type="button" onclick="window.appActions.setDailyDate('${todayStr}')" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 transition shadow-xs cursor-pointer shrink-0">กลับมาวันนี้</button>` : ''}
+                  ${!isToday ? `<button type="button" onclick="window.appActions.setDailyDate('${todayStr}')" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-200 hover:from-purple-200 hover:to-indigo-200 border border-purple-300/80 dark:border-purple-800 transition shadow-xs cursor-pointer shrink-0">กลับมาวันนี้</button>` : ''}
                   <input type="date" value="${dailySelectedDate}" onchange="window.appActions.setDailyDate(this.value)" class="flex-1 min-w-[110px] md:flex-initial px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs">
                   ${isManager ? `
                     <select onchange="window.appActions.setDailyMemberFilter(this.value)" class="flex-1 min-w-[120px] md:flex-initial px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-xs truncate">
@@ -4425,7 +4467,7 @@
                 const rate = grandTotal > 0 ? Math.round((completed.length / grandTotal) * 100) : 0;
 
                 return `
-                  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs flex flex-col justify-between space-y-3.5 sm:space-y-4 hover:shadow-md transition">
+                  <div class="bg-white/95 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-3 sm:p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between space-y-3.5 sm:space-y-4 hover:shadow-[0_10px_25px_-5px_rgba(147,51,234,0.15)] hover:border-purple-300/60 dark:hover:border-purple-800/60 hover:-translate-y-0.5 transition-all duration-200">
                     <div>
                       <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                         <div class="flex items-center space-x-2.5">
@@ -4564,7 +4606,7 @@
         const memberId = member ? member.id : '';
 
         return `
-          <div class="daily-task-item p-2.5 rounded-xl border flex items-start space-x-2 group hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition relative cursor-grab active:cursor-grabbing ${borderClass}"
+          <div class="daily-task-item p-2.5 rounded-xl border flex items-start space-x-2 group hover:bg-white dark:hover:bg-slate-900 hover:shadow-[0_4px_16px_rgba(147,51,234,0.12)] hover:border-purple-300/80 dark:hover:border-purple-700/80 hover:-translate-y-0.5 transition-all duration-200 relative cursor-grab active:cursor-grabbing ${borderClass}"
                draggable="true"
                data-task-id="${task.id}"
                data-member-id="${memberId}"
