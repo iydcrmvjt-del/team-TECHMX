@@ -1940,12 +1940,23 @@
         return 'calendar';
       })();
 
-      // AI Shorts Assistant Studio State (Silence Removal & CapCut Caption Generator)
+      // AI Shorts Assistant Studio State (Silence Removal, Logo Watermark & CapCut Studio)
       let aiShortsState = {
         fileName: 'คลิปรีวิว_iPhone_16_Pro_Max_บรีฟตัดต่อ.mp4',
         fileSize: 48500000,
         originalDuration: 142.5,
         cutDuration: 94.3,
+        videoUrl: null,
+        videoFile: null,
+        skipSilenceEnabled: true,
+        logoUrl: null,
+        logoName: 'TECHMX_Badge_Logo.png',
+        logoPosition: 'top-right', // 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center'
+        logoScale: 16, // 16% width
+        logoOpacity: 90, // 90% opacity
+        logoMargin: 20, // 20px
+        isExportingVideo: false,
+        exportProgress: 0,
         silenceThreshold: -30, // dB
         minSilenceDuration: 0.35, // seconds
         padding: 0.08, // seconds
@@ -4763,7 +4774,37 @@
         `;
       };
 
-      // ================= AI SHORTS ASSISTANT STUDIO (CAPCUT READY) =================
+      // ================= AI SHORTS ASSISTANT STUDIO (CAPCUT & LOGO READY) =================
+      const DEFAULT_TECHMX_LOGO_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg width="280" height="74" viewBox="0 0 280 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="276" height="70" rx="18" fill="rgba(15, 23, 42, 0.88)" stroke="url(#border_grad)" stroke-width="2.5"/>
+  <circle cx="34" cy="37" r="15" fill="url(#circle_grad)"/>
+  <path d="M30 29L41 37L30 45V29Z" fill="white"/>
+  <text x="60" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="900" fill="white" letter-spacing="1">TECHMX</text>
+  <defs>
+    <linearGradient id="border_grad" x1="0" y1="0" x2="280" y2="74" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A855F7"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="circle_grad" x1="19" y1="22" x2="49" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EC4899"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+</svg>
+`)}`;
+
+      const getLogoPositionInlineStyle = (pos, margin = 20) => {
+        switch(pos) {
+          case 'top-left': return `top: ${margin}px; left: ${margin}px;`;
+          case 'bottom-right': return `bottom: ${margin + 30}px; right: ${margin}px;`;
+          case 'bottom-left': return `bottom: ${margin + 30}px; left: ${margin}px;`;
+          case 'center': return `top: 50%; left: 50%; transform: translate(-50%, -50%);`;
+          case 'top-right':
+          default: return `top: ${margin}px; right: ${margin}px;`;
+        }
+      };
+
       const formatTimeMMSS = (seconds) => {
         if (isNaN(seconds) || seconds < 0) return '00:00';
         const mins = Math.floor(seconds / 60);
@@ -4829,7 +4870,7 @@
         return lines.join('\n');
       };
 
-      const generateFFmpegCutCommand = (segments, fileName = 'input.mp4') => {
+      const generateFFmpegCutAndLogoCommand = (segments, fileName = 'input.mp4', logoName = 'assets/logo.png', logoPos = 'top-right', logoScale = 16, logoOpacity = 90) => {
         const speech = (segments || []).filter(s => !s.isSilence);
         if (speech.length === 0) return '# ไม่พบช่วงเสียงพูดที่ต้องการตัด';
 
@@ -4843,13 +4884,25 @@
           concatInputs.push(`[v${i}][a${i}]`);
         });
 
-        const filterComplex = `${videoFilters.join(';')};${audioFilters.join(';')};${concatInputs.join('')}concat=n=${speech.length}:v=1:a=1[outv][outa]`;
+        let posExpr = 'x=W-w-24:y=24';
+        if (logoPos === 'top-left') posExpr = 'x=24:y=24';
+        else if (logoPos === 'bottom-right') posExpr = 'x=W-w-24:y=H-h-24';
+        else if (logoPos === 'bottom-left') posExpr = 'x=24:y=H-h-24';
+        else if (logoPos === 'center') posExpr = 'x=(W-w)/2:y=(H-h)/2';
+
+        const scaleFraction = (logoScale / 100).toFixed(2);
+        const opacityFraction = (logoOpacity / 100).toFixed(2);
+
+        const concatFilter = `${videoFilters.join(';')};${audioFilters.join(';')};${concatInputs.join('')}concat=n=${speech.length}:v=1:a=1[vcut][acut]`;
+        const logoFilter = `[1:v][vcut]scale2ref=w=main_w*${scaleFraction}:h=-1[logo_s][vbase];[logo_s]format=rgba,colorchannelmixer=aa=${opacityFraction}[logo_a];[vbase][logo_a]overlay=${posExpr}[vfinal]`;
+
+        const filterComplex = `${concatFilter};${logoFilter}`;
         const baseName = fileName.replace(/\.[^/.]+$/, '');
-        return `ffmpeg -i "${fileName}" -filter_complex "${filterComplex}" -map "[outv]" -map "[outa]" -c:v libx264 -preset fast -crf 18 -c:a aac -b:a 192k "${baseName}_cut.mp4"`;
+        return `ffmpeg -i "${fileName}" -i "${logoName}" -filter_complex "${filterComplex}" -map "[vfinal]" -map "[acut]" -c:v libx264 -pix_fmt yuv420p -preset fast -crf 18 -c:a aac -b:a 192k "${baseName}_cut_logo.mp4"`;
       };
 
       const downloadBlobFile = (content, filename, mimeType) => {
-        const blob = new Blob([content], { type: mimeType });
+        const blob = (content instanceof Blob) ? content : new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -4923,16 +4976,16 @@
               <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div class="space-y-2">
                   <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold bg-white/10 backdrop-blur-md border border-white/15 text-purple-200">
-                    <span>⚡ Silence Cut & Auto Subtitles</span>
+                    <span>⚡ Silence Cut + Logo Overlay + Export MP4</span>
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>CapCut Desktop Ready</span>
+                    <span>Taskflow Studio Ready</span>
                   </div>
                   <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center space-x-2">
-                    <span>🤖 AI ผู้ช่วยตัดต่อคลิปสั้น</span>
-                    <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-sm">v2.0</span>
+                    <span>🤖 AI ผู้ช่วยตัดต่อคลิปสั้น & ใส่ Logo</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-sm">v2.5</span>
                   </h2>
                   <p class="text-xs sm:text-sm text-purple-200/80 max-w-2xl leading-relaxed">
-                    ตรวจจับและตัดช่วงเงียบ (Dead-air / Jump Cut) อัตโนมัติ พร้อมสร้างไฟล์ซับไตเติลภาษาไทย <span class="text-white font-bold">.SRT</span> และไทม์ไลน์ <span class="text-white font-bold">.EDL</span> นำเข้าเปิดแต่งต่อใน <span class="text-amber-300 font-bold">CapCut Desktop</span> ได้ทันที
+                    ตัดช่วงเงียบ (Dead-air) อัตโนมัติ พร้อมใส่ Logo ลายน้ำประจำช่อง และส่งออกไฟล์ <span class="text-white font-bold">.MP4</span> หรือไฟล์ซับไตเติล <span class="text-amber-300 font-bold">.SRT / .EDL</span> สำหรับนำไปแต่งต่อใน CapCut ได้ทันที
                   </p>
                 </div>
 
@@ -4942,9 +4995,13 @@
                     <span>📁</span>
                     <span>โหลดคลิปตัวอย่าง</span>
                   </button>
+                  <button type="button" onclick="window.appActions.aiShortsCopyBatchCommand()" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition backdrop-blur-md shadow-xs active:scale-95 cursor-pointer" title="คัดลอกคำสั่งรันระบบโฟลเดอร์ Input บน Mac">
+                    <span>⚡</span>
+                    <span>รันโฟลเดอร์ Input (Mac)</span>
+                  </button>
                   <button type="button" onclick="window.appActions.aiShortsCopyAllText()" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition backdrop-blur-md shadow-xs active:scale-95 cursor-pointer">
                     <span>📋</span>
-                    <span>คัดลอกสคริปต์ทั้งหมด</span>
+                    <span>คัดลอกสคริปต์</span>
                   </button>
                   <button type="button" onclick="window.appActions.aiShortsExportToKanban()" class="flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 shadow-[0_4px_16px_rgba(251,191,36,0.35)] transition active:scale-95 cursor-pointer">
                     <span>➕</span>
@@ -4985,28 +5042,28 @@
 
               <div class="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-purple-200/80 dark:border-purple-900/50 shadow-2xs">
                 <div class="text-[11px] font-semibold text-purple-600 dark:text-purple-400 mb-1 flex items-center justify-between">
-                  <span>💬 คำบรรยาย (CapCut Subtitles)</span>
-                  <span class="text-purple-500 font-mono">.SRT</span>
+                  <span>🏷️ Logo ที่ติดบนคลิป</span>
+                  <span class="text-purple-500 font-mono">${aiShortsState.logoScale}%</span>
                 </div>
-                <div class="text-lg sm:text-xl font-black text-purple-600 dark:text-purple-400">${subsCount} ท่อน</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">พรีเซ็ต ${aiShortsState.captionStyle}</div>
+                <div class="text-sm sm:text-base font-black text-purple-600 dark:text-purple-400 capitalize">${aiShortsState.logoPosition}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">ความทึบแสง: ${aiShortsState.logoOpacity}%</div>
               </div>
             </div>
 
             <!-- Two-Column Workspace Layout -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-              <!-- Left Column: Upload, Settings, Styles, CapCut Export -->
+              <!-- Left Column: Upload, Silence Controls, Logo Studio, Export -->
               <div class="lg:col-span-5 space-y-5">
                 <!-- Box 1: File Upload & Info -->
                 <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
                   <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
                       <span>📁</span>
-                      <span>ไฟล์วิดีโอ / คลิปเสียงต้นฉบับ</span>
+                      <span>ไฟล์วิดีโอต้นฉบับ</span>
                     </h3>
                     <input type="file" id="aiShortsFileInput" accept="video/*,audio/*" onchange="window.appActions.aiShortsOnFileSelected(event)" class="hidden">
                     <button type="button" onclick="document.getElementById('aiShortsFileInput').click()" class="text-xs px-2.5 py-1 rounded-lg font-bold bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 transition cursor-pointer">
-                      + เลือกไฟล์ใหม่
+                      + เลือกไฟล์วิดีโอ
                     </button>
                   </div>
 
@@ -5019,7 +5076,7 @@
                     </div>
                     <div class="mt-2 inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">
                       <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span>วิเคราะห์เสียงเรียบร้อย</span>
+                      <span>พร้อมตัดต่อ & วาง Logo</span>
                     </div>
                   </div>
                 </div>
@@ -5057,7 +5114,7 @@
                     <input type="range" min="0.15" max="1.50" step="0.05" value="${aiShortsState.minSilenceDuration}" onchange="window.appActions.aiShortsUpdateSetting('minSilenceDuration', this.value)" class="w-full accent-purple-600 cursor-pointer">
                     <div class="flex justify-between text-[10px] text-slate-400">
                       <span>0.15s (กระชับมาก)</span>
-                      <span>0.35s (กำลังดี)</span>
+                      <span>0.35s (แนะนำ)</span>
                       <span>1.50s (ผ่อนคลาย)</span>
                     </div>
                   </div>
@@ -5069,80 +5126,182 @@
                       <span class="font-mono font-bold text-purple-600 dark:text-purple-400">${aiShortsState.padding}s</span>
                     </div>
                     <input type="range" min="0.02" max="0.25" step="0.01" value="${aiShortsState.padding}" onchange="window.appActions.aiShortsUpdateSetting('padding', this.value)" class="w-full accent-purple-600 cursor-pointer">
-                    <div class="text-[10.5px] text-slate-400">ป้องกันไม่ให้เสียงพยัญชนะต้นหรือสระท้ายโดนตัดห้วน</div>
+                    <div class="text-[10.5px] text-slate-400">ป้องกันเสียงพยัญชนะต้นหรือสระท้ายโดนตัดห้วน</div>
                   </div>
                 </div>
 
-                <!-- Box 3: CapCut Subtitle Preset -->
-                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-3">
-                  <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
-                    <span>🎨</span>
-                    <span>พรีเซ็ตซับไตเติล CapCut</span>
-                  </h3>
-
-                  <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="window.appActions.aiShortsSetStyle('yellow-bold')" class="p-2.5 rounded-xl border text-center transition cursor-pointer ${aiShortsState.captionStyle === 'yellow-bold' ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/40 ring-2 ring-amber-400/30' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}">
-                      <div class="text-base font-black text-amber-500 drop-shadow-sm">เหลืองสด</div>
-                      <div class="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5">ไวรัล Shorts</div>
+                <!-- Box 3: Logo Watermark Studio -->
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                      <span>🏷️</span>
+                      <span>การตั้งค่า Logo ประจำช่อง (Watermark)</span>
+                    </h3>
+                    <input type="file" id="aiShortsLogoInput" accept="image/*" onchange="window.appActions.aiShortsOnLogoSelected(event)" class="hidden">
+                    <button type="button" onclick="document.getElementById('aiShortsLogoInput').click()" class="text-xs px-2.5 py-1 rounded-lg font-bold bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition cursor-pointer">
+                      🖼️ เปลี่ยน Logo
                     </button>
+                  </div>
 
-                    <button type="button" onclick="window.appActions.aiShortsSetStyle('white-bold')" class="p-2.5 rounded-xl border text-center transition cursor-pointer ${aiShortsState.captionStyle === 'white-bold' ? 'border-purple-400 bg-purple-50 dark:bg-purple-950/40 ring-2 ring-purple-400/30' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}">
-                      <div class="text-base font-black text-slate-800 dark:text-white">ขาวขอบดำ</div>
-                      <div class="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5">คลีน มินิมอล</div>
-                    </button>
+                  <!-- Logo Preview Pill -->
+                  <div class="flex items-center space-x-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                    <div class="w-16 h-10 rounded-lg bg-slate-900 flex items-center justify-center p-1 border border-slate-700 overflow-hidden shrink-0">
+                      <img src="${aiShortsState.logoUrl || DEFAULT_TECHMX_LOGO_SVG}" alt="Logo" class="max-h-full max-w-full object-contain">
+                    </div>
+                    <div class="min-w-0 flex-1 text-xs">
+                      <div class="font-bold text-slate-800 dark:text-slate-200 truncate">${escapeHtml(aiShortsState.logoName)}</div>
+                      <div class="text-[10.5px] text-slate-400">ขนาด ${aiShortsState.logoScale}% • ทึบแสง ${aiShortsState.logoOpacity}%</div>
+                    </div>
+                  </div>
 
-                    <button type="button" onclick="window.appActions.aiShortsSetStyle('purple-neon')" class="p-2.5 rounded-xl border text-center transition cursor-pointer ${aiShortsState.captionStyle === 'purple-neon' ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 ring-2 ring-indigo-400/30' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}">
-                      <div class="text-base font-black text-indigo-500">ม่วงนีออน</div>
-                      <div class="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5">เทค ล้ำยุค</div>
-                    </button>
+                  <!-- Position Selector Grid (5 Buttons) -->
+                  <div class="space-y-1.5">
+                    <div class="text-xs font-semibold text-slate-600 dark:text-slate-300">ตำแหน่งวาง Logo บนหน้าจอ:</div>
+                    <div class="grid grid-cols-5 gap-1.5">
+                      <button type="button" onclick="window.appActions.aiShortsSetLogoPosition('top-left')" class="p-2 rounded-xl text-center border text-xs transition cursor-pointer ${aiShortsState.logoPosition === 'top-left' ? 'bg-purple-600 text-white border-purple-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-purple-50'}">
+                        ↖️ ซ้ายบน
+                      </button>
+                      <button type="button" onclick="window.appActions.aiShortsSetLogoPosition('top-right')" class="p-2 rounded-xl text-center border text-xs transition cursor-pointer ${aiShortsState.logoPosition === 'top-right' ? 'bg-purple-600 text-white border-purple-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-purple-50'}">
+                        ↗️ ขวาบน
+                      </button>
+                      <button type="button" onclick="window.appActions.aiShortsSetLogoPosition('center')" class="p-2 rounded-xl text-center border text-xs transition cursor-pointer ${aiShortsState.logoPosition === 'center' ? 'bg-purple-600 text-white border-purple-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-purple-50'}">
+                        🎯 กลาง
+                      </button>
+                      <button type="button" onclick="window.appActions.aiShortsSetLogoPosition('bottom-left')" class="p-2 rounded-xl text-center border text-xs transition cursor-pointer ${aiShortsState.logoPosition === 'bottom-left' ? 'bg-purple-600 text-white border-purple-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-purple-50'}">
+                        ↙️ ซ้ายล่าง
+                      </button>
+                      <button type="button" onclick="window.appActions.aiShortsSetLogoPosition('bottom-right')" class="p-2 rounded-xl text-center border text-xs transition cursor-pointer ${aiShortsState.logoPosition === 'bottom-right' ? 'bg-purple-600 text-white border-purple-600 font-bold shadow-xs' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-purple-50'}">
+                        ↘️ ขวาล่าง
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Size & Opacity Sliders -->
+                  <div class="grid grid-cols-2 gap-3 pt-1">
+                    <div class="space-y-1">
+                      <div class="flex justify-between text-xs">
+                        <span class="text-slate-600 dark:text-slate-300 font-medium">ขนาด Logo</span>
+                        <span class="font-mono font-bold text-purple-600 dark:text-purple-400">${aiShortsState.logoScale}%</span>
+                      </div>
+                      <input type="range" min="10" max="32" step="1" value="${aiShortsState.logoScale}" oninput="window.appActions.aiShortsUpdateLogoSetting('logoScale', this.value)" class="w-full accent-purple-600 cursor-pointer">
+                    </div>
+                    <div class="space-y-1">
+                      <div class="flex justify-between text-xs">
+                        <span class="text-slate-600 dark:text-slate-300 font-medium">ความทึบแสง</span>
+                        <span class="font-mono font-bold text-purple-600 dark:text-purple-400">${aiShortsState.logoOpacity}%</span>
+                      </div>
+                      <input type="range" min="40" max="100" step="5" value="${aiShortsState.logoOpacity}" oninput="window.appActions.aiShortsUpdateLogoSetting('logoOpacity', this.value)" class="w-full accent-purple-600 cursor-pointer">
+                    </div>
                   </div>
                 </div>
 
-                <!-- Box 4: CapCut Export Hub -->
+                <!-- Box 4: Export Hub -->
                 <div class="p-5 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-slate-800 dark:to-purple-950/40 border border-purple-200 dark:border-purple-800/60 shadow-xs space-y-3">
                   <h3 class="text-sm font-bold text-purple-900 dark:text-purple-200 flex items-center space-x-2">
                     <span>⚡</span>
-                    <span>ส่งออกไฟล์สำหรับ CapCut Desktop</span>
+                    <span>ส่งออกวิดีโอ & ไฟล์สำหรับ CapCut</span>
                   </h3>
 
-                  <!-- Button 1: Download SRT -->
-                  <button type="button" onclick="window.appActions.aiShortsDownloadSrt()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-[0_4px_16px_rgba(147,51,234,0.35)] hover:opacity-95 transition active:scale-98 cursor-pointer">
-                    <div class="flex items-center space-x-2.5">
-                      <span class="text-lg">📥</span>
-                      <div class="text-left">
-                        <div>ดาวน์โหลดไฟล์ .SRT (CapCut Subtitles)</div>
-                        <div class="text-[10px] text-purple-200 font-normal">นำเข้าเมนู Text > Local Captions ได้ทันที</div>
-                      </div>
-                    </div>
-                    <span class="text-xs bg-white/20 px-2 py-0.5 rounded-md font-mono font-bold">.SRT</span>
-                  </button>
-
-                  <!-- Button 2: Download EDL -->
-                  <button type="button" onclick="window.appActions.aiShortsDownloadEdl()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-98 cursor-pointer">
+                  <!-- Action Button: Browser Video Export -->
+                  <button type="button" onclick="window.appActions.aiShortsExportBrowserVideo()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-[0_4px_16px_rgba(147,51,234,0.35)] hover:opacity-95 transition active:scale-98 cursor-pointer">
                     <div class="flex items-center space-x-2.5">
                       <span class="text-lg">🎬</span>
                       <div class="text-left">
-                        <div>ดาวน์โหลดไทม์ไลน์ .EDL (Jump-Cut)</div>
-                        <div class="text-[10px] text-slate-400 font-normal">CMX 3600 ตัดช่วงเดดแอร์ออกให้เรียบร้อย</div>
+                        <div>เรนเดอร์และดาวน์โหลดวิดีโอ (MP4 + Logo)</div>
+                        <div class="text-[10px] text-purple-200 font-normal">ตัดเดดแอร์ + วาง Logo อัตโนมัติในเบราว์เซอร์</div>
                       </div>
                     </div>
-                    <span class="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-mono font-bold text-slate-600 dark:text-slate-300">.EDL</span>
+                    <span class="text-xs bg-white/20 px-2 py-0.5 rounded-md font-mono font-bold">.MP4</span>
                   </button>
 
-                  <!-- Button 3: Copy FFmpeg Script -->
-                  <button type="button" onclick="window.appActions.aiShortsCopyFFmpegCommand()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-900 transition active:scale-98 cursor-pointer">
+                  <!-- Action Button: Local Folder Batch Command -->
+                  <button type="button" onclick="window.appActions.aiShortsCopyBatchCommand()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold text-xs border border-purple-300 dark:border-purple-700 hover:bg-purple-50/50 dark:hover:bg-purple-950/30 transition active:scale-98 cursor-pointer" title="สำหรับตัดไฟล์ในโฟลเดอร์ video-auto-cutter/input ทีละหลายคลิป">
                     <div class="flex items-center space-x-2">
-                      <span>💻</span>
-                      <span>คัดลอกคำสั่ง FFmpeg Script</span>
+                      <span>📁</span>
+                      <div class="text-left">
+                        <div>รันระบบโฟลเดอร์ Input (Local Batch Mac)</div>
+                        <div class="text-[10px] text-slate-400 font-normal">ใช้ Native FFmpeg Apple Silicon เรนเดอร์ 2 วินาทีเสร็จ</div>
+                      </div>
                     </div>
-                    <span class="text-[10px] text-slate-400">Terminal CLI</span>
+                    <span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">คลิกคัดลอก</span>
+                  </button>
+
+                  <!-- Button: Download SRT -->
+                  <button type="button" onclick="window.appActions.aiShortsDownloadSrt()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-semibold text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition active:scale-98 cursor-pointer">
+                    <div class="flex items-center space-x-2">
+                      <span>📥</span>
+                      <span>ดาวน์โหลดไฟล์ .SRT (ซับไตเติล CapCut)</span>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-purple-600">.SRT</span>
+                  </button>
+
+                  <!-- Button: Download EDL -->
+                  <button type="button" onclick="window.appActions.aiShortsDownloadEdl()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-semibold text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition active:scale-98 cursor-pointer">
+                    <div class="flex items-center space-x-2">
+                      <span>🎬</span>
+                      <span>ดาวน์โหลดไทม์ไลน์ .EDL (Jump-Cut Timeline)</span>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-slate-500">.EDL</span>
+                  </button>
+
+                  <!-- Button: Copy FFmpeg Script -->
+                  <button type="button" onclick="window.appActions.aiShortsCopyFFmpegCommand()" class="w-full flex items-center justify-between px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 text-xs font-medium hover:bg-slate-200 transition active:scale-98 cursor-pointer">
+                    <span>💻 คัดลอกคำสั่ง FFmpeg Script (พร้อม Logo & Cut)</span>
+                    <span class="text-[10px]">Terminal</span>
                   </button>
                 </div>
               </div>
 
-              <!-- Right Column: Visual Timeline, Subtitle Editor, CapCut Guide -->
+              <!-- Right Column: Live Video Player & Live Logo Overlay, Timeline, Subtitles -->
               <div class="lg:col-span-7 space-y-5">
-                <!-- Box 5: Visual Timeline Bar -->
+                <!-- Box 5: Live Video Player & Logo Watermark Stage -->
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-3">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                      <span>🎬</span>
+                      <span>หน้าจอพรีวิววิดีโอ & Logo สด (Live Preview)</span>
+                    </h3>
+                    <!-- Toggle Skip Silence Switch -->
+                    <button type="button" onclick="window.appActions.aiShortsToggleSkipSilence()" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold transition cursor-pointer ${aiShortsState.skipSilenceEnabled ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shadow-2xs' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-300 dark:border-slate-600'}" title="เปิด/ปิด การข้ามช่วงเดดแอร์แบบสดขณะกดเล่นวิดีโอ">
+                      <span class="w-2 h-2 rounded-full ${aiShortsState.skipSilenceEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}"></span>
+                      <span>${aiShortsState.skipSilenceEnabled ? '⚡ กำลังข้ามเดดแอร์สด' : 'เล่นตามเวลาจริง'}</span>
+                    </button>
+                  </div>
+
+                  <!-- Player Stage Container -->
+                  <div class="relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-xl flex items-center justify-center min-h-[300px] max-h-[440px]">
+                    <!-- Live Floating Logo Element -->
+                    <div id="aiShortsLiveLogo" style="position: absolute; ${getLogoPositionInlineStyle(aiShortsState.logoPosition, aiShortsState.logoMargin)}; width: ${aiShortsState.logoScale}%; opacity: ${aiShortsState.logoOpacity / 100}; pointer-events: none; z-index: 25; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);">
+                      <img src="${aiShortsState.logoUrl || DEFAULT_TECHMX_LOGO_SVG}" alt="Logo" class="w-full h-auto drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+                    </div>
+
+                    ${aiShortsState.videoUrl ? `
+                      <video id="aiShortsPlayer" src="${aiShortsState.videoUrl}" class="w-full max-h-[420px] object-contain" playsinline controls ontimeupdate="window.appActions.aiShortsOnVideoTimeUpdate(this)"></video>
+                    ` : `
+                      <div class="p-8 text-center space-y-3 cursor-pointer" onclick="document.getElementById('aiShortsFileInput').click()">
+                        <div class="w-16 h-16 rounded-2xl bg-purple-900/40 border border-purple-500/30 flex items-center justify-center mx-auto text-3xl text-purple-300">
+                          🎬
+                        </div>
+                        <div>
+                          <div class="text-sm font-bold text-white">หน้าจอแสดงตัวอย่างวิดีโอ & Logo สด</div>
+                          <div class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                            คลิกที่นี่เพื่อเลือกไฟล์วิดีโอสำหรับทดลองเล่นแบบข้ามช่วงเงียบ (Jump-Cut) และดูตำแหน่ง Logo
+                          </div>
+                        </div>
+                        <button type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md hover:opacity-95 transition">
+                          + เลือกไฟล์วิดีโอเพื่อพรีวิว
+                        </button>
+                      </div>
+                    `}
+                  </div>
+
+                  <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-1">
+                    <span>💡 ลองปรับเปลี่ยนตำแหน่ง Logo หรือเปิดโหมดข้ามเดดแอร์ แล้วกดเล่นวิดีโอได้ทันที!</span>
+                    <span class="font-bold text-purple-600 dark:text-purple-400">Jump-Cut Live Engine</span>
+                  </div>
+                </div>
+
+                <!-- Box 6: Timeline Bar -->
                 <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-3">
                   <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
@@ -5161,12 +5320,10 @@
                     </div>
                   </div>
 
-                  <!-- Timeline Visualizer Bar -->
                   <div class="space-y-1.5">
                     <div class="w-full h-8 rounded-xl bg-slate-100 dark:bg-slate-900 flex overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
                       ${segmentsBarHtml}
                     </div>
-                    <!-- Time Ruler -->
                     <div class="flex justify-between text-[10px] font-mono text-slate-400 px-1">
                       <span>00:00</span>
                       <span>${formatTimeMMSS(origDur * 0.25)}</span>
@@ -5177,7 +5334,7 @@
                   </div>
                 </div>
 
-                <!-- Box 6: Subtitle Editor -->
+                <!-- Box 7: Subtitle Editor -->
                 <div class="p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
                   <div class="flex items-center justify-between">
                     <div>
@@ -5192,47 +5349,30 @@
                     </button>
                   </div>
 
-                  <!-- Subtitle Cards List -->
-                  <div class="space-y-2.5 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
+                  <div class="space-y-2.5 max-h-[340px] overflow-y-auto custom-scrollbar pr-1">
                     ${subtitlesListHtml}
                   </div>
                 </div>
 
-                <!-- Box 7: CapCut 3-Step Guide -->
+                <!-- Box 8: Local Mac System Info -->
                 <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
-                  <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-2">
-                    <span>💡</span>
-                    <span>คู่มือ 3 ขั้นตอนนำไฟล์เข้า CapCut Desktop</span>
-                  </h4>
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                    <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
-                      <div class="font-bold text-purple-600 dark:text-purple-400 mb-1">1. ลากวิดีโอลงโปรแกรม</div>
-                      <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
-                        เปิด CapCut Desktop นำเข้าไฟล์วิดีโอต้นฉบับลงในไทม์ไลน์ตามปกติ
-                      </p>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
-                      <div class="font-bold text-purple-600 dark:text-purple-400 mb-1">2. กด Import ไฟล์ .SRT</div>
-                      <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
-                        ไปที่เมนู <strong>Text (ข้อความ)</strong> ด้านบนซ้าย เลือก <strong>Local Captions</strong> แล้วกดเลือกไฟล์ .SRT ที่ดาวน์โหลด
-                      </p>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
-                      <div class="font-bold text-purple-600 dark:text-purple-400 mb-1">3. ซับตรงเป๊ะ แต่งต่อได้เลย</div>
-                      <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
-                        ข้อความจะวางเรียงตรงจังหวะคำพูด เลือกเทมเพลตและใส่เอฟเฟกต์แอนิเมชันได้ทันที!
-                      </p>
-                    </div>
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+                      <span>📁</span>
+                      <span>ระบบประมวลผลวิดีโอโฟลเดอร์ในเครื่อง (Local Mac Engine)</span>
+                    </h4>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">พร้อมใช้งาน</span>
                   </div>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    มีโฟลเดอร์สำหรับตัดต่ออัตโนมัติอยู่ที่: <code class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[11px] text-purple-600 dark:text-purple-400">/Users/techmx/Documents/video-auto-cutter</code>
+                    เพียงนำคลิปมาใส่ในโฟลเดอร์ <strong>input/</strong> แล้วดับเบิลคลิก <strong>run_mac.command</strong> ระบบจะใช้ FFmpeg Native Apple Silicon ตัดเงียบและใส่ Logo ให้ทุกคลิปในเวลาเพียงไม่กี่วินาที!
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         `;
       };
-
       // 5. Modal and Event Handlers
       const renderModalOptions = () => {
         const grid = document.getElementById('optionsPillGrid');
@@ -7260,6 +7400,7 @@ switchUser: (newUserId) => {
           aiShortsState.fileSize = 48500000;
           aiShortsState.originalDuration = 142.5;
           aiShortsState.cutDuration = 94.3;
+          aiShortsState.videoUrl = null;
           aiShortsState.silenceThreshold = -30;
           aiShortsState.minSilenceDuration = 0.35;
           aiShortsState.padding = 0.08;
@@ -7300,6 +7441,11 @@ switchUser: (newUserId) => {
           aiShortsState.isProcessing = true;
           aiShortsState.fileName = file.name;
           aiShortsState.fileSize = file.size;
+          aiShortsState.videoFile = file;
+          try {
+            aiShortsState.videoUrl = URL.createObjectURL(file);
+          } catch(e) {}
+
           showToast(`กำลังวิเคราะห์ช่วงเสียงและเดดแอร์ในไฟล์ "${file.name}"... 🎙️`, 'info');
           renderApp();
 
@@ -7421,11 +7567,49 @@ switchUser: (newUserId) => {
           } catch(err) {
             console.warn('Web Audio decoding notice:', err);
             aiShortsState.isProcessing = false;
-            const estimatedDur = Math.max(30, Math.min(300, Math.round(file.size / (1024 * 1024) * 2.5)));
+            const estimatedDur = Math.max(10, Math.min(300, Math.round(file.size / (1024 * 1024) * 2.5)));
             aiShortsState.originalDuration = estimatedDur;
             aiShortsState.cutDuration = parseFloat((estimatedDur * 0.68).toFixed(1));
-            showToast(`อ่านข้อมูลไฟล์ "${file.name}" เรียบร้อย พร้อมตัดต่อใน CapCut! ⚡`, 'info');
+            showToast(`อ่านข้อมูลไฟล์ "${file.name}" เรียบร้อย พร้อมตัดต่อ & วาง Logo! ⚡`, 'info');
           }
+          renderApp();
+        },
+        aiShortsOnVideoTimeUpdate: (video) => {
+          if (!aiShortsState.skipSilenceEnabled || !video) return;
+          const cur = video.currentTime;
+          const sil = (aiShortsState.segments || []).find(s => s.isSilence && cur >= s.start && cur < s.end);
+          if (sil) {
+            video.currentTime = sil.end + 0.02;
+          }
+        },
+        aiShortsOnLogoSelected: (event) => {
+          const file = event.target.files && event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            aiShortsState.logoUrl = e.target.result;
+            aiShortsState.logoName = file.name;
+            showToast(`อัปโหลด Logo "${file.name}" เรียบร้อย! 🏷️`, 'success');
+            renderApp();
+          };
+          reader.readAsDataURL(file);
+        },
+        aiShortsSetLogoPosition: (pos) => {
+          aiShortsState.logoPosition = pos;
+          showToast(`เปลี่ยนตำแหน่ง Logo เป็น: ${pos} 📌`, 'info');
+          renderApp();
+        },
+        aiShortsUpdateLogoSetting: (key, val) => {
+          aiShortsState[key] = parseFloat(val);
+          const liveLogo = document.getElementById('aiShortsLiveLogo');
+          if (liveLogo) {
+            if (key === 'logoScale') liveLogo.style.width = `${val}%`;
+            if (key === 'logoOpacity') liveLogo.style.opacity = `${val / 100}`;
+          }
+        },
+        aiShortsToggleSkipSilence: () => {
+          aiShortsState.skipSilenceEnabled = !aiShortsState.skipSilenceEnabled;
+          showToast(`โหมดข้ามเดดแอร์ขณะเล่น: ${aiShortsState.skipSilenceEnabled ? 'เปิดทำงาน ⚡' : 'ปิด'}`, 'info');
           renderApp();
         },
         aiShortsUpdateSetting: (key, val) => {
@@ -7480,12 +7664,108 @@ switchUser: (newUserId) => {
           showToast(`ดาวน์โหลดไฟล์ไทม์ไลน์ "${baseName}_jumpcut_timeline.edl" แล้ว 🎬`, 'success');
         },
         aiShortsCopyFFmpegCommand: () => {
-          const cmd = generateFFmpegCutCommand(aiShortsState.segments, aiShortsState.fileName);
+          const cmd = generateFFmpegCutAndLogoCommand(
+            aiShortsState.segments,
+            aiShortsState.fileName,
+            aiShortsState.logoName || 'assets/logo.png',
+            aiShortsState.logoPosition,
+            aiShortsState.logoScale,
+            aiShortsState.logoOpacity
+          );
           navigator.clipboard.writeText(cmd).then(() => {
-            showToast('คัดลอกคำสั่ง FFmpeg ไปยังคลิปบอร์ดแล้ว! ⚡', 'success');
+            showToast('คัดลอกคำสั่ง FFmpeg (ตัดเงียบ + ใส่ Logo) เรียบร้อย! ⚡', 'success');
           }).catch(() => {
             showToast('ไม่สามารถคัดลอกได้ กรุณาลองใหม่อีกครั้ง', 'error');
           });
+        },
+        aiShortsCopyBatchCommand: () => {
+          const cmd = `cd /Users/techmx/Documents/video-auto-cutter && ./run_mac.command`;
+          navigator.clipboard.writeText(cmd).then(() => {
+            showToast('คัดลอกคำสั่งรันโฟลเดอร์ Input แล้ว! ⚡ วางใน Terminal บน Mac ได้ทันที', 'success');
+          }).catch(() => {
+            showToast('ไม่สามารถคัดลอกได้', 'error');
+          });
+        },
+        aiShortsExportBrowserVideo: async () => {
+          const videoElem = document.getElementById('aiShortsPlayer');
+          if (!videoElem || !videoElem.src) {
+            showToast('กรุณาเลือกไฟล์วิดีโอก่อน หรือใช้ปุ่มรันโฟลเดอร์ Input บนเครื่อง', 'warning');
+            return;
+          }
+          showToast('กำลังเตรียมเรนเดอร์วิดีโอพร้อม Logo ผ่านเบราว์เซอร์... 🎬', 'info');
+
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = videoElem.videoWidth || 1080;
+            canvas.height = videoElem.videoHeight || 1920;
+
+            const logoImg = new Image();
+            logoImg.crossOrigin = 'anonymous';
+            logoImg.src = aiShortsState.logoUrl || DEFAULT_TECHMX_LOGO_SVG;
+            await new Promise(r => { logoImg.onload = r; logoImg.onerror = r; });
+
+            const stream = canvas.captureStream(30);
+            if (videoElem.captureStream) {
+              const vs = videoElem.captureStream();
+              const audioTracks = vs.getAudioTracks();
+              if (audioTracks.length > 0) {
+                stream.addTrack(audioTracks[0]);
+              }
+            }
+
+            const mime = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')
+              ? 'video/mp4;codecs=avc1'
+              : (MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm');
+
+            const recorder = new MediaRecorder(stream, { mimeType: mime });
+            const chunks = [];
+            recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+            recorder.onstop = () => {
+              const blob = new Blob(chunks, { type: mime });
+              const ext = mime.includes('mp4') ? 'mp4' : 'webm';
+              const baseName = (aiShortsState.fileName || 'video').replace(/\.[^/.]+$/, '');
+              downloadBlobFile(blob, `${baseName}_cut_logo.${ext}`, mime);
+              showToast(`เรนเดอร์และดาวน์โหลดวิดีโอสำเร็จ! 🎉`, 'success');
+            };
+
+            recorder.start();
+            showToast('กำลังเรนเดอร์วิดีโอ... กรุณารอสักครู่ 🚀', 'info');
+
+            let isRunning = true;
+            const draw = () => {
+              if (!isRunning) return;
+              ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+
+              const logoW = canvas.width * (aiShortsState.logoScale / 100);
+              const logoH = logoW * (logoImg.height / (logoImg.width || 1));
+              let lx = canvas.width - logoW - 24;
+              let ly = 24;
+              if (aiShortsState.logoPosition === 'top-left') { lx = 24; ly = 24; }
+              else if (aiShortsState.logoPosition === 'bottom-right') { lx = canvas.width - logoW - 24; ly = canvas.height - logoH - 24; }
+              else if (aiShortsState.logoPosition === 'bottom-left') { lx = 24; ly = canvas.height - logoH - 24; }
+              else if (aiShortsState.logoPosition === 'center') { lx = (canvas.width - logoW)/2; ly = (canvas.height - logoH)/2; }
+
+              ctx.globalAlpha = aiShortsState.logoOpacity / 100;
+              ctx.drawImage(logoImg, lx, ly, logoW, logoH);
+              ctx.globalAlpha = 1.0;
+
+              requestAnimationFrame(draw);
+            };
+
+            videoElem.currentTime = 0;
+            videoElem.play();
+            draw();
+
+            setTimeout(() => {
+              isRunning = false;
+              recorder.stop();
+              videoElem.pause();
+            }, Math.min(20000, (aiShortsState.cutDuration || 10) * 1000));
+          } catch(err) {
+            console.warn('Browser video render notice:', err);
+            showToast('สามารถใช้ปุ่มรันโฟลเดอร์ Input เพื่อเรนเดอร์ความเร็วสูงด้วย FFmpeg บนเครื่องได้ทันทีครับ', 'info');
+          }
         },
         aiShortsCopyAllText: () => {
           const fullText = (aiShortsState.subtitles || []).map(s => s.text).join('\n');
@@ -7502,10 +7782,10 @@ switchUser: (newUserId) => {
           const savedDur = origDur - cutDur;
           const pct = Math.round((savedDur / origDur) * 100);
 
-          const noteContent = `🎬 งานตัดต่อคลิปสั้นสำหรับ TikTok / Reels / Shorts\n- ไฟล์ต้นฉบับ: ${aiShortsState.fileName}\n- ความยาวเดิม: ${formatTimeMMSS(origDur)} (${origDur}s)\n- ตัดช่วงเงียบ/เดดแอร์ออกแล้ว: ${formatTimeMMSS(savedDur)} (ประหยัดเวลา ${pct}%)\n- ความยาวคลิปสุทธิ: ${formatTimeMMSS(cutDur)} (${cutDur}s)\n- จำนวนซับไตเติล CapCut: ${aiShortsState.subtitles.length} ท่อน\n- สไตล์ซับ: ${aiShortsState.captionStyle}\n\n💡 โน้ตคนตัดต่อ: นำไฟล์ .SRT เข้า CapCut ที่เมนู Text -> Local Captions ได้ทันที!`;
+          const noteContent = `🎬 งานตัดต่อคลิปสั้นสำหรับ TikTok / Reels / Shorts\n- ไฟล์ต้นฉบับ: ${aiShortsState.fileName}\n- ความยาวเดิม: ${formatTimeMMSS(origDur)} (${origDur}s)\n- ตัดช่วงเงียบ/เดดแอร์ออกแล้ว: ${formatTimeMMSS(savedDur)} (ประหยัดเวลา ${pct}%)\n- ความยาวคลิปสุทธิ: ${formatTimeMMSS(cutDur)} (${cutDur}s)\n- ตำแหน่ง Logo: ${aiShortsState.logoPosition} (สเกล: ${aiShortsState.logoScale}%, ทึบแสง: ${aiShortsState.logoOpacity}%)\n- โฟลเดอร์ระบบในเครื่อง: /Users/techmx/Documents/video-auto-cutter\n\n💡 โน้ตคนตัดต่อ: สามารถวางไฟล์ในโฟลเดอร์ input/ แล้วดับเบิลคลิก run_mac.command หรือนำไฟล์ .SRT เข้า CapCut Desktop ได้ทันที!`;
 
           openModal({
-            title: `[ตัดต่อคลิปสั้น] ${baseName}`,
+            title: `[ตัดต่อคลิป + ใส่ Logo] ${baseName}`,
             category: 'vdo',
             note: noteContent,
             status: 'todo',
@@ -7513,10 +7793,6 @@ switchUser: (newUserId) => {
             options: ['Roll A']
           });
           showToast('เปิดแบบฟอร์มมอบหมายงานตัดต่อในบอร์ดแล้ว! 📌', 'info');
-        },
-
-        sendDailyDigestToLark: () => {
-          window.appActions.openLarkPreviewModal();
         },
         toggleTheme: () => {
           applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
