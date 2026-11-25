@@ -278,8 +278,9 @@
       <div class="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-2">
         <!-- Logo -->
         <div class="flex items-center space-x-1.5 sm:space-x-3 min-w-0 shrink">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-bold text-base sm:text-xl shadow-md shadow-indigo-500/20 shrink-0">
-            📋
+          <div class="relative group w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base sm:text-xl shadow-[0_4px_16px_rgba(147,51,234,0.45)] ring-2 ring-purple-300/40 shrink-0">
+            <span class="absolute inset-0 rounded-xl bg-gradient-to-b from-white/30 to-transparent pointer-events-none"></span>
+            <span class="relative z-10 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">📋</span>
           </div>
           <div class="min-w-0">
             <h1 class="text-xs sm:text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight truncate">Team TaskFlow</h1>
@@ -350,23 +351,29 @@
   </header>
 
   <!-- Banner Area -->
-  <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-3.5 sm:py-4 px-2 sm:px-6 lg:px-8 shadow-inner">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+  <div class="relative overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-slate-900 text-white py-3.5 sm:py-4 px-2 sm:px-6 lg:px-8 border-b border-purple-900/30 shadow-inner">
+    <!-- Ambient Purple Mesh Light Glow in Banner -->
+    <div class="absolute -top-12 -right-12 w-64 h-64 bg-gradient-to-br from-purple-600/30 via-violet-600/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-10 left-1/4 w-48 h-48 bg-gradient-to-tr from-indigo-600/20 via-purple-600/15 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div class="flex items-center space-x-2.5 sm:space-x-3 w-full sm:w-auto">
-        <span id="bannerAvatar" class="text-2xl sm:text-3xl p-1.5 sm:p-2 bg-white/10 rounded-2xl backdrop-blur-sm shrink-0">👑</span>
+        <span id="bannerAvatar" class="text-2xl sm:text-3xl p-1.5 sm:p-2 bg-white/10 rounded-2xl backdrop-blur-sm shrink-0 border border-purple-400/20 shadow-[0_2px_12px_rgba(147,51,234,0.3)]">👑</span>
         <div class="min-w-0 flex-1">
           <div class="flex items-center space-x-2">
             <h2 id="bannerName" class="text-base sm:text-lg font-bold truncate">เห็นภาพรวมทุกคน</h2>
-            <span id="bannerRoleBadge" class="text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-full bg-white/20 text-white font-medium shrink-0">ผู้จัดการภาพรวมทีม</span>
+            <span id="bannerRoleBadge" class="text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-full bg-purple-500/25 border border-purple-400/40 text-purple-200 font-medium shrink-0 shadow-2xs">ผู้จัดการภาพรวมทีม</span>
           </div>
           <p id="bannerDesc" class="text-[11px] sm:text-xs text-slate-300 truncate sm:whitespace-normal">ตรวจสอบภาพรวมงาน มอบหมายงาน และติดตามความคืบหน้า</p>
         </div>
       </div>
 
-      <!-- Main Action Button -->
-      <button id="btnOpenCreateModal" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        <span id="btnCreateTaskText">มอบหมายงานใหม่</span>
+      <!-- Main Action Button with Purple Glow & Glass Highlight -->
+      <button id="btnOpenCreateModal" class="relative group w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:via-purple-500 hover:to-indigo-500 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow-[0_10px_24px_-4px_rgba(147,51,234,0.55),0_4px_12px_-2px_rgba(168,85,247,0.35)] hover:shadow-[0_14px_30px_-3px_rgba(147,51,234,0.7)] ring-2 ring-purple-400/35 transition-all duration-200 cursor-pointer overflow-hidden">
+        <!-- Top Glass Highlight Sheen -->
+        <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent pointer-events-none"></span>
+        <svg class="w-4 h-4 stroke-[2.5] relative z-10 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <span id="btnCreateTaskText" class="relative z-10 tracking-wide filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">มอบหมายงานใหม่</span>
       </button>
     </div>
   </div>
@@ -536,8 +543,12 @@
           <button type="button" id="btnCancelModal" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">
             ยกเลิก
           </button>
-          <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-500/20 transition">
-            บันทึกข้อมูล
+          <button type="submit" class="relative group px-5 sm:px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl shadow-[0_8px_20px_-3px_rgba(147,51,234,0.55),0_4px_10px_-2px_rgba(168,85,247,0.35)] ring-2 ring-purple-300/40 active:scale-95 transition-all overflow-hidden cursor-pointer">
+            <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></span>
+            <span class="relative z-10 flex items-center space-x-1.5 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+              <span>💾</span>
+              <span>บันทึกข้อมูล</span>
+            </span>
           </button>
         </div>
       </form>
@@ -757,9 +768,12 @@
           <button type="button" onclick="window.appActions.closeSyncDiagnosticModal()" class="w-full sm:w-auto px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-semibold text-xs transition cursor-pointer">
             ปิด
           </button>
-          <button type="button" id="btnSyncModalRetry" onclick="window.appActions.retryCloudSyncFromModal()" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-semibold text-xs shadow-xs transition cursor-pointer flex items-center justify-center space-x-1.5">
-            <span>🔄</span>
-            <span>ตรวจสอบและซิงค์ใหม่</span>
+          <button type="button" id="btnSyncModalRetry" onclick="window.appActions.retryCloudSyncFromModal()" class="relative group w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-95 text-white rounded-xl font-bold text-xs shadow-[0_6px_18px_-3px_rgba(147,51,234,0.45)] ring-2 ring-purple-300/40 transition-all cursor-pointer flex items-center justify-center space-x-1.5 overflow-hidden">
+            <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></span>
+            <span class="relative z-10 flex items-center space-x-1.5 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+              <span>🔄</span>
+              <span>ตรวจสอบและซิงค์ใหม่</span>
+            </span>
           </button>
         </div>
       </div>
@@ -1026,9 +1040,12 @@
           <button type="button" onclick="window.appActions.closeLarkPreviewModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
             ยกเลิก
           </button>
-          <button id="larkConfirmSendBtn" type="button" onclick="window.appActions.confirmSendLarkDigest()" class="px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:from-orange-700 text-white rounded-xl shadow-md shadow-orange-500/20 transition cursor-pointer flex items-center space-x-2">
-            <span id="larkSendBtnIcon">🚀</span>
-            <span id="larkSendBtnText">ยืนยันส่งเข้า Lark ทันที</span>
+          <button id="larkConfirmSendBtn" type="button" onclick="window.appActions.confirmSendLarkDigest()" class="relative group px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold bg-gradient-to-r from-orange-500 via-amber-500 to-rose-500 hover:from-orange-400 hover:via-amber-400 hover:to-rose-400 active:scale-95 text-white rounded-xl shadow-[0_8px_24px_-4px_rgba(249,115,22,0.55),0_4px_10px_-2px_rgba(245,158,11,0.35)] ring-2 ring-orange-300/40 transition-all cursor-pointer flex items-center space-x-2 overflow-hidden">
+            <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></span>
+            <span class="relative z-10 flex items-center space-x-2 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+              <span id="larkSendBtnIcon">🚀</span>
+              <span id="larkSendBtnText">ยืนยันส่งเข้า Lark ทันที</span>
+            </span>
           </button>
         </div>
       </div>
@@ -2922,33 +2939,33 @@
               <!-- View Tabs Group (Segmented Pill Style) -->
               <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/60 text-xs sm:text-sm font-semibold gap-1 shrink-0">
                 <!-- 1. ปฏิทินไทม์ไลน์ -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'calendar' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'calendar' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>📅</span>
                   <span>ปฏิทิน<span class="hidden sm:inline">ไทม์ไลน์</span></span>
                 </button>
 
                 <!-- 2. สรุปงานประจำวัน -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'daily' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'daily' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>☀️</span>
                   <span>สรุป<span class="hidden sm:inline">งานประจำวัน</span><span class="sm:hidden">รายวัน</span></span>
-                  ${todayDueCount > 0 ? `<span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">${todayDueCount}</span>` : ''}
+                  ${todayDueCount > 0 ? `<span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 ring-1 ring-amber-300/40">${todayDueCount}</span>` : ''}
                 </button>
 
                 <!-- 3. กระดาน Kanban -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'kanban' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'kanban' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>📊</span>
                   <span><span class="hidden sm:inline">กระดาน </span>Kanban</span>
-                  <span class="ml-1 text-[10.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'kanban' ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">${tasksCount}</span>
+                  <span class="ml-1 text-[10.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'kanban' ? 'bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300/40' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">${tasksCount}</span>
                 </button>
 
                 <!-- 4. สถิติ & สรุปผลงาน -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'analytics' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'analytics' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>🏆</span>
                   <span>สถิติ<span class="hidden sm:inline"> & สรุปผลงาน</span></span>
                 </button>
 
                 <!-- 5. ดูรวมทั้งหมด -->
-                <button type="button" onclick="window.appActions.setActiveViewTab('all')" title="แสดงทุกส่วนรวมกันในหน้าเดียวแบบเดิม" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('all')" title="แสดงทุกส่วนรวมกันในหน้าเดียวแบบเดิม" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'all' ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-[0_4px_16px_-2px_rgba(147,51,234,0.35)] ring-1 ring-purple-400/40 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>🎛️</span>
                   <span class="hidden md:inline">ดูรวมทั้งหมด</span>
                   <span class="md:hidden">รวม</span>
@@ -2979,10 +2996,10 @@
       // Direction 3: Mobile-First Bottom Navigation Bar
       const renderMobileBottomNav = (activeTab, tasksCount, todayDueCount, overdueCount, archivedCount) => {
         return `
-          <nav id="mobileBottomNav" class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] pb-[calc(env(safe-area-inset-bottom,0px)+0.2rem)] select-none">
+          <nav id="mobileBottomNav" class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-purple-100/60 dark:border-purple-900/40 shadow-[0_-4px_25px_rgba(147,51,234,0.08)] pb-[calc(env(safe-area-inset-bottom,0px)+0.2rem)] select-none">
             <div class="max-w-md mx-auto grid grid-cols-5 items-stretch h-[60px] px-1 py-1 gap-0.5">
               <!-- 1. ปฏิทินไทม์ไลน์ -->
-              <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'calendar' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+              <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'calendar' ? 'text-purple-600 dark:text-purple-300 font-bold bg-gradient-to-b from-purple-500/15 to-violet-500/10 dark:from-purple-500/25 dark:to-violet-500/15 border border-purple-400/35 shadow-[0_2px_12px_rgba(147,51,234,0.25)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
                 <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
                   <span class="text-xl">📅</span>
                 </div>
@@ -2990,7 +3007,7 @@
               </button>
 
               <!-- 2. สรุปงานประจำวัน -->
-              <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'daily' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+              <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'daily' ? 'text-purple-600 dark:text-purple-300 font-bold bg-gradient-to-b from-purple-500/15 to-violet-500/10 dark:from-purple-500/25 dark:to-violet-500/15 border border-purple-400/35 shadow-[0_2px_12px_rgba(147,51,234,0.25)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
                 <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
                   <span class="text-xl">☀️</span>
                   ${todayDueCount > 0 ? `
@@ -3001,16 +3018,16 @@
               </button>
 
               <!-- 3. กระดาน Kanban -->
-              <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'kanban' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+              <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'kanban' ? 'text-purple-600 dark:text-purple-300 font-bold bg-gradient-to-b from-purple-500/15 to-violet-500/10 dark:from-purple-500/25 dark:to-violet-500/15 border border-purple-400/35 shadow-[0_2px_12px_rgba(147,51,234,0.25)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
                 <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
                   <span class="text-xl">📊</span>
-                  <span class="absolute -top-1 -right-2.5 px-1 min-w-[15px] h-[15px] flex items-center justify-center text-[9px] font-bold ${activeTab === 'kanban' ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'} rounded-full ring-2 ring-white dark:ring-slate-900">${tasksCount}</span>
+                  <span class="absolute -top-1 -right-2.5 px-1 min-w-[15px] h-[15px] flex items-center justify-center text-[9px] font-bold ${activeTab === 'kanban' ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-xs' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'} rounded-full ring-2 ring-white dark:ring-slate-900">${tasksCount}</span>
                 </div>
                 <span class="text-[10px] leading-tight font-medium tracking-tight">Kanban</span>
               </button>
 
               <!-- 4. สถิติ & สรุปผลงาน -->
-              <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'analytics' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+              <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'analytics' ? 'text-purple-600 dark:text-purple-300 font-bold bg-gradient-to-b from-purple-500/15 to-violet-500/10 dark:from-purple-500/25 dark:to-violet-500/15 border border-purple-400/35 shadow-[0_2px_12px_rgba(147,51,234,0.25)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
                 <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
                   <span class="text-xl">🏆</span>
                   ${overdueCount > 0 ? `
@@ -3021,7 +3038,7 @@
               </button>
 
               <!-- 5. ดูรวมทั้งหมด -->
-              <button type="button" onclick="window.appActions.setActiveViewTab('all')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'all' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+              <button type="button" onclick="window.appActions.setActiveViewTab('all')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'all' ? 'text-purple-600 dark:text-purple-300 font-bold bg-gradient-to-b from-purple-500/15 to-violet-500/10 dark:from-purple-500/25 dark:to-violet-500/15 border border-purple-400/35 shadow-[0_2px_12px_rgba(147,51,234,0.25)]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
                 <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
                   <span class="text-xl">🎛️</span>
                 </div>
@@ -3099,16 +3116,16 @@
           /* ================= MANAGER VIEW SECTIONS ================= */
           const statsSummaryHtml = `
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-[0_8px_20px_-4px_rgba(147,51,234,0.15)] hover:border-purple-300/60 dark:hover:border-purple-800/60 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
-                  <span>งานทั้งหมดของทีม</span><span class="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">📁</span>
+                  <span>งานทั้งหมดของทีม</span><span class="p-1.5 bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 rounded-lg">📁</span>
                 </div>
                 <div class="mt-2.5 sm:mt-3 flex items-baseline justify-between">
                   <span class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">${total}</span>
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
               </div>
-              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-[0_8px_20px_-4px_rgba(59,130,246,0.18)] hover:border-blue-300/60 dark:hover:border-blue-800/60 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                   <span>รอดำเนินการ</span><span class="p-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-lg">⏳</span>
                 </div>
@@ -3117,7 +3134,7 @@
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
               </div>
-              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-[0_8px_20px_-4px_rgba(245,158,11,0.18)] hover:border-amber-300/60 dark:hover:border-amber-800/60 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                   <span>กำลังดำเนินการ</span><span class="p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg">⚡</span>
                 </div>
@@ -3126,7 +3143,7 @@
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
               </div>
-              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-[0_8px_20px_-4px_rgba(16,185,129,0.18)] hover:border-emerald-300/60 dark:hover:border-emerald-800/60 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                   <span>เสร็จสิ้นแล้ว</span><span class="p-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg">✅</span>
                 </div>
@@ -3135,10 +3152,10 @@
                   <span class="text-xs text-slate-400">${total > 0 ? Math.round((doneCount / total) * 100) : 0}%</span>
                 </div>
               </div>
-              <div onclick="window.appActions.openOverdueModal()" title="คลิกเพื่อดูรายการงานที่เกินกำหนดส่ง" class="p-3.5 sm:p-4 rounded-2xl border shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1 transition-all duration-200 group cursor-pointer ${overdueCount > 0 ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 hover:border-rose-400 hover:shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'}">
+              <div onclick="window.appActions.openOverdueModal()" title="คลิกเพื่อดูรายการงานที่เกินกำหนดส่ง" class="p-3.5 sm:p-4 rounded-2xl border shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1 transition-all duration-200 group cursor-pointer ${overdueCount > 0 ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 hover:border-rose-400 hover:shadow-[0_8px_20px_-4px_rgba(244,63,94,0.3)] hover:-translate-y-0.5' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-purple-300/60 hover:shadow-[0_8px_20px_-4px_rgba(147,51,234,0.15)] hover:-translate-y-0.5'}">
                 <div class="flex items-center justify-between text-xs font-medium">
                   <span class="${overdueCount > 0 ? 'text-rose-700 dark:text-rose-300 font-bold' : 'text-slate-500 dark:text-slate-400'}">เกินกำหนดส่ง (Overdue)</span>
-                  <span class="p-1.5 ${overdueCount > 0 ? 'bg-rose-100 dark:bg-rose-900/60 group-hover:scale-110 transition-transform' : 'bg-slate-100 dark:bg-slate-800'} rounded-lg">🚨</span>
+                  <span class="p-1.5 ${overdueCount > 0 ? 'bg-rose-100 dark:bg-rose-900/60 group-hover:scale-110 transition-transform shadow-xs' : 'bg-slate-100 dark:bg-slate-800'} rounded-lg">🚨</span>
                 </div>
                 <div class="mt-2.5 sm:mt-3 flex items-baseline justify-between">
                   <span class="text-xl sm:text-2xl font-bold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}">${overdueCount}</span>
@@ -3256,7 +3273,7 @@
                       const rate = mTotal > 0 ? Math.round((mDone / mTotal) * 100) : 0;
 
                       return `
-                        <div onclick="window.appActions.switchUser('${m.id}')" class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 group">
+                        <div onclick="window.appActions.switchUser('${m.id}')" class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-purple-300/80 dark:hover:border-purple-700/80 hover:shadow-[0_8px_20px_-4px_rgba(147,51,234,0.18)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 group">
                           <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2.5">
                               <span class="text-2xl p-1 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">${m.avatar}</span>
@@ -3750,7 +3767,7 @@
         const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
 
         return `
-          <div draggable="true" ondragstart="window.appActions.onDragStart(event, '${task.id}')" class="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 border-l-4 ${colConf.borderL} shadow-xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing group relative">
+          <div draggable="true" ondragstart="window.appActions.onDragStart(event, '${task.id}')" class="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 border-l-4 ${colConf.borderL} shadow-xs hover:shadow-[0_10px_25px_-5px_rgba(147,51,234,0.18),0_4px_10px_-2px_rgba(0,0,0,0.05)] hover:border-purple-300/80 dark:hover:border-purple-800/80 hover:-translate-y-0.5 transition-all duration-200 cursor-grab active:cursor-grabbing group relative">
             <div class="flex items-center justify-between gap-2 mb-2">
               <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
                 <span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full border ${colConf.badge}" title="สีกำกับในปฏิทิน: ${colConf.name}">
@@ -4232,7 +4249,7 @@
                          class="calendar-cell p-1.5 sm:p-2 transition flex flex-col justify-start group relative ${!cell.isCurrentMonth ? 'bg-slate-50/60 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600' : (isHoliday ? 'bg-rose-50/35 dark:bg-rose-950/25 hover:bg-rose-50/55 dark:hover:bg-rose-900/35' : 'bg-white dark:bg-slate-900/40 hover:bg-slate-50/30 dark:hover:bg-slate-800/30')}">
                       <div class="flex items-center justify-between mb-1 px-1 h-6 shrink-0">
                         <div class="flex items-center space-x-1 min-w-0">
-                          <span class="text-xs font-semibold inline-flex items-center justify-center ${isToday ? 'w-6 h-6 rounded-full bg-indigo-600 text-white font-bold shadow-xs' : (isHoliday ? 'w-6 h-6 rounded-full text-rose-600 dark:text-rose-400 font-bold bg-rose-100/90 dark:bg-rose-900/60' : 'w-6 h-6 text-slate-700 dark:text-slate-300')}">
+                          <span class="text-xs font-semibold inline-flex items-center justify-center ${isToday ? 'w-6 h-6 rounded-full bg-gradient-to-tr from-violet-600 to-purple-600 text-white font-bold shadow-[0_2px_8px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/50' : (isHoliday ? 'w-6 h-6 rounded-full text-rose-600 dark:text-rose-400 font-bold bg-rose-100/90 dark:bg-rose-900/60' : 'w-6 h-6 text-slate-700 dark:text-slate-300')}">
                             ${cell.dayNumber}
                           </span>
                           ${isHoliday ? `
@@ -4355,9 +4372,12 @@
                       ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${dailyMemberFilter === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
                     </select>
                   ` : ''}
-                  <button type="button" onclick="window.appActions.openLarkPreviewModal()" title="ดูตัวอย่าง แก้ไข และส่งสรุปงานประจำวันเข้ากลุ่มแชท Lark" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white transition shadow-xs cursor-pointer flex items-center space-x-1.5 shrink-0">
-                    <span>🦜</span>
-                    <span>ส่งสรุปเข้า Lark</span>
+                  <button type="button" onclick="window.appActions.openLarkPreviewModal()" title="ดูตัวอย่าง แก้ไข และส่งสรุปงานประจำวันเข้ากลุ่มแชท Lark" class="relative group px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:from-sky-400 hover:via-indigo-500 hover:to-purple-500 shadow-[0_6px_18px_-3px_rgba(99,102,241,0.45),0_2px_8px_-2px_rgba(147,51,234,0.3)] ring-2 ring-indigo-300/40 active:scale-95 transition-all cursor-pointer flex items-center space-x-1.5 shrink-0 overflow-hidden">
+                    <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></span>
+                    <span class="relative z-10 flex items-center space-x-1.5 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+                      <span>🦜</span>
+                      <span>ส่งสรุปเข้า Lark</span>
+                    </span>
                   </button>
                 </div>
               </div>
@@ -4950,9 +4970,12 @@
                 <span>🗑️</span>
                 <span>ลบงาน</span>
               </button>
-              <button type="button" onclick="window.appActions.editFromDetails('${task.id}')" class="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-md shadow-indigo-500/20 transition cursor-pointer">
-                <span>✏️</span>
-                <span>แก้ไขงานนี้</span>
+              <button type="button" onclick="window.appActions.editFromDetails('${task.id}')" class="relative group flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 px-4 sm:px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl shadow-[0_8px_20px_-3px_rgba(147,51,234,0.55),0_4px_10px_-2px_rgba(168,85,247,0.35)] ring-2 ring-purple-300/40 active:scale-95 transition-all cursor-pointer overflow-hidden">
+                <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></span>
+                <span class="relative z-10 flex items-center space-x-1.5 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+                  <span>✏️</span>
+                  <span>แก้ไขงานนี้</span>
+                </span>
               </button>
             </div>
           </div>
