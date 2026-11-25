@@ -1036,8 +1036,14 @@
   </div>
 
   <!-- Mobile-First Floating Action Button (FAB) for New Task (md:hidden) -->
-  <button id="mobileCreateFab" onclick="window.appActions.openCreateModal()" title="เพิ่มงานใหม่" class="fixed bottom-20 right-4 z-40 md:hidden flex items-center justify-center w-13 h-13 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-600 to-violet-600 active:from-indigo-700 active:to-violet-700 text-white shadow-xl shadow-indigo-500/40 border-2 border-white dark:border-slate-800 active:scale-90 hover:scale-105 transition-all cursor-pointer">
-    <svg class="w-6 h-6 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+  <button id="mobileCreateFab" onclick="window.appActions.openCreateModal()" title="เพิ่มงานใหม่" class="group fixed bottom-[5.25rem] right-4 z-40 md:hidden flex items-center justify-center w-[60px] h-[60px] rounded-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-700 text-white shadow-[0_12px_28px_-4px_rgba(79,70,229,0.55),0_6px_12px_-2px_rgba(79,70,229,0.3)] ring-4 ring-white/95 dark:ring-slate-900/95 active:scale-90 hover:scale-105 transition-all duration-200 cursor-pointer select-none">
+    <!-- Ambient Luminous Glow Ring -->
+    <span class="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-sm opacity-60 group-active:opacity-40 transition-opacity -z-10"></span>
+    <!-- Glass Highlight Sheen -->
+    <span class="absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/5 to-transparent pointer-events-none"></span>
+    <svg class="w-7 h-7 stroke-[2.75] filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)] relative z-10 transition-transform group-hover:rotate-90 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+    </svg>
   </button>
 
   <!-- Mobile-First Bottom Navigation Bar Container (md:hidden) -->
