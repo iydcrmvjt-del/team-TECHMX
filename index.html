@@ -863,6 +863,166 @@
     </div>
   </div>
 
+  <!-- Lark Daily Digest Preview & Edit Modal -->
+  <div id="larkPreviewModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm hidden animate-fade-in">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl max-w-3xl w-full flex flex-col max-h-[92vh] overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div class="flex items-center space-x-3 min-w-0">
+          <div class="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xl shrink-0 shadow-xs border border-orange-200/50 dark:border-orange-800/40">
+            🦜
+          </div>
+          <div class="min-w-0">
+            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-lg flex items-center gap-2 truncate">
+              พรีวิวและแก้ไขก่อนส่งสรุปเข้า Lark
+            </h3>
+            <p id="larkPreviewSubtitle" class="text-xs text-slate-500 dark:text-slate-400 truncate">
+              ตรวจสอบข้อความและปรับแต่งเนื้อหาก่อนแจ้งเตือนไปยังกลุ่มแชท Lark
+            </p>
+          </div>
+        </div>
+        <button type="button" onclick="window.appActions.closeLarkPreviewModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center transition cursor-pointer shrink-0">
+          ✕
+        </button>
+      </div>
+
+      <!-- Tab Switcher (Edit vs Preview) -->
+      <div class="px-5 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-white dark:bg-slate-900">
+        <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold">
+          <button id="larkTabBtnEdit" type="button" onclick="window.appActions.switchLarkPreviewTab('edit')" class="px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-semibold">
+            <span>✏️</span>
+            <span>แก้ไขข้อความ</span>
+          </button>
+          <button id="larkTabBtnView" type="button" onclick="window.appActions.switchLarkPreviewTab('preview')" class="px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
+            <span>👁️</span>
+            <span>ดูตัวอย่างการ์ด Lark</span>
+          </button>
+        </div>
+        <div class="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:flex items-center gap-1.5">
+          <span>💡 สามารถแก้ไขข้อความก่อนกดส่งจริงได้</span>
+        </div>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4">
+        <!-- TAB 1: EDIT FORM -->
+        <div id="larkPaneEdit" class="space-y-4">
+          <!-- Card Title Input -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              🏷️ หัวข้อการ์ดสรุปงาน (Card Title)
+            </label>
+            <input type="text" id="larkEditTitle" class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium transition">
+          </div>
+
+          <!-- Announcement / Extra Note Input (Optional) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+              <span>📢 ประกาศ / หมายเหตุเพิ่มเติมถึงทีม (ไม่บังคับ)</span>
+              <span class="text-[11px] font-normal text-slate-400">จะแสดงเป็นกล่องไฮไลท์ที่ด้านบนของการ์ด</span>
+            </label>
+            <textarea id="larkEditNote" rows="2" placeholder="เช่น วันนี้มีนัดประชุมช่วง 14:00 น. หรือ แจ้งเตือนส่งไฟล์ก่อน 17:00 น." class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition resize-y"></textarea>
+          </div>
+
+          <!-- Quick Stats Preview Banner -->
+          <div id="larkEditStatsBanner" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 text-xs">
+            <!-- Dynamic stats populated by JS -->
+          </div>
+
+          <!-- Breakdown / Member Tasks Textarea (Editable Markdown) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+              <span>📝 รายละเอียดงานรายบุคคล (แก้ไขเนื้อหา, ชื่องาน, หรือหมายเหตุได้อิสระ)</span>
+              <button type="button" onclick="window.appActions.resetLarkPreviewContent()" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline flex items-center gap-1 cursor-pointer">
+                <span>🔄 คืนค่าข้อความเริ่มต้น</span>
+              </button>
+            </label>
+            <textarea id="larkEditBreakdown" rows="12" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-mono leading-relaxed bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition resize-y custom-scrollbar"></textarea>
+            <p class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+              รองรับ Markdown: **ตัวหนา**, *ตัวเอียง*, • รายการ, 1. ลำดับ
+            </p>
+          </div>
+        </div>
+
+        <!-- TAB 2: VISUAL LARK CARD PREVIEW -->
+        <div id="larkPaneView" class="hidden">
+          <div class="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+            <span>📱 จำลองหน้าตาการ์ดที่จะแสดงจริงในกลุ่มแชท Lark:</span>
+          </div>
+          <!-- Lark Interactive Card Container Simulation -->
+          <div class="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/90 max-w-xl mx-auto">
+            <!-- Orange Lark Header -->
+            <div class="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-3">
+              <div class="text-xs font-medium text-orange-100 uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                <span>🦜 LARK INTERACTIVE CARD</span>
+              </div>
+              <h4 id="larkSimTitle" class="font-bold text-base sm:text-lg leading-snug">
+                📊 รายงานสรุปงานประจำวัน
+              </h4>
+            </div>
+
+            <!-- Card Content Body -->
+            <div class="p-4 sm:p-5 space-y-3.5 text-xs sm:text-sm text-slate-700 dark:text-slate-200">
+              <!-- Sim Announcement Note if present -->
+              <div id="larkSimNoteBox" class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs hidden">
+                <div class="font-bold mb-1 flex items-center gap-1">
+                  <span>📢 ประกาศเพิ่มเติม:</span>
+                </div>
+                <div id="larkSimNoteText" class="whitespace-pre-wrap leading-relaxed"></div>
+              </div>
+
+              <!-- Sim Stats 2-column or 4-column -->
+              <div id="larkSimStatsBox" class="grid grid-cols-2 gap-2 text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                <!-- Populated dynamically -->
+              </div>
+
+              <!-- Sim Type Summary -->
+              <div id="larkSimTypeBox" class="text-xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                <!-- Populated dynamically -->
+              </div>
+
+              <!-- Divider -->
+              <div class="border-t border-slate-200 dark:border-slate-700 my-2"></div>
+
+              <!-- Sim Member Task Breakdown -->
+              <div>
+                <div class="font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-1.5">
+                  <span>📋 รายละเอียดงานรายบุคคล:</span>
+                </div>
+                <div id="larkSimBreakdownText" class="whitespace-pre-wrap font-sans leading-relaxed text-xs sm:text-sm p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 max-h-[350px] overflow-y-auto custom-scrollbar"></div>
+              </div>
+
+              <!-- Sim Button -->
+              <div class="pt-2">
+                <div class="w-full py-2.5 px-4 rounded-xl bg-orange-600 text-white font-semibold text-center text-xs sm:text-sm shadow-xs flex items-center justify-center gap-1.5 cursor-default opacity-90">
+                  <span>🚀 ไปที่บอร์ดงาน Team TaskFlow</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50 gap-2 flex-wrap">
+        <button type="button" onclick="window.appActions.resetLarkPreviewContent()" class="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl transition cursor-pointer flex items-center space-x-1.5 shadow-xs">
+          <span>🔄</span>
+          <span>คืนค่าเริ่มต้น</span>
+        </button>
+
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="window.appActions.closeLarkPreviewModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer">
+            ยกเลิก
+          </button>
+          <button id="larkConfirmSendBtn" type="button" onclick="window.appActions.confirmSendLarkDigest()" class="px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:from-orange-700 text-white rounded-xl shadow-md shadow-orange-500/20 transition cursor-pointer flex items-center space-x-2">
+            <span id="larkSendBtnIcon">🚀</span>
+            <span id="larkSendBtnText">ยืนยันส่งเข้า Lark ทันที</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
@@ -1675,6 +1835,11 @@
       let dailySelectedDate = getTodayStr(0);
       let dailyMemberFilter = 'all';
 
+      // Lark Daily Digest Preview & Edit State
+      let larkPreviewCurrentData = null;
+      let larkPreviewInitialData = null;
+      let larkPreviewActiveTab = 'edit';
+
       let searchQuery = '';
       let filterAssignee = 'all';
       let filterStatus = 'all';
@@ -2369,7 +2534,7 @@
         };
       };
 
-      const buildLarkDailyDigestCard = (selectedDate, taskList, memberFilter) => {
+      const generateDailyDigestData = (selectedDate, taskList, memberFilter) => {
         const thaiDate = formatThaiDate(selectedDate) || selectedDate;
         const targetMembers = (memberFilter && memberFilter !== 'all')
           ? TEAM_MEMBERS.filter(m => m.id === memberFilter)
@@ -2512,26 +2677,65 @@
           ? memberSummaries.join('\n\n')
           : '🎉 ไม่มีภาระงานค้างสำหรับสมาชิกที่เลือกในวันนี้';
 
+        const defaultTitle = `📊 รายงานสรุปงานประจำวัน: ${thaiDate}`;
+
+        return {
+          thaiDate,
+          selectedDate,
+          memberFilter,
+          targetMembers,
+          totalDueToday,
+          totalInProg,
+          totalOverdue,
+          totalCompleted,
+          typeSummaryText,
+          typeSummaryList,
+          breakdownText,
+          memberSummaries,
+          defaultTitle,
+          appUrl
+        };
+      };
+
+      const buildLarkDailyDigestCard = (selectedDate, taskList, memberFilter, customOverrides = null) => {
+        const data = generateDailyDigestData(selectedDate, taskList, memberFilter);
+        const title = (customOverrides && typeof customOverrides.title === 'string' && customOverrides.title.trim())
+          ? customOverrides.title.trim()
+          : data.defaultTitle;
+        const note = (customOverrides && typeof customOverrides.note === 'string')
+          ? customOverrides.note.trim()
+          : '';
+        const breakdownText = (customOverrides && typeof customOverrides.breakdown === 'string' && customOverrides.breakdown.trim())
+          ? customOverrides.breakdown.trim()
+          : data.breakdownText;
+
         const cardElements = [
           {
             tag: "div",
             fields: [
               {
                 is_short: true,
-                text: { tag: "lark_md", content: `**🚨 ต้องส่งวันนี้:** ${totalDueToday} งาน\n**⚡ กำลังทำอยู่:** ${totalInProg} งาน` }
+                text: { tag: "lark_md", content: `**🚨 ต้องส่งวันนี้:** ${data.totalDueToday} งาน\n**⚡ กำลังทำอยู่:** ${data.totalInProg} งาน` }
               },
               {
                 is_short: true,
-                text: { tag: "lark_md", content: `**⚠️ งานค้างเกินกำหนด:** ${totalOverdue} งาน\n**✅ เสร็จสิ้นแล้ว:** ${totalCompleted} งาน` }
+                text: { tag: "lark_md", content: `**⚠️ งานค้างเกินกำหนด:** ${data.totalOverdue} งาน\n**✅ เสร็จสิ้นแล้ว:** ${data.totalCompleted} งาน` }
               }
             ]
           }
         ];
 
-        if (typeSummaryText) {
+        if (note) {
           cardElements.push({
             tag: "div",
-            text: { tag: "lark_md", content: typeSummaryText }
+            text: { tag: "lark_md", content: `📢 **ประกาศ / หมายเหตุเพิ่มเติม:**\n${note}` }
+          });
+        }
+
+        if (data.typeSummaryText) {
+          cardElements.push({
+            tag: "div",
+            text: { tag: "lark_md", content: data.typeSummaryText }
           });
         }
 
@@ -2548,7 +2752,7 @@
                 tag: "button",
                 text: { tag: "plain_text", content: "🚀 ไปที่บอร์ดงาน Team TaskFlow" },
                 type: "primary",
-                url: appUrl
+                url: data.appUrl
               }
             ]
           }
@@ -2560,7 +2764,7 @@
             config: { wide_screen_mode: true, enable_forward: true },
             header: {
               template: "orange",
-              title: { tag: "plain_text", content: `📊 รายงานสรุปงานประจำวัน: ${thaiDate}` }
+              title: { tag: "plain_text", content: title }
             },
             elements: cardElements
           }
@@ -3860,7 +4064,7 @@
                       ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${dailyMemberFilter === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
                     </select>
                   ` : ''}
-                  <button type="button" onclick="window.appActions.sendDailyDigestToLark()" title="ส่งสรุปงานประจำวันเข้ากลุ่มแชท Lark" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white transition shadow-xs cursor-pointer flex items-center space-x-1.5 shrink-0">
+                  <button type="button" onclick="window.appActions.openLarkPreviewModal()" title="ดูตัวอย่าง แก้ไข และส่งสรุปงานประจำวันเข้ากลุ่มแชท Lark" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white transition shadow-xs cursor-pointer flex items-center space-x-1.5 shrink-0">
                     <span>🦜</span>
                     <span>ส่งสรุปเข้า Lark</span>
                   </button>
@@ -5873,27 +6077,241 @@ switchUser: (newUserId) => {
             }
           }
         },
-        sendDailyDigestToLark: async () => {
-          const cfg = getLarkConfig();
-          if (!cfg.webhookUrl) {
-            if (confirm('ยังไม่ได้ระบุ Lark Webhook URL ต้องการเปิดหน้าตั้งค่าตอนนี้หรือไม่?')) {
-              window.appActions.openLarkSettings();
+        openLarkPreviewModal: () => {
+          try {
+            const cfg = getLarkConfig();
+            if (!cfg.webhookUrl) {
+              if (confirm('ยังไม่ได้ระบุ Lark Webhook URL ต้องการเปิดหน้าตั้งค่าตอนนี้หรือไม่?')) {
+                window.appActions.openLarkSettings();
+              }
+              return;
             }
-            return;
+
+            saveDailyOrder();
+
+            const data = generateDailyDigestData(dailySelectedDate, tasks, dailyMemberFilter);
+            larkPreviewCurrentData = data;
+            larkPreviewInitialData = {
+              title: data.defaultTitle,
+              note: '',
+              breakdown: data.breakdownText
+            };
+
+            const sub = document.getElementById('larkPreviewSubtitle');
+            if (sub) {
+              const memberName = (dailyMemberFilter && dailyMemberFilter !== 'all')
+                ? (TEAM_MEMBERS.find(m => m.id === dailyMemberFilter)?.name || dailyMemberFilter)
+                : 'ทุกคนในทีม';
+              sub.textContent = `ประจำวันที่ ${data.thaiDate} (สมาชิก: ${memberName}) • ตรวจสอบและแก้ไขเนื้อหาก่อนส่ง`;
+            }
+
+            const titleInput = document.getElementById('larkEditTitle');
+            if (titleInput) titleInput.value = data.defaultTitle;
+
+            const noteInput = document.getElementById('larkEditNote');
+            if (noteInput) noteInput.value = '';
+
+            const breakdownInput = document.getElementById('larkEditBreakdown');
+            if (breakdownInput) breakdownInput.value = data.breakdownText;
+
+            const statsBanner = document.getElementById('larkEditStatsBanner');
+            if (statsBanner) {
+              statsBanner.innerHTML = `
+                <div class="flex items-center space-x-2">
+                  <span class="text-base">🚨</span>
+                  <div>
+                    <div class="text-[10px] text-slate-500 dark:text-slate-400">ต้องส่งวันนี้</div>
+                    <div class="text-xs font-bold text-rose-600 dark:text-rose-400">${data.totalDueToday} งาน</div>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-base">⚡</span>
+                  <div>
+                    <div class="text-[10px] text-slate-500 dark:text-slate-400">กำลังทำอยู่</div>
+                    <div class="text-xs font-bold text-amber-600 dark:text-amber-400">${data.totalInProg} งาน</div>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-base">⚠️</span>
+                  <div>
+                    <div class="text-[10px] text-slate-500 dark:text-slate-400">เกินกำหนด</div>
+                    <div class="text-xs font-bold text-red-600 dark:text-red-400">${data.totalOverdue} งาน</div>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-base">✅</span>
+                  <div>
+                    <div class="text-[10px] text-slate-500 dark:text-slate-400">เสร็จแล้ว</div>
+                    <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400">${data.totalCompleted} งาน</div>
+                  </div>
+                </div>
+              `;
+            }
+
+            window.appActions.switchLarkPreviewTab('edit');
+
+            const modal = document.getElementById('larkPreviewModal');
+            if (modal) {
+              modal.classList.remove('hidden');
+            }
+          } catch (err) {
+            console.error('Error in openLarkPreviewModal:', err);
+            alert('เกิดข้อผิดพลาดในการเปิดหน้าพรีวิว Lark: ' + err.message);
           }
+        },
+        closeLarkPreviewModal: () => {
+          const modal = document.getElementById('larkPreviewModal');
+          if (modal) modal.classList.add('hidden');
+        },
+        switchLarkPreviewTab: (tab) => {
+          larkPreviewActiveTab = tab;
+          const btnEdit = document.getElementById('larkTabBtnEdit');
+          const btnView = document.getElementById('larkTabBtnView');
+          const paneEdit = document.getElementById('larkPaneEdit');
+          const paneView = document.getElementById('larkPaneView');
 
-          saveDailyOrder();
-          showToast('กำลังเตรียมสรุปงานและส่งเข้า Lark... 🦜', 'lark', 2000);
-          const card = buildLarkDailyDigestCard(dailySelectedDate, tasks, dailyMemberFilter);
-          const res = await sendToLark(card);
-
-          if (res && res.success) {
-            showToast(`ส่งสรุปงานวันที่ ${formatThaiDate(dailySelectedDate)} เข้า Lark สำเร็จแล้ว! 🦜`, 'success');
+          if (tab === 'preview') {
+            if (btnEdit) {
+              btnEdit.className = 'px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100';
+            }
+            if (btnView) {
+              btnView.className = 'px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-semibold';
+            }
+            if (paneEdit) paneEdit.classList.add('hidden');
+            if (paneView) paneView.classList.remove('hidden');
+            window.appActions.renderLarkVisualPreview();
           } else {
-            const err = (res && res.error) || 'เกิดข้อผิดพลาดในการส่งเข้า Lark';
-            showToast(`ส่งไม่สำเร็จ: ${err}`, 'error', 4500);
-            alert(`ไม่สามารถส่งสรุปงานเข้า Lark ได้:\n${err}`);
+            if (btnEdit) {
+              btnEdit.className = 'px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-semibold';
+            }
+            if (btnView) {
+              btnView.className = 'px-3.5 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100';
+            }
+            if (paneEdit) paneEdit.classList.remove('hidden');
+            if (paneView) paneView.classList.add('hidden');
           }
+        },
+        renderLarkVisualPreview: () => {
+          if (!larkPreviewCurrentData) return;
+          const titleInput = document.getElementById('larkEditTitle');
+          const noteInput = document.getElementById('larkEditNote');
+          const breakdownInput = document.getElementById('larkEditBreakdown');
+
+          const title = (titleInput && titleInput.value.trim()) || larkPreviewCurrentData.defaultTitle;
+          const note = (noteInput && noteInput.value.trim()) || '';
+          const breakdown = (breakdownInput && breakdownInput.value) || larkPreviewCurrentData.breakdownText;
+
+          const simTitle = document.getElementById('larkSimTitle');
+          if (simTitle) simTitle.textContent = title;
+
+          const simNoteBox = document.getElementById('larkSimNoteBox');
+          const simNoteText = document.getElementById('larkSimNoteText');
+          if (simNoteBox && simNoteText) {
+            if (note) {
+              simNoteBox.classList.remove('hidden');
+              simNoteText.textContent = note;
+            } else {
+              simNoteBox.classList.add('hidden');
+              simNoteText.textContent = '';
+            }
+          }
+
+          const simStatsBox = document.getElementById('larkSimStatsBox');
+          if (simStatsBox) {
+            simStatsBox.innerHTML = `
+              <div class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex flex-col">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">🚨 ต้องส่งวันนี้</span>
+                <span class="text-base font-bold text-rose-600 dark:text-rose-400">${larkPreviewCurrentData.totalDueToday} งาน</span>
+              </div>
+              <div class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex flex-col">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">⚡ กำลังทำอยู่</span>
+                <span class="text-base font-bold text-amber-600 dark:text-amber-400">${larkPreviewCurrentData.totalInProg} งาน</span>
+              </div>
+              <div class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex flex-col">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">⚠️ ค้างเกินกำหนด</span>
+                <span class="text-base font-bold text-red-600 dark:text-red-400">${larkPreviewCurrentData.totalOverdue} งาน</span>
+              </div>
+              <div class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex flex-col">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">✅ เสร็จสิ้นแล้ว</span>
+                <span class="text-base font-bold text-emerald-600 dark:text-emerald-400">${larkPreviewCurrentData.totalCompleted} งาน</span>
+              </div>
+            `;
+          }
+
+          const simTypeBox = document.getElementById('larkSimTypeBox');
+          if (simTypeBox) {
+            if (larkPreviewCurrentData.typeSummaryText) {
+              simTypeBox.classList.remove('hidden');
+              simTypeBox.textContent = larkPreviewCurrentData.typeSummaryText.replace(/\*\*/g, '');
+            } else {
+              simTypeBox.classList.add('hidden');
+            }
+          }
+
+          const simBreakdownText = document.getElementById('larkSimBreakdownText');
+          if (simBreakdownText) {
+            const safeHtml = escapeHtml(breakdown)
+              .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900 dark:text-slate-100">$1</strong>')
+              .replace(/\*(.*?)\*/g, '<em class="italic text-slate-600 dark:text-slate-400">$1</em>');
+            simBreakdownText.innerHTML = safeHtml;
+          }
+        },
+        resetLarkPreviewContent: () => {
+          if (!larkPreviewInitialData) return;
+          const titleInput = document.getElementById('larkEditTitle');
+          const noteInput = document.getElementById('larkEditNote');
+          const breakdownInput = document.getElementById('larkEditBreakdown');
+
+          if (titleInput) titleInput.value = larkPreviewInitialData.title;
+          if (noteInput) noteInput.value = larkPreviewInitialData.note;
+          if (breakdownInput) breakdownInput.value = larkPreviewInitialData.breakdown;
+
+          if (larkPreviewActiveTab === 'preview') {
+            window.appActions.renderLarkVisualPreview();
+          }
+          showToast('คืนค่าข้อความสรุปเป็นค่าเริ่มต้นแล้ว 🔄', 'info', 2000);
+        },
+        confirmSendLarkDigest: async () => {
+          const titleInput = document.getElementById('larkEditTitle');
+          const noteInput = document.getElementById('larkEditNote');
+          const breakdownInput = document.getElementById('larkEditBreakdown');
+
+          const title = (titleInput && titleInput.value.trim()) || (larkPreviewCurrentData && larkPreviewCurrentData.defaultTitle) || 'รายงานสรุปงานประจำวัน';
+          const note = (noteInput && noteInput.value.trim()) || '';
+          const breakdown = (breakdownInput && breakdownInput.value) || (larkPreviewCurrentData && larkPreviewCurrentData.breakdownText) || '';
+
+          const sendBtn = document.getElementById('larkConfirmSendBtn');
+          const btnIcon = document.getElementById('larkSendBtnIcon');
+          const btnText = document.getElementById('larkSendBtnText');
+
+          if (sendBtn) sendBtn.disabled = true;
+          if (btnIcon) btnIcon.innerHTML = '<span class="inline-block animate-spin">⏳</span>';
+          if (btnText) btnText.textContent = 'กำลังส่งเข้า Lark...';
+
+          try {
+            const card = buildLarkDailyDigestCard(dailySelectedDate, tasks, dailyMemberFilter, { title, note, breakdown });
+            const res = await sendToLark(card);
+
+            if (res && res.success) {
+              window.appActions.closeLarkPreviewModal();
+              showToast(`ส่งสรุปงานวันที่ ${formatThaiDate(dailySelectedDate)} เข้า Lark สำเร็จแล้ว! 🦜`, 'success');
+            } else {
+              const err = (res && res.error) || 'เกิดข้อผิดพลาดในการส่งเข้า Lark';
+              showToast(`ส่งไม่สำเร็จ: ${err}`, 'error', 4500);
+              alert(`ไม่สามารถส่งสรุปงานเข้า Lark ได้:\n${err}`);
+            }
+          } catch (err) {
+            console.error('Error confirming send Lark digest:', err);
+            showToast(`เกิดข้อผิดพลาด: ${err.message}`, 'error', 4500);
+            alert(`เกิดข้อผิดพลาดในการส่งเข้า Lark:\n${err.message}`);
+          } finally {
+            if (sendBtn) sendBtn.disabled = false;
+            if (btnIcon) btnIcon.textContent = '🚀';
+            if (btnText) btnText.textContent = 'ยืนยันส่งเข้า Lark ทันที';
+          }
+        },
+        sendDailyDigestToLark: () => {
+          window.appActions.openLarkPreviewModal();
         },
         toggleTheme: () => {
           applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
@@ -5972,6 +6390,12 @@ switchUser: (newUserId) => {
           if (e.target === archiveModal) window.appActions.closeArchiveModal();
         };
       }
+      const larkPreviewModal = document.getElementById('larkPreviewModal');
+      if (larkPreviewModal) {
+        larkPreviewModal.onclick = (e) => {
+          if (e.target === larkPreviewModal) window.appActions.closeLarkPreviewModal();
+        };
+      }
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           closeModal();
@@ -5979,6 +6403,7 @@ switchUser: (newUserId) => {
           window.appActions.closeLarkSettings();
           window.appActions.closePWAInstallModal();
           window.appActions.closeOverdueModal();
+          window.appActions.closeLarkPreviewModal();
           window.appActions.closeArchiveModal();
         }
       });
