@@ -1152,9 +1152,9 @@
       };
 
       // Sort tasks for Daily Summary agenda using custom drag-and-drop order with priority fallback
-      const sortDailyList = (list, memberId, groupType) => {
+      const sortDailyList = (list, memberId, groupType, dateStr = null) => {
         if (!Array.isArray(list) || list.length <= 1) return list || [];
-        const selDate = (typeof dailySelectedDate !== 'undefined') ? dailySelectedDate : '';
+        const selDate = dateStr || ((typeof dailySelectedDate !== 'undefined') ? dailySelectedDate : '');
         const orderKey = `${memberId}_${selDate}_${groupType}`;
         const memberKey = `${memberId}_${selDate}`;
         const fallbackKey = `${memberId}_${groupType}`;
@@ -2407,7 +2407,8 @@
           const opts = (Array.isArray(t.options) && t.options.length > 0)
             ? t.options.map(o => (TASK_OPTIONS_CONFIG[o] ? `${TASK_OPTIONS_CONFIG[o].icon} ${TASK_OPTIONS_CONFIG[o].name}` : o)).join(', ')
             : 'งานทั่วไป';
-          let line = `**${t.title}** [${opts}]`;
+          const priorityPfx = t.priority === 'high' ? '🔥 [ด่วน] ' : (t.priority === 'low' ? '[ไม่รีบ] ' : '');
+          let line = `${priorityPfx}**${t.title}** [${opts}]`;
           if (!t.isAllDay && (t.startTime || t.endTime)) {
             const timeSpan = (t.startTime && t.endTime) ? `${t.startTime} - ${t.endTime}` : (t.startTime ? `เริ่ม ${t.startTime}` : `ถึง ${t.endTime}`);
             line += ` (⏰ ${timeSpan} น.)`;
@@ -2426,17 +2427,17 @@
 
         targetMembers.forEach(member => {
           const mTasks = taskList.filter(t => t.assigneeIds && t.assigneeIds.includes(member.id));
-          const dueToday = sortDailyList(mTasks.filter(t => t.deadline === selectedDate && t.status !== 'done'), member.id, 'due-today');
+          const dueToday = sortDailyList(mTasks.filter(t => t.deadline === selectedDate && t.status !== 'done'), member.id, 'due-today', selectedDate);
           const inProg = sortDailyList(mTasks.filter(t => {
             const s = t.date || t.deadline; const e = t.deadline || t.date;
             return s <= selectedDate && selectedDate <= e && t.deadline !== selectedDate && t.status !== 'done';
-          }), member.id, 'in-progress');
-          const overdue = sortDailyList(mTasks.filter(t => t.deadline < selectedDate && t.status !== 'done'), member.id, 'overdue');
+          }), member.id, 'in-progress', selectedDate);
+          const overdue = sortDailyList(mTasks.filter(t => t.deadline < selectedDate && t.status !== 'done'), member.id, 'overdue', selectedDate);
           const completed = sortDailyList(mTasks.filter(t => {
             if (t.status !== 'done') return false;
             const s = t.date || t.deadline; const e = t.deadline || t.date;
             return (s <= selectedDate && selectedDate <= e) || t.deadline === selectedDate;
-          }), member.id, 'completed');
+          }), member.id, 'completed', selectedDate);
 
           // Track unique tasks for overall type statistics
           [...dueToday, ...inProg, ...overdue, ...completed].forEach(t => {
@@ -2453,30 +2454,30 @@
             let taskLines = [];
             if (dueToday.length > 0) {
               if (dueToday.length === 1) {
-                taskLines.push(`  • 🚨 **ส่งวันนี้:** ${formatLarkTaskItem(dueToday[0], '    ')}`);
+                taskLines.push(`  • 🚨 **ต้องส่งวันนี้:** 1. ` + formatLarkTaskItem(dueToday[0], '    '));
               } else {
-                taskLines.push(`  • 🚨 **ส่งวันนี้ (${dueToday.length} งาน):**\n    - ` + dueToday.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
+                taskLines.push(`  • 🚨 **ต้องส่งวันนี้ (${dueToday.length} งาน):**\n` + dueToday.map((t, idx) => `    ${idx + 1}. ` + formatLarkTaskItem(t, '       ')).join('\n'));
               }
             }
             if (inProg.length > 0) {
               if (inProg.length === 1) {
-                taskLines.push(`  • ⚡ **กำลังทำ:** ${formatLarkTaskItem(inProg[0], '    ')}`);
+                taskLines.push(`  • ⚡ **กำลังทำอยู่:** 1. ` + formatLarkTaskItem(inProg[0], '    '));
               } else {
-                taskLines.push(`  • ⚡ **กำลังทำ (${inProg.length} งาน):**\n    - ` + inProg.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
+                taskLines.push(`  • ⚡ **กำลังทำอยู่ (${inProg.length} งาน):**\n` + inProg.map((t, idx) => `    ${idx + 1}. ` + formatLarkTaskItem(t, '       ')).join('\n'));
               }
             }
             if (overdue.length > 0) {
               if (overdue.length === 1) {
-                taskLines.push(`  • ⚠️ **เกินกำหนด:** ${formatLarkTaskItem(overdue[0], '    ')}`);
+                taskLines.push(`  • ⚠️ **งานค้างเกินกำหนด:** 1. ` + formatLarkTaskItem(overdue[0], '    '));
               } else {
-                taskLines.push(`  • ⚠️ **เกินกำหนด (${overdue.length} งาน):**\n    - ` + overdue.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
+                taskLines.push(`  • ⚠️ **งานค้างเกินกำหนด (${overdue.length} งาน):**\n` + overdue.map((t, idx) => `    ${idx + 1}. ` + formatLarkTaskItem(t, '       ')).join('\n'));
               }
             }
             if (completed.length > 0) {
               if (completed.length === 1) {
-                taskLines.push(`  • ✅ **เสร็จแล้ว:** ${formatLarkTaskItem(completed[0], '    ')}`);
+                taskLines.push(`  • ✅ **ทำเสร็จแล้ว:** 1. ` + formatLarkTaskItem(completed[0], '    '));
               } else {
-                taskLines.push(`  • ✅ **เสร็จแล้ว (${completed.length} งาน):**\n    - ` + completed.map(t => formatLarkTaskItem(t, '      ')).join('\n    - '));
+                taskLines.push(`  • ✅ **ทำเสร็จแล้ว (${completed.length} งาน):**\n` + completed.map((t, idx) => `    ${idx + 1}. ` + formatLarkTaskItem(t, '       ')).join('\n'));
               }
             }
 
@@ -5881,6 +5882,7 @@ switchUser: (newUserId) => {
             return;
           }
 
+          saveDailyOrder();
           showToast('กำลังเตรียมสรุปงานและส่งเข้า Lark... 🦜', 'lark', 2000);
           const card = buildLarkDailyDigestCard(dailySelectedDate, tasks, dailyMemberFilter);
           const res = await sendToLark(card);
