@@ -235,6 +235,17 @@
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
     }
 
+    /* Mobile Bottom Sheet Smooth Slide-up Keyframes */
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    @media (max-width: 639px) {
+      .mobile-bottom-sheet {
+        animation: slideUpSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    }
+
     /* ================= DESKTOP UI ENLARGEMENT ================= */
     /* Scale up UI, typography and layout on desktop screens (>=1024px) */
     /* Mobile displays (<1024px) remain strictly untouched at standard 16px */
@@ -391,18 +402,29 @@
     <div id="appRoot" class="space-y-4 sm:space-y-6 w-full"></div>
   </main>
 
-  <!-- Task Modal (Create / Edit) - Expanded Spacious Width -->
-  <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-3xl sm:max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[92vh] overflow-y-auto custom-scrollbar">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <h3 id="modalTitle" class="font-bold text-slate-800 dark:text-slate-100 text-lg sm:text-xl">มอบหมายงานใหม่ให้ทีม</h3>
-        <button id="btnCloseModal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+  <!-- Task Modal (Create / Edit) - Mobile Bottom Sheet & Desktop Centered Dialog -->
+  <div id="taskModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden transition-opacity duration-200">
+    <div class="mobile-bottom-sheet bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl max-w-3xl sm:max-w-4xl w-full flex flex-col max-h-[92vh] sm:max-h-[90vh] shadow-2xl border-t border-x sm:border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+      <!-- Mobile Pull / Drag Indicator Pill -->
+      <div class="sm:hidden w-full pt-2.5 pb-1 flex justify-center shrink-0 cursor-grab">
+        <div class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+      </div>
+
+      <!-- Header (Fixed at top of modal) -->
+      <div class="flex items-center justify-between px-5 sm:px-7 pt-2 pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <div class="flex items-center space-x-2 min-w-0">
+          <span class="p-1.5 bg-purple-50 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 rounded-xl text-base shrink-0">📝</span>
+          <h3 id="modalTitle" class="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-xl truncate">มอบหมายงานใหม่ให้ทีม</h3>
+        </div>
+        <button id="btnCloseModal" type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <form id="taskForm" class="mt-4 space-y-4">
-        <input type="hidden" id="formTaskId" value="">
+      <form id="taskForm" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <!-- Scrollable Form Body -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-7 py-4 space-y-4">
+          <input type="hidden" id="formTaskId" value="">
 
         <!-- Title -->
         <div>
@@ -542,16 +564,18 @@
           </div>
         </div>
 
-        <!-- Buttons -->
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
-          <button type="button" id="btnCancelModal" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">
+        </div>
+
+        <!-- Sticky Bottom Sheet Footer (Pinned at bottom, no scroll needed to save!) -->
+        <div class="sticky bottom-0 z-20 px-5 sm:px-7 py-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 flex items-center justify-between sm:justify-end space-x-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3 shrink-0">
+          <button type="button" id="btnCancelModal" class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
             ยกเลิก
           </button>
-          <button type="submit" class="relative group px-5 sm:px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl shadow-[0_8px_20px_-3px_rgba(147,51,234,0.55),0_4px_10px_-2px_rgba(168,85,247,0.35)] ring-2 ring-purple-300/40 active:scale-95 transition-all overflow-hidden cursor-pointer">
+          <button type="submit" class="relative group flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 px-5 sm:px-7 py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl shadow-[0_8px_20px_-3px_rgba(147,51,234,0.55),0_4px_10px_-2px_rgba(168,85,247,0.35)] ring-2 ring-purple-300/40 active:scale-95 transition-all overflow-hidden cursor-pointer">
             <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></span>
             <span class="relative z-10 flex items-center space-x-1.5 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
               <span>💾</span>
-              <span>บันทึกข้อมูล</span>
+              <span>บันทึกข้อมูลงาน</span>
             </span>
           </button>
         </div>
@@ -559,23 +583,28 @@
     </div>
   </div>
 
-  <!-- Task Detail Modal (View Details First) - Expanded Width -->
-  <div id="taskDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-3xl sm:max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[92vh] overflow-y-auto custom-scrollbar">
-      <div class="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
+  <!-- Task Detail Modal (View Details First) - Mobile Bottom Sheet & Desktop Centered Dialog -->
+  <div id="taskDetailModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden transition-opacity duration-200">
+    <div class="mobile-bottom-sheet bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl max-w-3xl sm:max-w-4xl w-full flex flex-col max-h-[92vh] sm:max-h-[90vh] shadow-2xl border-t border-x sm:border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+      <!-- Mobile Pull / Drag Indicator Pill -->
+      <div class="sm:hidden w-full pt-2.5 pb-1 flex justify-center shrink-0 cursor-grab">
+        <div class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+      </div>
+
+      <div class="flex items-start justify-between px-5 sm:px-7 pt-2 pb-3.5 border-b border-slate-100 dark:border-slate-800 gap-2 shrink-0">
         <div class="flex items-center space-x-2">
-          <span class="p-1.5 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-base">📋</span>
+          <span class="p-1.5 bg-purple-50 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 rounded-xl text-base">📋</span>
           <div>
             <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base leading-snug">รายละเอียดข้อมูลงาน</h3>
             <p class="text-xs text-slate-400 dark:text-slate-500">ข้อมูลกำหนดการ ผู้รับผิดชอบ และลิงก์ส่งงาน</p>
           </div>
         </div>
-        <button id="btnCloseDetailModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-lg cursor-pointer">
+        <button id="btnCloseDetailModal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <div id="taskDetailContent" class="mt-4 space-y-4">
+      <div id="taskDetailContent" class="flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-7 py-4 space-y-4">
         <!-- Rendered dynamically -->
       </div>
     </div>
@@ -4815,6 +4844,8 @@
         renderModalOptions();
         renderModalAssignees();
         renderColorPicker();
+        const formScrollBody = document.querySelector('#taskForm > .overflow-y-auto');
+        if (formScrollBody) formScrollBody.scrollTop = 0;
         document.getElementById('taskModal').classList.remove('hidden');
       };
 
@@ -6888,6 +6919,55 @@ switchUser: (newUserId) => {
           if (e.target === taskModal) closeModal();
         };
       }
+
+      // Swipe down to dismiss Bottom Sheet on mobile
+      const initBottomSheetSwipe = (modalId, closeFn) => {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        const sheet = modal.querySelector('.mobile-bottom-sheet');
+        if (!sheet) return;
+
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+
+        sheet.addEventListener('touchstart', (e) => {
+          if (window.innerWidth >= 640) return;
+          const scrollable = sheet.querySelector('.overflow-y-auto');
+          if (scrollable && scrollable.scrollTop > 5 && !e.target.closest('.cursor-grab')) return;
+          startY = e.touches[0].clientY;
+          isDragging = true;
+          sheet.style.transition = 'none';
+        }, { passive: true });
+
+        sheet.addEventListener('touchmove', (e) => {
+          if (!isDragging) return;
+          currentY = e.touches[0].clientY;
+          const diff = currentY - startY;
+          if (diff > 0) {
+            sheet.style.transform = `translateY(${diff}px)`;
+          }
+        }, { passive: true });
+
+        sheet.addEventListener('touchend', () => {
+          if (!isDragging) return;
+          isDragging = false;
+          sheet.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+          const diff = currentY - startY;
+          if (diff > 120) {
+            sheet.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+              closeFn();
+              sheet.style.transform = '';
+            }, 220);
+          } else {
+            sheet.style.transform = '';
+          }
+        }, { passive: true });
+      };
+
+      initBottomSheetSwipe('taskModal', closeModal);
+      initBottomSheetSwipe('taskDetailModal', closeTaskDetails);
       const larkSettingsModal = document.getElementById('larkSettingsModal');
       if (larkSettingsModal) {
         larkSettingsModal.onclick = (e) => {
