@@ -315,9 +315,9 @@
 
           <!-- Lark Bot Settings Button -->
           <!-- Google Sheets Process Bar Sync Button -->
-          <button type="button" id="btnSheetsSync" onclick="window.appActions.openSheetsSyncModal()" title="เชื่อมต่อ Google Sheet Process Bar (ซิงค์ 2 ทาง)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 font-semibold text-xs transition shadow-xs hover:shadow-[0_2px_12px_rgba(16,185,129,0.25)] cursor-pointer shrink-0">
+          <button type="button" id="btnSheetsSync" onclick="window.appActions.openSheetsSyncModal()" title="ส่งข้อมูลงานเข้า Google Sheet Process Bar (Taskflow ➔ Sheet)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 font-semibold text-xs transition shadow-xs hover:shadow-[0_2px_12px_rgba(16,185,129,0.25)] cursor-pointer shrink-0">
             <span class="text-xs">📊</span>
-            <span class="hidden md:inline text-xs">Process Bar</span>
+            <span class="hidden md:inline text-xs">ส่งเข้า Process Bar</span>
           </button>
 
           <button type="button" id="btnOpenLarkSettings" onclick="window.appActions.openLarkSettings()" title="ตั้งค่าการแจ้งเตือนเข้า Lark (Bot Webhook)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/70 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 font-semibold text-xs transition shadow-xs hover:shadow-[0_2px_12px_rgba(14,165,233,0.25)] cursor-pointer shrink-0">
@@ -793,19 +793,20 @@
     </div>
   </div>
 
-  <!-- Google Sheets Process Bar Sync Modal (Two-Way Sync Hub) -->
+  <!-- Google Sheets Process Bar Sync Modal (Taskflow ➔ Sheet Hub) -->
   <div id="sheetsSyncModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden space-y-4">
+      
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
         <div class="flex items-center space-x-3">
           <span class="p-2.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 rounded-2xl text-xl shadow-xs ring-1 ring-emerald-300/40">📊</span>
           <div>
             <div class="flex items-center space-x-2">
-              <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-lg">Google Sheet Process Bar (ซิงค์ 2 ทาง)</h3>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Two-Way Sync ⭐</span>
+              <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-lg">ส่งงานเข้า Google Sheet (Process Bar)</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Taskflow ➔ Sheet</span>
             </div>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500">ซิงค์กำหนดการถ่ายทำ, ตัดต่อ, สคริปต์, ปกงาน และวันโพสต์ระหว่าง Taskflow กับ Google Sheet</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500">ลงงานในเว็บ Taskflow แล้วระบบส่งข้อมูลไปอัปเดตบนชีต Process Bar อัตโนมัติ</p>
           </div>
         </div>
         <div class="flex items-center space-x-2">
@@ -819,75 +820,24 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
-      <div class="flex items-center space-x-2 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800 shrink-0 text-xs font-semibold">
-        <button type="button" id="tabBtnSheetsPull" onclick="window.appActions.switchSheetsSyncTab('pull')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition cursor-pointer">
-          <span>🔄</span>
-          <span>1. ดึงข้อมูลจาก Sheet (Pull)</span>
-        </button>
-        <button type="button" id="tabBtnSheetsPush" onclick="window.appActions.switchSheetsSyncTab('push')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
-          <span>📤</span>
-          <span>2. ส่งงานขึ้น Sheet (Push)</span>
-        </button>
-        <button type="button" id="tabBtnSheetsSetup" onclick="window.appActions.switchSheetsSyncTab('setup')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
-          <span>⚙️</span>
-          <span>3. ตั้งค่า Webhook 2 ทาง</span>
-        </button>
-      </div>
-
-      <!-- Tab 1: Pull from Google Sheets -->
-      <div id="tabContentSheetsPull" class="flex-1 min-h-0 flex flex-col space-y-3 pt-3 overflow-hidden">
-        <div class="flex flex-wrap items-center justify-between gap-2 shrink-0 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
+      <!-- Scrollable Body Content -->
+      <div class="flex-1 min-h-0 overflow-y-auto space-y-4 custom-scrollbar pr-1">
+        
+        <!-- Live Connection Status Pill Banner -->
+        <div id="sheetsConnectionStatusBanner" class="p-3 rounded-xl border flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700">
           <div class="flex items-center space-x-2">
-            <button type="button" id="btnPullSheetsData" onclick="window.appActions.pullFromGoogleSheets()" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer">
-              <span>🔄</span>
-              <span>ดึงข้อมูลล่าสุดจาก Google Sheet</span>
-            </button>
-            <span id="sheetsPullStatusBadge" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">ยังไม่ได้ตรวจสอบข้อมูล</span>
+            <span id="sheetsStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+            <span id="sheetsStatusText" class="font-bold text-slate-700 dark:text-slate-200">ตรวจสอบการเชื่อมต่อ Webhook...</span>
           </div>
-          <div class="flex items-center space-x-2">
-            <button type="button" onclick="window.appActions.toggleSelectAllSheetTasks()" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer">เลือกทั้งหมด / ล้างค่า</button>
-            <button type="button" id="btnConfirmImportSheets" onclick="window.appActions.confirmImportSheetTasks()" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50">
-              <span>📥</span>
-              <span>นำเข้างานเข้าปฏิทิน & คัมบัง</span>
-            </button>
-          </div>
+          <span class="text-[11px] text-slate-400">ชีต: Process Bar (ชีต1)</span>
         </div>
 
-        <!-- Preview Table Scroll Area -->
-        <div class="flex-1 min-h-0 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 custom-scrollbar">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="sticky top-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 z-10">
-              <tr>
-                <th class="p-2.5 w-8 text-center"><input type="checkbox" id="chkSelectAllSheets" onchange="window.appActions.toggleSelectAllSheetTasks(this.checked)" checked class="cursor-pointer rounded text-emerald-600"></th>
-                <th class="p-2.5 w-14 text-center">แถว</th>
-                <th class="p-2.5">Product (ชื่องาน)</th>
-                <th class="p-2.5 w-24">Type of SOW</th>
-                <th class="p-2.5 w-32">วันโพสต์ (Deadline)</th>
-                <th class="p-2.5">ขั้นตอนในชีต (Milestones)</th>
-                <th class="p-2.5 w-24 text-center">สถานะ</th>
-              </tr>
-            </thead>
-            <tbody id="sheetsPreviewTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/80 text-slate-700 dark:text-slate-200">
-              <tr>
-                <td colspan="7" class="p-8 text-center text-slate-400 dark:text-slate-500">
-                  <div class="text-3xl mb-2">📊</div>
-                  <div class="font-semibold text-sm">พร้อมดึงข้อมูลจากตาราง Process Bar</div>
-                  <div class="text-xs mt-1">กดปุ่ม <strong>"ดึงข้อมูลล่าสุดจาก Google Sheet"</strong> ด้านบนเพื่อโหลดรายการงานและวันโพสต์</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab 2: Push to Google Sheets -->
-      <div id="tabContentSheetsPush" class="flex-1 min-h-0 flex-col space-y-4 pt-3 overflow-y-auto hidden">
-        <div class="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 space-y-2">
+        <!-- Card 1: ส่งงานเข้าชีตอัตโนมัติ (Auto-Sync) & ส่งงานทั้งหมดทันที -->
+        <div class="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 space-y-3">
           <div class="flex items-center justify-between">
             <div class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center space-x-2">
               <span>⚡</span>
-              <span>อัปเดตงานอัตโนมัติ (Auto-Sync on Save)</span>
+              <span>ส่งงานเข้าชีตอัตโนมัติ (Auto-Sync to Sheet)</span>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="sheetsAutoSyncToggle" onchange="window.appActions.toggleSheetsAutoSync(this.checked)" class="sr-only peer" checked>
@@ -895,76 +845,65 @@
             </label>
           </div>
           <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            เมื่อเปิดใช้งาน ทุกครั้งที่มีการสร้างงานใหม่, แก้ไขวันโพสต์, หรือเปลี่ยนสถานะงานใน Taskflow ระบบจะทำการซิงค์อัปเดตข้อมูลไปยัง Google Sheet Process Bar ให้โดยอัตโนมัติ
+            เปิดไว้เสมอ: ทุกครั้งที่มีการลงงานใหม่ หรือแก้ไขกำหนดการ/วันโพสต์ใน Taskflow ระบบจะส่งข้อมูลไปอัปเดตลงแถวของชีต Process Bar ให้โดยอัตโนมัติทันที
           </p>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
-          <div class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center space-x-2">
-            <span>📤</span>
-            <span>ส่งงานทั้งหมดจาก Taskflow ไปอัปเดตบน Google Sheet ทันที</span>
-          </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            จะส่งข้อมูลงานปัจจุบันทั้งหมดที่มีในระบบไปอัปเดตบรรทัดที่ตรงกัน หรือเพิ่มงานใหม่ต่อท้ายในชีต Process Bar
-          </p>
-          <div class="flex items-center space-x-3 pt-1">
-            <button type="button" id="btnPushAllToSheets" onclick="window.appActions.pushToGoogleSheets()" class="inline-flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer">
-              <span>📤</span>
-              <span>ส่งข้อมูลงานทั้งหมดขึ้น Google Sheet เดี๋ยวนี้</span>
-            </button>
-            <span id="sheetsPushStatusText" class="text-xs text-slate-500 dark:text-slate-400"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab 3: Google Apps Script Webhook Setup -->
-      <div id="tabContentSheetsSetup" class="flex-1 min-h-0 flex-col space-y-4 pt-3 overflow-y-auto hidden">
-        <div class="p-3.5 rounded-xl bg-sky-50/80 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 text-xs space-y-1.5">
-          <div class="font-bold text-sky-800 dark:text-sky-200 flex items-center space-x-1.5">
-            <span>💡</span>
-            <span>การทำงานของระบบ 2-Way Sync</span>
-          </div>
-          <div class="text-sky-700/90 dark:text-sky-300/90 leading-relaxed">
-            • <strong>ดึงข้อมูลจากชีต (Pull):</strong> ทำงานได้ทันที 100% โดยไม่ต้องตั้งค่าใดๆ เพิ่มเติม<br>
-            • <strong>บันทึกกลับลงชีต (Push):</strong> จำเป็นต้องนำโค้ด Apps Script ไปติดตั้งในชีต 1 ครั้ง (ใช้เวลาไม่เกิน 30 วินาที)
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <label class="block font-semibold text-slate-700 dark:text-slate-200 text-xs">
-            🔗 Google Apps Script Webhook URL:
-          </label>
-          <div class="flex items-center space-x-2">
-            <input type="url" id="sheetsWebhookInput" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" class="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
-            <button type="button" onclick="window.appActions.saveSheetsWebhookUrl()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition cursor-pointer shrink-0">
-              💾 บันทึก URL
-            </button>
-          </div>
-        </div>
-
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="font-bold text-slate-800 dark:text-slate-100 text-xs flex items-center space-x-1.5">
-              <span>📋</span>
-              <span>โค้ด Google Apps Script (พร้อม Deploy ได้ทันที)</span>
+          <div class="pt-2 border-t border-emerald-200/60 dark:border-emerald-800/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="text-slate-500 dark:text-slate-400 font-medium">
+              📋 งานในระบบ: <strong id="sheetsTotalTasksCount" class="text-slate-800 dark:text-slate-100">0</strong> งาน
+              <span class="mx-1">•</span>
+              🕒 <span id="sheetsLastSyncTimeText">ยังไม่มีประวัติการส่ง</span>
             </div>
-            <button type="button" onclick="window.appActions.copyGoogleAppsScriptCode()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold text-xs rounded-lg transition cursor-pointer">
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="window.appActions.testSheetsWebhookConnection()" class="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs transition cursor-pointer">
+                🧪 ทดสอบการเชื่อมต่อ
+              </button>
+              <button type="button" id="btnPushAllToSheets" onclick="window.appActions.pushToGoogleSheets()" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer">
+                <span>📤</span>
+                <span>ส่งงานทั้งหมดเข้าชีตเดี๋ยวนี้</span>
+              </button>
+            </div>
+          </div>
+          <div id="sheetsPushStatusText" class="text-[11px] font-semibold hidden"></div>
+        </div>
+
+        <!-- Card 2: การตั้งค่า Webhook (Google Apps Script) -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm flex items-center space-x-1.5">
+              <span>⚙️</span>
+              <span>ตั้งค่า Google Apps Script Webhook (ทำครั้งเดียวใน 1 นาที)</span>
+            </div>
+            <button type="button" onclick="window.appActions.copyGoogleAppsScriptCode()" class="inline-flex items-center space-x-1.5 px-3 py-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold text-xs rounded-lg transition cursor-pointer shadow-2xs">
               <span>📋</span>
               <span>คัดลอกโค้ด Apps Script</span>
             </button>
           </div>
-          <div class="space-y-1.5 text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
-            <p><strong>ขั้นตอนติดตั้งง่ายๆ 3 ขั้นตอน:</strong></p>
-            <p>1. ใน Google Sheet Process Bar คลิกเมนู <strong>ส่วนขยาย (Extensions) ➔ Apps Script</strong></p>
-            <p>2. ลบโค้ดเดิมทั้งหมดในไฟล์ Code.gs แล้ววางโค้ดที่คัดลอกมา</p>
-            <p>3. คลิกปุ่มสีน้ำเงิน <strong>ทำให้ใช้งานได้ (Deploy) ➔ รายการทำให้ใช้งานได้ใหม่ (New deployment)</strong> เลือกประเภทเป็น <strong>เว็บแอป (Web app)</strong> โดยตั้งค่าผู้มีสิทธิ์เข้าถึง (Who has access) เป็น <strong>ทุกคน (Anyone)</strong> จากนั้นนำ Web App URL ที่ได้มาวางในช่องด้านบน</p>
+
+          <div class="space-y-1.5">
+            <label class="block font-semibold text-slate-700 dark:text-slate-200 text-xs">
+              🔗 Google Apps Script Webhook URL:
+            </label>
+            <div class="flex items-center space-x-2">
+              <input type="url" id="sheetsWebhookInput" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="flex-1 px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+              <button type="button" onclick="window.appActions.saveSheetsWebhookUrl()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition cursor-pointer shrink-0">
+                💾 บันทึก URL
+              </button>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 leading-relaxed">
+            <div class="font-bold text-slate-700 dark:text-slate-200 mb-0.5">📌 ขั้นตอนการรับ Webhook URL (3 สเต็ปง่ายๆ):</div>
+            <div>1. เปิด Google Sheet Process Bar ➔ คลิกเมนู <strong>ส่วนขยาย (Extensions) ➔ Apps Script</strong></div>
+            <div>2. ลบโค้ดเดิมทั้งหมดใน `Code.gs` แล้วกดปุ่ม <strong>"คัดลอกโค้ด Apps Script"</strong> ด้านบนไปวาง ➔ กดบันทึก (Ctrl+S / Cmd+S)</div>
+            <div>3. คลิกปุ่มสีน้ำเงิน <strong>ทำให้ใช้งานได้ (Deploy) ➔ รายการทำให้ใช้งานได้ใหม่</strong> เลือก <strong>เว็บแอป (Web app)</strong> โดยตั้งค่าผู้มีสิทธิ์เข้าถึง (Who has access) เป็น <strong>ทุกคน (Anyone)</strong> ➔ นำ Web App URL ที่ได้มาวางในช่องด้านบนแล้วกดบันทึก!</div>
           </div>
         </div>
+
       </div>
 
       <!-- Modal Footer -->
-      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
-        <div id="sheetsLastSyncFooterText">เชื่อมต่อกับ Process Bar (ชีต1)</div>
+      <div class="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
+        <div>เชื่อมต่อกับ Google Sheet Process Bar (ชีต1)</div>
         <button type="button" onclick="window.appActions.closeSheetsSyncModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer">
           ปิดหน้าต่าง
         </button>
@@ -5595,10 +5534,8 @@
       let selectedSheetRowsToImport = new Set();
 
       const GOOGLE_APPS_SCRIPT_TEMPLATE = `/**
- * ==============================================================================
- * Google Apps Script Webhook: Taskflow <-> Google Sheets Process Bar 2-Way Sync
- * Sheet URL: https://docs.google.com/spreadsheets/d/1I94nTxERcyRfhy4vWEK4FLH0cQhygBiQnsjXi7cWhVs/edit
- * ==============================================================================
+ * Google Apps Script Webhook: Taskflow ➔ Google Sheets Process Bar
+ * Sheet: https://docs.google.com/spreadsheets/d/1I94nTxERcyRfhy4vWEK4FLH0cQhygBiQnsjXi7cWhVs/edit
  */
 
 function doPost(e) {
@@ -5616,6 +5553,16 @@ function doPost(e) {
     var contents = e.postData ? e.postData.contents : "{}";
     var payload = JSON.parse(contents);
     var action = payload.action || "upsert";
+
+    if (action === "ping" || action === "test") {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: "Webhook connected successfully to Google Sheet Process Bar!",
+        sheetTitle: ss.getName(),
+        activeSheet: sheet.getName(),
+        timestamp: new Date().toISOString()
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
 
     if (action === "batch_upsert") {
       var tasks = payload.tasks || [];
@@ -5649,6 +5596,36 @@ function doPost(e) {
   }
 }
 
+function formatThaiSheetDate(dStr) {
+  if (!dStr) return "";
+  if (dStr.indexOf("-") !== -1) {
+    var p = dStr.split("-");
+    if (p.length === 3) {
+      var d = parseInt(p[2], 10);
+      var m = parseInt(p[1], 10);
+      var thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+      if (m >= 1 && m <= 12) {
+        return d + " " + thaiMonths[m - 1];
+      }
+    }
+  }
+  return dStr;
+}
+
+function formatSheetTime(tStr) {
+  if (!tStr) return "";
+  var p = tStr.split(":");
+  if (p.length >= 2) {
+    var h = parseInt(p[0], 10);
+    var m = p[1];
+    var ampm = h >= 12 ? "PM" : "AM";
+    var h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return h12 + ":" + m + " " + ampm;
+  }
+  return tStr;
+}
+
 function upsertSingleTask(sheet, data, task) {
   if (!task) return { error: "Empty task" };
   var targetRow = task.sheetRow;
@@ -5677,37 +5654,41 @@ function upsertSingleTask(sheet, data, task) {
   // Column B: Type of SOW
   if (task.sow) sheet.getRange(targetRow, 2).setValue(task.sow);
   
-  // Column C: Post Date
-  if (task.deadline || task.postDate) {
-    sheet.getRange(targetRow, 3).setValue(task.postDate || task.deadline);
+  // Column C: Post Date (formatted Thai date e.g. 28 พ.ย.)
+  var postDateVal = task.postDate || task.deadline;
+  if (postDateVal) {
+    sheet.getRange(targetRow, 3).setValue(formatThaiSheetDate(postDateVal));
   }
   
-  // Column D: Post Time
-  if (task.startTime || task.postTime) {
-    sheet.getRange(targetRow, 4).setValue(task.startTime || task.postTime);
+  // Column D: Post Time (formatted e.g. 7:00 PM)
+  var postTimeVal = task.startTime || task.postTime;
+  if (postTimeVal) {
+    sheet.getRange(targetRow, 4).setValue(formatSheetTime(postTimeVal));
   }
 
   // Options & Milestones mapping
   var opts = Array.isArray(task.options) ? task.options : [];
-  var dateVal = task.date || Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd");
+  var rawDate = task.date || Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd");
+  var thaiDate = formatThaiSheetDate(rawDate);
 
   if (opts.indexOf("เขียนสคริปต์") !== -1 || task.scriptDate) {
-    sheet.getRange(targetRow, 12).setValue(task.scriptDate || dateVal);
+    sheet.getRange(targetRow, 12).setValue(formatThaiSheetDate(task.scriptDate) || thaiDate);
   }
   if (opts.indexOf("Roll A") !== -1 || task.rollA) {
-    sheet.getRange(targetRow, 13).setValue(task.rollA || dateVal);
+    sheet.getRange(targetRow, 13).setValue(formatThaiSheetDate(task.rollA) || thaiDate);
   }
   if (opts.indexOf("ins") !== -1 || task.rollB) {
-    sheet.getRange(targetRow, 14).setValue(task.rollB || dateVal);
+    sheet.getRange(targetRow, 14).setValue(formatThaiSheetDate(task.rollB) || thaiDate);
   }
   if (opts.indexOf("ตัดต่อ") !== -1 || task.editDate) {
-    sheet.getRange(targetRow, 16).setValue(task.editDate || dateVal);
+    sheet.getRange(targetRow, 16).setValue(formatThaiSheetDate(task.editDate) || thaiDate);
   }
   if (opts.indexOf("กราฟฟิก") !== -1 || task.coverDate) {
-    sheet.getRange(targetRow, 18).setValue(task.coverDate || dateVal);
+    sheet.getRange(targetRow, 18).setValue(formatThaiSheetDate(task.coverDate) || thaiDate);
   }
   if (task.status === "done" || task.finishDate) {
-    sheet.getRange(targetRow, 19).setValue(task.finishDate || Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd"));
+    var finDate = task.finishDate ? formatThaiSheetDate(task.finishDate) : formatThaiSheetDate(Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd"));
+    sheet.getRange(targetRow, 19).setValue(finDate);
   }
 
   return { rowIndex: targetRow, product: productName, updated: true };
@@ -5716,15 +5697,14 @@ function upsertSingleTask(sheet, data, task) {
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: "active",
-    name: "Taskflow Google Sheets Process Bar 2-Way Sync Webhook",
+    name: "Taskflow Google Sheets Process Bar 1-Way Push Webhook",
     timestamp: new Date().toISOString()
   })).setMimeType(ContentService.MimeType.JSON);
 }`;
 
       window.appActions = {
         // ==============================================================================
-        // Google Sheets Process Bar Two-Way Sync Actions
-        // ==============================================================================
+        // Google Sheets Process Bar One-Way Push Actions (Taskflow ➔ Sheet)
         openSheetsSyncModal: async () => {
           const modal = document.getElementById('sheetsSyncModal');
           if (modal) modal.classList.remove('hidden');
@@ -5734,6 +5714,11 @@ function doGet(e) {
 
           const autoSyncToggle = document.getElementById('sheetsAutoSyncToggle');
           if (autoSyncToggle) autoSyncToggle.checked = googleSheetsConfig.autoSync !== false;
+
+          const countEl = document.getElementById('sheetsTotalTasksCount');
+          if (countEl) countEl.textContent = tasks.filter(t => !t.archived).length;
+
+          window.appActions.updateSheetsStatusUI();
 
           // Fetch cloud configuration from D1
           if (window.location.protocol.startsWith('http')) {
@@ -5746,19 +5731,12 @@ function doGet(e) {
                   if (input && data.config.webhookUrl) input.value = data.config.webhookUrl;
                   if (autoSyncToggle && data.config.autoSync !== undefined) autoSyncToggle.checked = data.config.autoSync;
                   if (data.config.lastSyncTime) {
-                    const el = document.getElementById('sheetsLastSyncFooterText');
-                    if (el) el.textContent = `ซิงค์ล่าสุด: ${new Date(data.config.lastSyncTime).toLocaleString('th-TH')}`;
+                    googleSheetsConfig.lastSyncTime = data.config.lastSyncTime;
                   }
+                  window.appActions.updateSheetsStatusUI();
                 }
               }
             } catch(e) {}
-          }
-
-          // Auto-trigger pull if cached tasks are empty
-          if (cachedSheetTasks.length === 0) {
-            window.appActions.pullFromGoogleSheets();
-          } else {
-            window.appActions.renderSheetsPreviewTable();
           }
         },
 
@@ -5767,286 +5745,148 @@ function doGet(e) {
           if (modal) modal.classList.add('hidden');
         },
 
-        switchSheetsSyncTab: (tabName) => {
-          const tabs = ['pull', 'push', 'setup'];
-          tabs.forEach(t => {
-            const btn = document.getElementById(`tabBtnSheets${t.charAt(0).toUpperCase() + t.slice(1)}`);
-            const content = document.getElementById(`tabContentSheets${t.charAt(0).toUpperCase() + t.slice(1)}`);
-            if (t === tabName) {
-              if (btn) {
-                btn.className = "flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition cursor-pointer";
-              }
-              if (content) {
-                content.classList.remove('hidden');
-                content.classList.add('flex');
-              }
-            } else {
-              if (btn) {
-                btn.className = "flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer";
-              }
-              if (content) {
-                content.classList.add('hidden');
-                content.classList.remove('flex');
-              }
+        updateSheetsStatusUI: () => {
+          const banner = document.getElementById('sheetsConnectionStatusBanner');
+          const dot = document.getElementById('sheetsStatusDot');
+          const text = document.getElementById('sheetsStatusText');
+          const lastSyncEl = document.getElementById('sheetsLastSyncTimeText');
+
+          if (lastSyncEl && googleSheetsConfig.lastSyncTime) {
+            try {
+              lastSyncEl.textContent = `ส่งล่าสุด: ${new Date(googleSheetsConfig.lastSyncTime).toLocaleTimeString('th-TH')}`;
+            } catch(e) {}
+          }
+
+          if (googleSheetsConfig.webhookUrl && googleSheetsConfig.webhookUrl.trim()) {
+            if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+            if (text) {
+              text.textContent = "🟢 เชื่อมต่อ Webhook แล้ว พร้อมส่งงานเข้าชีตอัตโนมัติ";
+              text.className = "font-bold text-emerald-700 dark:text-emerald-300";
             }
-          });
+            if (banner) {
+              banner.className = "p-3 rounded-xl border flex items-center justify-between text-xs bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-800/80";
+            }
+          } else {
+            if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+            if (text) {
+              text.textContent = "🟠 ยังไม่ได้ใส่ Webhook URL (กรุณานำ URL มาใส่ในกล่องด้านล่าง เพื่อเปิดใช้งาน)";
+              text.className = "font-bold text-amber-700 dark:text-amber-300";
+            }
+            if (banner) {
+              banner.className = "p-3 rounded-xl border flex items-center justify-between text-xs bg-amber-50/70 dark:bg-amber-950/40 border-amber-200/80 dark:border-amber-800/80";
+            }
+          }
         },
 
-        pullFromGoogleSheets: async () => {
-          const btn = document.getElementById('btnPullSheetsData');
-          const badge = document.getElementById('sheetsPullStatusBadge');
-          if (btn) {
-            btn.innerHTML = '<span>⏳</span><span>กำลังดึงข้อมูล...</span>';
-            btn.disabled = true;
+        toggleSheetsAutoSync: (checked) => {
+          googleSheetsConfig.autoSync = Boolean(checked);
+          localStorage.setItem('team_taskflow_sheets_autosync', String(googleSheetsConfig.autoSync));
+          if (window.location.protocol.startsWith('http')) {
+            fetch('/api/sheets-sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'save_config',
+                config: { autoSync: googleSheetsConfig.autoSync }
+              })
+            }).catch(() => {});
           }
-          if (badge) {
-            badge.textContent = 'กำลังโหลดข้อมูลจากชีต...';
-            badge.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold animate-pulse';
+          showToast(`บันทึกโหมด Auto-Sync: ${googleSheetsConfig.autoSync ? 'เปิดใช้งาน ✅' : 'ปิดใช้งาน ⏸️'}`, 'info');
+        },
+
+        saveSheetsWebhookUrl: async () => {
+          const input = document.getElementById('sheetsWebhookInput');
+          const url = input ? input.value.trim() : '';
+          if (url && !url.includes('script.google.com')) {
+            alert('URL ต้องเป็น Google Apps Script Webhook URL (เช่น https://script.google.com/macros/s/AKfycb.../exec)');
+            return;
+          }
+
+          googleSheetsConfig.webhookUrl = url;
+          localStorage.setItem('team_taskflow_sheets_webhook', url);
+
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              await fetch('/api/sheets-sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'save_config',
+                  config: { webhookUrl: url }
+                })
+              });
+            } catch(e) {}
+          }
+
+          window.appActions.updateSheetsStatusUI();
+          showToast('บันทึก Google Apps Script Webhook URL เรียบร้อยแล้ว! 🔗✅', 'success');
+        },
+
+        testSheetsWebhookConnection: async () => {
+          const input = document.getElementById('sheetsWebhookInput');
+          const webhookUrl = (input && input.value.trim()) || googleSheetsConfig.webhookUrl;
+          const statusText = document.getElementById('sheetsPushStatusText');
+
+          if (!webhookUrl) {
+            alert('กรุณากรอก Google Apps Script Webhook URL ก่อนกดทดสอบ');
+            if (input) input.focus();
+            return;
+          }
+
+          if (statusText) {
+            statusText.textContent = '⏳ กำลังทดสอบการเชื่อมต่อ Webhook...';
+            statusText.className = 'text-[11px] font-semibold text-emerald-600 animate-pulse';
+            statusText.classList.remove('hidden');
           }
 
           try {
-            let sheetDataTasks = [];
-            if (window.location.protocol.startsWith('http')) {
-              const res = await fetch('/api/sheets-sync?action=pull');
-              if (!res.ok) throw new Error(`HTTP ${res.status}`);
-              const data = await res.json();
-              if (data && data.success && Array.isArray(data.tasks)) {
-                sheetDataTasks = data.tasks;
-              } else {
-                throw new Error((data && data.error) || 'Failed to parse sheet data');
+            const res = await fetch('/api/sheets-sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'test', webhookUrl })
+            });
+            const data = await res.json();
+            if (data && data.success) {
+              if (statusText) {
+                statusText.textContent = '✅ เชื่อมต่อ Webhook สำเร็จ! Google Sheet พร้อมรับข้อมูลแล้ว';
+                statusText.className = 'text-[11px] font-bold text-emerald-600';
               }
+              showToast('ทดสอบการเชื่อมต่อ Google Sheet สำเร็จ! 🎉', 'success');
             } else {
-              // Direct fallback in local file mode via public gviz
-              const gvizRes = await fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`);
-              const rawText = await gvizRes.text();
-              const jsonStart = rawText.indexOf('{');
-              const jsonEnd = rawText.lastIndexOf('}');
-              const gvizData = JSON.parse(rawText.substring(jsonStart, jsonEnd + 1));
-              sheetDataTasks = gvizData.table.rows.map((r, i) => {
-                const c = r.c || [];
-                const p = c[0] && c[0].v ? String(c[0].v).trim() : '';
-                return { rowIndex: i + 2, product: p, sow: c[1] && c[1].v ? String(c[1].v) : '', postDate: c[2] && (c[2].f || c[2].v), status: 'todo' };
-              }).filter(t => t.product && !['waiting', 'product'].includes(t.product.toLowerCase()));
+              throw new Error((data && data.error) || 'Webhook unreachable');
             }
-
-            cachedSheetTasks = sheetDataTasks;
-            selectedSheetRowsToImport = new Set(sheetDataTasks.map(t => t.rowIndex));
-
-            if (badge) {
-              badge.textContent = `พบงานในชีตทั้งหมด ${cachedSheetTasks.length} รายการ ✅`;
-              badge.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 font-bold';
-            }
-
-            window.appActions.renderSheetsPreviewTable();
-            showToast(`ดึงข้อมูลจากชีตเรียบร้อยแล้ว (${cachedSheetTasks.length} งาน) 📊`, 'success');
           } catch(err) {
-            console.error('Pull sheets error:', err);
-            if (badge) {
-              badge.textContent = `❌ ไม่สามารถดึงข้อมูลได้: ${err.message}`;
-              badge.className = 'text-[11px] text-rose-500 font-semibold';
+            if (statusText) {
+              statusText.textContent = `❌ ผิดพลาด: ${err.message}`;
+              statusText.className = 'text-[11px] font-semibold text-rose-500';
             }
-            showToast(`ดึงข้อมูลไม่สำเร็จ: ${err.message}`, 'error');
-          } finally {
-            if (btn) {
-              btn.innerHTML = '<span>🔄</span><span>ดึงข้อมูลล่าสุดจาก Google Sheet</span>';
-              btn.disabled = false;
-            }
+            showToast(`ทดสอบไม่สำเร็จ: ${err.message}`, 'error');
           }
-        },
-
-        renderSheetsPreviewTable: () => {
-          const tbody = document.getElementById('sheetsPreviewTableBody');
-          if (!tbody) return;
-
-          if (cachedSheetTasks.length === 0) {
-            tbody.innerHTML = `
-              <tr>
-                <td colspan="7" class="p-8 text-center text-slate-400">
-                  <div class="text-3xl mb-2">📊</div>
-                  <div class="font-semibold text-sm">ไม่พบข้อมูลงานในชีต</div>
-                  <div class="text-xs mt-1">กดปุ่มดึงข้อมูลด้านบนเพื่อโหลดข้อมูลใหม่</div>
-                </td>
-              </tr>
-            `;
-            return;
-          }
-
-          let htmlRows = '';
-          cachedSheetTasks.forEach((st) => {
-            const isChecked = selectedSheetRowsToImport.has(st.rowIndex);
-            // Check if already in Taskflow
-            const existing = tasks.find(t => t.sheetRow === st.rowIndex || (t.title && t.title.toLowerCase().trim() === (st.product || st.title || '').toLowerCase().trim()));
-            const isAlreadyImported = Boolean(existing);
-
-            let statusBadge = '';
-            if (st.status === 'done' || st.finishDate) {
-              statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">เสร็จแล้ว</span>';
-            } else if (st.status === 'review' || st.editDate) {
-              statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">ตรวจ/ตัดต่อ</span>';
-            } else if (st.status === 'in_progress' || st.rollA || st.rollB) {
-              statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">กำลังถ่าย</span>';
-            } else {
-              statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">รอดำเนินการ</span>';
-            }
-
-            const milestones = [];
-            if (st.scriptDate) milestones.push(`📝 สคริปต์: ${st.scriptDate}`);
-            if (st.rollA) milestones.push(`🎬 Roll A: ${st.rollA}`);
-            if (st.rollB) milestones.push(`📹 Roll B: ${st.rollB}`);
-            if (st.editDate) milestones.push(`✂️ ตัดต่อ: ${st.editDate}`);
-            if (st.coverDate) milestones.push(`🎨 ปก: ${st.coverDate}`);
-
-            htmlRows += `
-              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition ${isChecked ? '' : 'opacity-60'}">
-                <td class="p-2.5 text-center">
-                  <input type="checkbox" onchange="window.appActions.toggleSingleSheetTask(${st.rowIndex}, this.checked)" ${isChecked ? 'checked' : ''} class="cursor-pointer rounded text-emerald-600">
-                </td>
-                <td class="p-2.5 text-center font-mono font-semibold text-slate-500">
-                  ${st.rowIndex}
-                </td>
-                <td class="p-2.5 font-semibold text-slate-800 dark:text-slate-100">
-                  <div class="flex items-center space-x-1.5">
-                    <span>${escapeHtml(st.product || st.title)}</span>
-                    ${isAlreadyImported ? '<span class="px-1.5 py-0.2 rounded text-[9px] bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold" title="มีใน Taskflow แล้ว">มีในปฏิทิน</span>' : '<span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">ใหม่</span>'}
-                  </div>
-                  ${st.section ? `<div class="text-[10px] text-slate-400 font-normal">หมวด: ${escapeHtml(st.section)}</div>` : ''}
-                </td>
-                <td class="p-2.5">
-                  <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${st.sow && st.sow.toLowerCase().includes('buy') ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}">
-                    ${escapeHtml(st.sow || '-')}
-                  </span>
-                </td>
-                <td class="p-2.5 font-medium text-slate-700 dark:text-slate-200">
-                  <div class="flex items-center space-x-1">
-                    <span>📅</span>
-                    <span>${escapeHtml(st.postDate || '-')}</span>
-                  </div>
-                  ${st.postTime ? `<div class="text-[10.5px] text-slate-400">🕒 ${escapeHtml(st.postTime)}</div>` : ''}
-                </td>
-                <td class="p-2.5 text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5">
-                  ${milestones.length > 0 ? milestones.join('<br>') : '<span class="text-slate-400">-</span>'}
-                </td>
-                <td class="p-2.5 text-center">
-                  ${statusBadge}
-                </td>
-              </tr>
-            `;
-          });
-
-          tbody.innerHTML = htmlRows;
-        },
-
-        toggleSelectAllSheetTasks: (forceState = null) => {
-          if (forceState !== null) {
-            if (forceState) {
-              selectedSheetRowsToImport = new Set(cachedSheetTasks.map(t => t.rowIndex));
-            } else {
-              selectedSheetRowsToImport.clear();
-            }
-          } else {
-            if (selectedSheetRowsToImport.size === cachedSheetTasks.length) {
-              selectedSheetRowsToImport.clear();
-            } else {
-              selectedSheetRowsToImport = new Set(cachedSheetTasks.map(t => t.rowIndex));
-            }
-          }
-          const chkAll = document.getElementById('chkSelectAllSheets');
-          if (chkAll) chkAll.checked = selectedSheetRowsToImport.size === cachedSheetTasks.length;
-          window.appActions.renderSheetsPreviewTable();
-        },
-
-        toggleSingleSheetTask: (rowIndex, isChecked) => {
-          if (isChecked) {
-            selectedSheetRowsToImport.add(rowIndex);
-          } else {
-            selectedSheetRowsToImport.delete(rowIndex);
-          }
-          const chkAll = document.getElementById('chkSelectAllSheets');
-          if (chkAll) chkAll.checked = selectedSheetRowsToImport.size === cachedSheetTasks.length;
-          window.appActions.renderSheetsPreviewTable();
-        },
-
-        confirmImportSheetTasks: () => {
-          if (cachedSheetTasks.length === 0) {
-            alert('กรุณากดดึงข้อมูลจาก Google Sheet ก่อน');
-            return;
-          }
-
-          const tasksToImport = cachedSheetTasks.filter(t => selectedSheetRowsToImport.has(t.rowIndex));
-          if (tasksToImport.length === 0) {
-            alert('กรุณาเลือกรายการงานที่ต้องการนำเข้าอย่างน้อย 1 รายการ');
-            return;
-          }
-
-          let addedCount = 0;
-          let updatedCount = 0;
-
-          tasksToImport.forEach(st => {
-            const prodName = (st.product || st.title || '').trim();
-            // Find existing task by sheetRow or title match
-            const existingIdx = tasks.findIndex(t => 
-              t.sheetRow === st.rowIndex || 
-              (t.title && t.title.toLowerCase().trim() === prodName.toLowerCase())
-            );
-
-            if (existingIdx !== -1) {
-              // Update existing task
-              const prev = tasks[existingIdx];
-              tasks[existingIdx] = {
-                ...prev,
-                sheetRow: st.rowIndex,
-                sheetId: SPREADSHEET_ID,
-                sow: st.sow || prev.sow,
-                deadline: st.deadline || (st.postDate && st.postDate.includes('-') ? st.postDate : prev.deadline),
-                date: st.date || prev.date,
-                startTime: st.postTime || prev.startTime,
-                isAllDay: !st.postTime,
-                options: (prev.options && prev.options.length > 0) ? prev.options : st.options,
-                status: (prev.status === 'done' || st.status === 'done') ? 'done' : (prev.status || st.status)
-              };
-              updatedCount++;
-            } else {
-              // Create brand new task
-              const newTask = normalizeTask({
-                id: `sheet-${st.rowIndex}-${Date.now().toString(36)}`,
-                title: prodName,
-                options: st.options || ['Roll A', 'ตัดต่อ'],
-                note: st.note || `นำเข้าจาก Google Sheet Process Bar (แถว ${st.rowIndex})`,
-                date: st.date || getTodayStr(0),
-                deadline: st.deadline || getTodayStr(2),
-                isAllDay: !st.postTime,
-                startTime: st.postTime || '',
-                endTime: '',
-                status: st.status || 'todo',
-                priority: (st.sow && st.sow.toLowerCase().includes('buy')) ? 'high' : 'normal',
-                assigneeIds: st.assigneeIds || ['non'],
-                sheetRow: st.rowIndex,
-                sheetId: SPREADSHEET_ID,
-                sow: st.sow
-              });
-              tasks.unshift(newTask);
-              addedCount++;
-            }
-          });
-
-          // Save and render
-          saveTasks(null, 'bulk');
-          renderApp();
-
-          showToast(`นำเข้างานจาก Google Sheet สำเร็จ! (เพิ่มใหม่ ${addedCount} งาน, อัปเดต ${updatedCount} งาน) 📥🎉`, 'success');
-          window.appActions.closeSheetsSyncModal();
         },
 
         pushToGoogleSheets: async (specificTask = null) => {
           const btn = document.getElementById('btnPushAllToSheets');
           const statusText = document.getElementById('sheetsPushStatusText');
+
+          if (!googleSheetsConfig.webhookUrl) {
+            if (statusText) {
+              statusText.textContent = '⚠️ กรุณาใส่ Google Apps Script Webhook URL ในกล่องด้านล่างแล้วกดบันทึกก่อนครับ';
+              statusText.className = 'text-[11px] font-semibold text-amber-600';
+              statusText.classList.remove('hidden');
+            }
+            const input = document.getElementById('sheetsWebhookInput');
+            if (input) input.focus();
+            return;
+          }
+
           if (btn) {
             btn.innerHTML = '<span>⏳</span><span>กำลังส่งข้อมูลไปที่ Sheet...</span>';
             btn.disabled = true;
           }
           if (statusText) {
-            statusText.textContent = 'กำลังส่งข้อมูล...';
-            statusText.className = 'text-xs text-emerald-600 font-semibold animate-pulse';
+            statusText.textContent = 'กำลังส่งข้อมูลไปยัง Google Sheet...';
+            statusText.className = 'text-[11px] text-emerald-600 font-semibold animate-pulse';
+            statusText.classList.remove('hidden');
           }
 
           try {
@@ -6077,27 +5917,25 @@ function doGet(e) {
               const nowStr = new Date().toISOString();
               googleSheetsConfig.lastSyncTime = nowStr;
               localStorage.setItem('team_taskflow_sheets_last_sync', nowStr);
+              window.appActions.updateSheetsStatusUI();
               if (statusText) {
-                statusText.textContent = `ส่งข้อมูลสำเร็จ ${taskList.length} รายการ ✅ (${new Date().toLocaleTimeString('th-TH')})`;
-                statusText.className = 'text-xs text-emerald-600 font-bold';
+                statusText.textContent = `ส่งข้อมูลสำเร็จ ${taskList.length} งาน เมื่อ ${new Date().toLocaleTimeString('th-TH')} ✅`;
+                statusText.className = 'text-[11px] text-emerald-600 font-bold';
               }
-              showToast(`ส่งข้อมูลขึ้น Google Sheet Process Bar เรียบร้อยแล้ว! 🚀`, 'success');
-            } else if (data && data.needWebhook) {
-              window.appActions.switchSheetsSyncTab('setup');
-              alert('กรุณาใส่ Google Apps Script Webhook URL ในแท็บ "3. ตั้งค่า Webhook 2 ทาง" ก่อนเพื่อเปิดใช้งานการเขียนข้อมูลลงชีต');
+              showToast(`ส่งข้อมูลเข้า Google Sheet Process Bar เรียบร้อยแล้ว (${taskList.length} งาน) 🚀`, 'success');
             } else {
-              throw new Error((data && data.error) || 'Webhook push error');
+              throw new Error((data && data.error) || 'Push failed');
             }
           } catch(err) {
             console.error('Push error:', err);
             if (statusText) {
               statusText.textContent = `❌ ผิดพลาด: ${err.message}`;
-              statusText.className = 'text-xs text-rose-500 font-semibold';
+              statusText.className = 'text-[11px] text-rose-500 font-semibold';
             }
             showToast(`ส่งข้อมูลไปยัง Sheet ไม่สำเร็จ: ${err.message}`, 'error');
           } finally {
             if (btn) {
-              btn.innerHTML = '<span>📤</span><span>ส่งข้อมูลงานทั้งหมดขึ้น Google Sheet เดี๋ยวนี้</span>';
+              btn.innerHTML = '<span>📤</span><span>ส่งงานทั้งหมดเข้าชีตเดี๋ยวนี้</span>';
               btn.disabled = false;
             }
           }
@@ -6123,51 +5961,12 @@ function doGet(e) {
                   date: task.date
                 }]
               })
+            }).then(r => r.json()).then(data => {
+              if (data && data.success) {
+                showToast(`อัปเดตข้อมูล "${task.title}" ลง Google Sheet แล้ว 📊✅`, 'success');
+              }
             }).catch(() => {});
           } catch(e) {}
-        },
-
-        toggleSheetsAutoSync: (checked) => {
-          googleSheetsConfig.autoSync = Boolean(checked);
-          localStorage.setItem('team_taskflow_sheets_autosync', String(googleSheetsConfig.autoSync));
-          if (window.location.protocol.startsWith('http')) {
-            fetch('/api/sheets-sync', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'save_config',
-                config: { autoSync: googleSheetsConfig.autoSync }
-              })
-            }).catch(() => {});
-          }
-          showToast(`บันทึกโหมด Auto-Sync: ${googleSheetsConfig.autoSync ? 'เปิดใช้งาน ✅' : 'ปิดใช้งาน ⏸️'}`, 'info');
-        },
-
-        saveSheetsWebhookUrl: async () => {
-          const input = document.getElementById('sheetsWebhookInput');
-          const url = input ? input.value.trim() : '';
-          if (url && !url.includes('script.google.com')) {
-            alert('URL ต้องเป็น Google Apps Script Webhook URL (ขึ้นต้นด้วย https://script.google.com/macros/s/...)');
-            return;
-          }
-
-          googleSheetsConfig.webhookUrl = url;
-          localStorage.setItem('team_taskflow_sheets_webhook', url);
-
-          if (window.location.protocol.startsWith('http')) {
-            try {
-              await fetch('/api/sheets-sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  action: 'save_config',
-                  config: { webhookUrl: url }
-                })
-              });
-            } catch(e) {}
-          }
-
-          showToast('บันทึก Google Apps Script Webhook URL เรียบร้อยแล้ว! 🔗✅', 'success');
         },
 
         copyGoogleAppsScriptCode: () => {
