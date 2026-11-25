@@ -2837,36 +2837,36 @@
       };
 
       // 3. Render Helpers
-      // Top View Switcher Navigation Bar (Direction 1: Tabbed Modern Layout)
+      // View Switcher Navigation Bar (Direction 1: Clean Docked Segmented Control)
       const renderViewSwitcherNav = (activeTab, tasksCount, todayDueCount, overdueCount, archivedCount) => {
         return `
-          <div id="viewSwitcherNav" class="sticky top-14 sm:top-16 z-20 -mx-2 sm:-mx-6 lg:-mx-8 px-2 sm:px-6 lg:px-8 py-2.5 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors mb-3.5 sm:mb-5">
-            <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar no-scrollbar py-0.5">
-              <!-- View Tabs Group -->
-              <div class="inline-flex p-1 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs gap-1 shrink-0">
-                <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'kanban' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+          <div id="viewSwitcherNav" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 sm:p-2.5 shadow-xs transition-colors">
+            <div class="flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar no-scrollbar py-0.5">
+              <!-- View Tabs Group (Segmented Pill Style) -->
+              <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/60 text-xs sm:text-sm font-semibold gap-1 shrink-0">
+                <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'kanban' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>📊</span>
                   <span><span class="hidden sm:inline">กระดาน </span>Kanban</span>
-                  <span class="ml-1 text-[10.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'kanban' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}">${tasksCount}</span>
+                  <span class="ml-1 text-[10.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'kanban' ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">${tasksCount}</span>
                 </button>
 
-                <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'calendar' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'calendar' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>📅</span>
                   <span>ปฏิทิน<span class="hidden sm:inline">ไทม์ไลน์</span></span>
                 </button>
 
-                <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'daily' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'daily' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>☀️</span>
                   <span>สรุป<span class="hidden sm:inline">งานประจำวัน</span><span class="sm:hidden">รายวัน</span></span>
-                  ${todayDueCount > 0 ? `<span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'daily' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'}">${todayDueCount}</span>` : ''}
+                  ${todayDueCount > 0 ? `<span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">${todayDueCount}</span>` : ''}
                 </button>
 
-                <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'analytics' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'analytics' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>🏆</span>
                   <span>สถิติ<span class="hidden sm:inline"> & สรุปผลงาน</span></span>
                 </button>
 
-                <button type="button" onclick="window.appActions.setActiveViewTab('all')" title="แสดงทุกส่วนรวมกันในหน้าเดียวแบบเดิม" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'all' ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                <button type="button" onclick="window.appActions.setActiveViewTab('all')" title="แสดงทุกส่วนรวมกันในหน้าเดียวแบบเดิม" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'}">
                   <span>🎛️</span>
                   <span class="hidden md:inline">ดูรวมทั้งหมด</span>
                   <span class="md:hidden">รวม</span>
@@ -2883,10 +2883,10 @@
                   </button>
                 ` : ''}
 
-                <button type="button" onclick="window.appActions.openArchiveModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition shadow-2xs cursor-pointer" title="ดูคลังประวัติงานที่ทำเสร็จแล้ว">
+                <button type="button" onclick="window.appActions.openArchiveModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition shadow-2xs cursor-pointer" title="ดูคลังประวัติงานที่ทำเสร็จแล้ว">
                   <span>📦</span>
                   <span class="hidden sm:inline">คลังงาน</span>
-                  <span class="text-[10px] px-1.5 py-0.2 rounded-full ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}">${archivedCount}</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded-full ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
                 </button>
               </div>
             </div>
@@ -6457,10 +6457,6 @@ switchUser: (newUserId) => {
             localStorage.setItem('team_taskflow_active_view', tab);
           } catch(e) {}
           renderApp();
-          const navElem = document.getElementById('viewSwitcherNav');
-          if (navElem) {
-            navElem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
         },
         sendDailyDigestToLark: () => {
           window.appActions.openLarkPreviewModal();
