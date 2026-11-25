@@ -1835,6 +1835,17 @@
       let dailySelectedDate = getTodayStr(0);
       let dailyMemberFilter = 'all';
 
+      // Active View Tab Navigation ('kanban' | 'calendar' | 'daily' | 'analytics' | 'all')
+      let activeViewTab = (function() {
+        try {
+          const saved = localStorage.getItem('team_taskflow_active_view');
+          if (saved && ['kanban', 'calendar', 'daily', 'analytics', 'all'].includes(saved)) {
+            return saved;
+          }
+        } catch(e) {}
+        return 'kanban';
+      })();
+
       // Lark Daily Digest Preview & Edit State
       let larkPreviewCurrentData = null;
       let larkPreviewInitialData = null;
@@ -2826,6 +2837,63 @@
       };
 
       // 3. Render Helpers
+      // Top View Switcher Navigation Bar (Direction 1: Tabbed Modern Layout)
+      const renderViewSwitcherNav = (activeTab, tasksCount, todayDueCount, overdueCount, archivedCount) => {
+        return `
+          <div id="viewSwitcherNav" class="sticky top-14 sm:top-16 z-20 -mx-2 sm:-mx-6 lg:-mx-8 px-2 sm:px-6 lg:px-8 py-2.5 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors mb-3.5 sm:mb-5">
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar no-scrollbar py-0.5">
+              <!-- View Tabs Group -->
+              <div class="inline-flex p-1 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs gap-1 shrink-0">
+                <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'kanban' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span>📊</span>
+                  <span><span class="hidden sm:inline">กระดาน </span>Kanban</span>
+                  <span class="ml-1 text-[10.5px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'kanban' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}">${tasksCount}</span>
+                </button>
+
+                <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'calendar' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span>📅</span>
+                  <span>ปฏิทิน<span class="hidden sm:inline">ไทม์ไลน์</span></span>
+                </button>
+
+                <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'daily' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span>☀️</span>
+                  <span>สรุป<span class="hidden sm:inline">งานประจำวัน</span><span class="sm:hidden">รายวัน</span></span>
+                  ${todayDueCount > 0 ? `<span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'daily' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'}">${todayDueCount}</span>` : ''}
+                </button>
+
+                <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'analytics' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span>🏆</span>
+                  <span>สถิติ<span class="hidden sm:inline"> & สรุปผลงาน</span></span>
+                </button>
+
+                <button type="button" onclick="window.appActions.setActiveViewTab('all')" title="แสดงทุกส่วนรวมกันในหน้าเดียวแบบเดิม" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer ${activeTab === 'all' ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span>🎛️</span>
+                  <span class="hidden md:inline">ดูรวมทั้งหมด</span>
+                  <span class="md:hidden">รวม</span>
+                </button>
+              </div>
+
+              <!-- Quick Action Shortcuts -->
+              <div class="flex items-center space-x-1.5 shrink-0">
+                ${overdueCount > 0 ? `
+                  <button type="button" onclick="window.appActions.openOverdueModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/70 hover:bg-rose-100 dark:hover:bg-rose-900 transition shadow-2xs cursor-pointer animate-pulse" title="มีงานค้างเกินกำหนด ${overdueCount} รายการ คลิกเพื่อดู">
+                    <span>🚨</span>
+                    <span class="hidden sm:inline">ค้างส่ง</span>
+                    <span>${overdueCount}</span>
+                  </button>
+                ` : ''}
+
+                <button type="button" onclick="window.appActions.openArchiveModal()" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition shadow-2xs cursor-pointer" title="ดูคลังประวัติงานที่ทำเสร็จแล้ว">
+                  <span>📦</span>
+                  <span class="hidden sm:inline">คลังงาน</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded-full ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}">${archivedCount}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
       const renderApp = () => {
         const isManager = currentUserId === 'manager';
         const currentUser = isManager ? MANAGER_PROFILE : (TEAM_MEMBERS.find(m => m.id === currentUserId) || MANAGER_PROFILE);
@@ -2875,64 +2943,67 @@
         const inProgressCount = activeTasks.filter(t => t.status === 'in-progress').length;
         const doneCount = activeTasks.filter(t => t.status === 'done').length;
         const todayObj = new Date(); todayObj.setHours(0,0,0,0);
+        const todayStr = getTodayStr(0);
         const overdueCount = activeTasks.filter(t => {
           if (t.status === 'done' || !t.deadline) return false;
           const d = parseDateLocal(t.deadline);
           if (!d) return false;
           return d < todayObj;
         }).length;
+        const todayDueCount = displayedTasks.filter(t => t.deadline === todayStr && t.status !== 'done').length;
 
         const root = document.getElementById('appRoot');
-        let html = '';
+
+        // Render sections based on activeViewTab
+        let contentHtml = '';
 
         if (isManager) {
-          /* ================= MANAGER VIEW ================= */
-          // 1. Stats Summary
-          html += `
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          /* ================= MANAGER VIEW SECTIONS ================= */
+          const statsSummaryHtml = `
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                   <span>งานทั้งหมดของทีม</span><span class="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">📁</span>
                 </div>
-                <div class="mt-3 flex items-baseline justify-between">
-                  <span class="text-2xl font-bold text-slate-800 dark:text-slate-100">${total}</span>
+                <div class="mt-2.5 sm:mt-3 flex items-baseline justify-between">
+                  <span class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">${total}</span>
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
               </div>
-              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                   <span>รอดำเนินการ</span><span class="p-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-lg">⏳</span>
                 </div>
-                <div class="mt-3 flex items-baseline justify-between">
-                  <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">${todoCount}</span>
+                <div class="mt-2.5 sm:mt-3 flex items-baseline justify-between">
+                  <span class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">${todoCount}</span>
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
               </div>
-              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                   <span>กำลังดำเนินการ</span><span class="p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg">⚡</span>
                 </div>
-                <div class="mt-3 flex items-baseline justify-between">
-                  <span class="text-2xl font-bold text-amber-600 dark:text-amber-400">${inProgressCount}</span>
+                <div class="mt-2.5 sm:mt-3 flex items-baseline justify-between">
+                  <span class="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">${inProgressCount}</span>
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
               </div>
-              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+              <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
                 <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                   <span>เสร็จสิ้นแล้ว</span><span class="p-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg">✅</span>
                 </div>
-                <div class="mt-3 flex items-baseline justify-between">
-                  <span class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">${doneCount}</span>
+                <div class="mt-2.5 sm:mt-3 flex items-baseline justify-between">
+                  <span class="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">${doneCount}</span>
                   <span class="text-xs text-slate-400">${total > 0 ? Math.round((doneCount / total) * 100) : 0}%</span>
                 </div>
               </div>
-              <div onclick="window.appActions.openOverdueModal()" title="คลิกเพื่อดูรายการงานที่เกินกำหนดส่ง" class="p-4 rounded-2xl border shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1 transition-all duration-200 group cursor-pointer ${overdueCount > 0 ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 hover:border-rose-400 hover:shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'}">
+              <div onclick="window.appActions.openOverdueModal()" title="คลิกเพื่อดูรายการงานที่เกินกำหนดส่ง" class="p-3.5 sm:p-4 rounded-2xl border shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1 transition-all duration-200 group cursor-pointer ${overdueCount > 0 ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200 hover:border-rose-400 hover:shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'}">
                 <div class="flex items-center justify-between text-xs font-medium">
                   <span class="${overdueCount > 0 ? 'text-rose-700 dark:text-rose-300 font-bold' : 'text-slate-500 dark:text-slate-400'}">เกินกำหนดส่ง (Overdue)</span>
                   <span class="p-1.5 ${overdueCount > 0 ? 'bg-rose-100 dark:bg-rose-900/60 group-hover:scale-110 transition-transform' : 'bg-slate-100 dark:bg-slate-800'} rounded-lg">🚨</span>
                 </div>
-                <div class="mt-3 flex items-baseline justify-between">
-                  <span class="text-2xl font-bold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}">${overdueCount}</span>
+                <div class="mt-2.5 sm:mt-3 flex items-baseline justify-between">
+                  <span class="text-xl sm:text-2xl font-bold ${overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}">${overdueCount}</span>
                   <span class="text-xs text-slate-400">รายการ</span>
                 </div>
                 <div class="mt-2 pt-2 border-t ${overdueCount > 0 ? 'border-rose-200/60 dark:border-rose-900/60 text-rose-600 dark:text-rose-400' : 'border-slate-100 dark:border-slate-800 text-slate-400'} flex items-center justify-between text-[11px] font-semibold">
@@ -2943,207 +3014,239 @@
             </div>
           `;
 
-          // 1.5 Monthly Content Output Counter (Team Overview)
-          html += `
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isMonthlyCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isMonthlyCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
-                <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
-                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} (ภาพรวมทั้งทีม)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ติดตามยอดส่งมอบคอนเทนต์หลักประจำเดือน: Long Form 🎬, คลิปสั้น (Short) 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
+          const monthlySectionHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isMonthlyCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
+                    <div>
+                      <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} (ภาพรวมทั้งทีม)</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ติดตามยอดส่งมอบคอนเทนต์หลักประจำเดือน: Long Form 🎬, คลิปสั้น (Short) 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
+                    </div>
                   </div>
-                </div>
-                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
-                  <span>${isMonthlyCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
-                </button>
-              </div>
-              ${!isMonthlyCollapsed ? renderMonthlyOutput(tasks, true) : ''}
-            </div>
-          `;
-
-          // 2. Separated Timeline Calendar (Top Section)
-          html += `
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📅</span>
-                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ปฏิทินไทม์ไลน์ภาพรวมทีม (Team Timeline Calendar)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">แสดงแผนงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁) • กรองดูตามประเภทงาน & ปรับสีกำกับงานได้ 15 สี (แยกกันชัดเจน)</p>
-                  </div>
-                </div>
-                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
-                  <span>${isCalendarCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
-                </button>
-              </div>
-              ${!isCalendarCollapsed ? renderCalendar(displayedTasks, true) : ''}
-            </div>
-          `;
-
-          // 3. Separated Daily Summary (Top Section)
-          html += `
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
-                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของแต่ละคน (Daily Summary & Agenda)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • ลากเพื่อปรับลำดับความสำคัญ (บน-ล่าง) ⇅ • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
-                  </div>
-                </div>
-                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
-                  <span>${isDailyCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
-                </button>
-              </div>
-              ${!isDailyCollapsed ? renderDailySummary(tasks, true) : ''}
-            </div>
-          `;
-
-          // 4. Team Workload
-          html += `
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isWorkloadCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isWorkloadCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
-                <div>
-                  <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ภาระงานรายบุคคล (Team Workload)</h3>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">นับรวมทั้งงานเดี่ยวและงานกลุ่ม • คลิกเพื่อสลับไปดูบอร์ดของคนนั้น</p>
-                </div>
-                <div class="flex items-center space-x-2 self-start sm:self-auto">
-                  <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">สมาชิก ${TEAM_MEMBERS.length} คน</span>
-                  <button onclick="window.appActions.toggleWorkloadCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isWorkloadCollapsed ? 'คลิกเพื่อแสดงภาระงานรายบุคคล' : 'คลิกเพื่อซ่อนภาระงานรายบุคคล'}">
-                    <span>${isWorkloadCollapsed ? '▼ แสดงภาระงาน' : '▲ ซ่อนภาระงาน'}</span>
-                  </button>
-                </div>
-              </div>
-              ${!isWorkloadCollapsed ? `
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
-                  ${TEAM_MEMBERS.map(m => {
-                    const mTasks = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(m.id));
-                    const mTotal = mTasks.length;
-                    const mDone = mTasks.filter(t => t.status === 'done').length;
-                    const mProg = mTasks.filter(t => t.status === 'in-progress').length;
-                    const mTodo = mTasks.filter(t => t.status === 'todo').length;
-                    const mOverdue = mTasks.filter(t => {
-                      if (t.status === 'done' || !t.deadline) return false;
-                      const d = parseDateLocal(t.deadline);
-                      if (!d) return false;
-                      return d < todayObj;
-                    }).length;
-                    const rate = mTotal > 0 ? Math.round((mDone / mTotal) * 100) : 0;
-
-                    return `
-                      <div onclick="window.appActions.switchUser('${m.id}')" class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 group">
-                        <div class="flex items-center justify-between">
-                          <div class="flex items-center space-x-2.5">
-                            <span class="text-2xl p-1 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">${m.avatar}</span>
-                            <div>
-                              <div class="flex items-center space-x-1.5">
-                                <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">${m.name}</span>
-                                ${mOverdue > 0 ? `<span class="text-[10px] px-1.5 py-0.2 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 font-bold rounded-full">เกิน ${mOverdue}</span>` : ''}
-                              </div>
-                              <span class="text-xs text-slate-400">งานที่รับผิดชอบ: ${mTotal} งาน</span>
-                            </div>
-                          </div>
-                          <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${rate}%</span>
-                        </div>
-                        <div class="mt-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden flex">
-                          <div class="bg-emerald-500 h-full" style="width: ${mTotal ? (mDone / mTotal) * 100 : 0}%"></div>
-                          <div class="bg-amber-400 h-full" style="width: ${mTotal ? (mProg / mTotal) * 100 : 0}%"></div>
-                          <div class="bg-blue-300 h-full" style="width: ${mTotal ? (mTodo / mTotal) * 100 : 0}%"></div>
-                        </div>
-                        <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                          <span>รอ: <strong class="text-slate-700 dark:text-slate-200">${mTodo}</strong></span>
-                          <span>กำลังทำ: <strong class="text-amber-600 dark:text-amber-400">${mProg}</strong></span>
-                          <span>เสร็จ: <strong class="text-emerald-600 dark:text-emerald-400">${mDone}</strong></span>
-                        </div>
-                      </div>
-                    `;
-                  }).join('')}
-                </div>
-              ` : ''}
-            </div>
-          `;
-
-          // 5. Task Management & Filters Card (Kanban & Table)
-          html += `
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isAllTasksCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isAllTasksCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
-                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                  <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">รายการงานทั้งหมดในทีม</h3>
-                  <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${displayedTasks.length} รายการ</span>
-                  ${!isAllTasksCollapsed ? `
-                    <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center space-x-1">
-                      <span>📅 เรียงตามกำหนดส่ง (Deadline)</span>
-                    </span>
+                  ${!forceOpen ? `
+                    <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
+                      <span>${isCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
+                    </button>
                   ` : ''}
                 </div>
-                <div class="flex items-center space-x-1.5 flex-wrap gap-y-1 w-full sm:w-auto justify-between sm:justify-start">
-                  <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer">
-                    <span>📦</span>
-                    <span>คลังงานที่ทำแล้ว</span>
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
-                  </button>
-                  <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl space-x-1">
-                    <button onclick="window.appActions.setManagerTaskView('kanban')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
-                      📊 Kanban รวม
-                    </button>
-                    <button onclick="window.appActions.setManagerTaskView('list')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
-                      📋 ตารางงาน
-                    </button>
-                  </div>
-                  <button onclick="window.appActions.toggleAllTasksCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isAllTasksCollapsed ? 'คลิกเพื่อแสดงรายการงานทั้งหมด' : 'คลิกเพื่อซ่อนรายการงานทั้งหมด'}">
-                    <span>${isAllTasksCollapsed ? '▼ แสดงรายการงาน' : '▲ ซ่อนรายการงาน'}</span>
-                  </button>
-                </div>
+                ${!isCollapsed ? renderMonthlyOutput(tasks, true) : ''}
               </div>
+            `;
+          };
 
-              ${!isAllTasksCollapsed ? `
-                <!-- Filter Bar -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div class="relative">
-                    <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ค้นหาชื่องาน หรือรายละเอียด..." class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs">
+          const calendarSectionHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isCalendarCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📅</span>
+                    <div>
+                      <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ปฏิทินไทม์ไลน์ภาพรวมทีม (Team Timeline Calendar)</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">แสดงแผนงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁) • กรองดูตามประเภทงาน & ปรับสีกำกับงานได้ 15 สี (แยกกันชัดเจน)</p>
+                    </div>
                   </div>
-                  <div>
-                    <select id="filterAssigneeSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
-                      <option value="all" ${filterAssignee === 'all' ? 'selected' : ''}>👥 กรองตามผู้รับผิดชอบ: ทุกคน</option>
-                      ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${filterAssignee === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
-                    </select>
+                  ${!forceOpen ? `
+                    <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                      <span>${isCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
+                    </button>
+                  ` : ''}
+                </div>
+                ${!isCollapsed ? renderCalendar(displayedTasks, true) : ''}
+              </div>
+            `;
+          };
+
+          const dailySectionHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isDailyCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
+                    <div>
+                      <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของแต่ละคน (Daily Summary & Agenda)</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • ลากเพื่อปรับลำดับความสำคัญ (บน-ล่าง) ⇅ • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                    </div>
                   </div>
+                  ${!forceOpen ? `
+                    <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                      <span>${isCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
+                    </button>
+                  ` : ''}
+                </div>
+                ${!isCollapsed ? renderDailySummary(tasks, true) : ''}
+              </div>
+            `;
+          };
+
+          const workloadSectionHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isWorkloadCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
                   <div>
-                    <select id="filterStatusSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
-                      <option value="all" ${filterStatus === 'all' ? 'selected' : ''}>📌 กรองตามสถานะ: ทั้งหมด</option>
-                      <option value="todo" ${filterStatus === 'todo' ? 'selected' : ''}>รอดำเนินการ (To Do)</option>
-                      <option value="in-progress" ${filterStatus === 'in-progress' ? 'selected' : ''}>กำลังทำ (In Progress)</option>
-                      <option value="done" ${filterStatus === 'done' ? 'selected' : ''}>เสร็จสิ้น (Done)</option>
-                    </select>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ภาระงานรายบุคคล (Team Workload)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">นับรวมทั้งงานเดี่ยวและงานกลุ่ม • คลิกเพื่อสลับไปดูบอร์ดของคนนั้น</p>
+                  </div>
+                  <div class="flex items-center space-x-2 self-start sm:self-auto">
+                    <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">สมาชิก ${TEAM_MEMBERS.length} คน</span>
+                    ${!forceOpen ? `
+                      <button onclick="window.appActions.toggleWorkloadCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isCollapsed ? 'คลิกเพื่อแสดงภาระงานรายบุคคล' : 'คลิกเพื่อซ่อนภาระงานรายบุคคล'}">
+                        <span>${isCollapsed ? '▼ แสดงภาระงาน' : '▲ ซ่อนภาระงาน'}</span>
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+                ${!isCollapsed ? `
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
+                    ${TEAM_MEMBERS.map(m => {
+                      const mTasks = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(m.id));
+                      const mTotal = mTasks.length;
+                      const mDone = mTasks.filter(t => t.status === 'done').length;
+                      const mProg = mTasks.filter(t => t.status === 'in-progress').length;
+                      const mTodo = mTasks.filter(t => t.status === 'todo').length;
+                      const mOverdue = mTasks.filter(t => {
+                        if (t.status === 'done' || !t.deadline) return false;
+                        const d = parseDateLocal(t.deadline);
+                        if (!d) return false;
+                        return d < todayObj;
+                      }).length;
+                      const rate = mTotal > 0 ? Math.round((mDone / mTotal) * 100) : 0;
+
+                      return `
+                        <div onclick="window.appActions.switchUser('${m.id}')" class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 group">
+                          <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                              <span class="text-2xl p-1 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">${m.avatar}</span>
+                              <div>
+                                <div class="flex items-center space-x-1.5">
+                                  <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">${m.name}</span>
+                                  ${mOverdue > 0 ? `<span class="text-[10px] px-1.5 py-0.2 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 font-bold rounded-full">เกิน ${mOverdue}</span>` : ''}
+                                </div>
+                                <span class="text-xs text-slate-400">งานที่รับผิดชอบ: ${mTotal} งาน</span>
+                              </div>
+                            </div>
+                            <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${rate}%</span>
+                          </div>
+                          <div class="mt-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden flex">
+                            <div class="bg-emerald-500 h-full" style="width: ${mTotal ? (mDone / mTotal) * 100 : 0}%"></div>
+                            <div class="bg-amber-400 h-full" style="width: ${mTotal ? (mProg / mTotal) * 100 : 0}%"></div>
+                            <div class="bg-blue-300 h-full" style="width: ${mTotal ? (mTodo / mTotal) * 100 : 0}%"></div>
+                          </div>
+                          <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                            <span>รอ: <strong class="text-slate-700 dark:text-slate-200">${mTodo}</strong></span>
+                            <span>กำลังทำ: <strong class="text-amber-600 dark:text-amber-400">${mProg}</strong></span>
+                            <span>เสร็จ: <strong class="text-emerald-600 dark:text-emerald-400">${mDone}</strong></span>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          };
+
+          const tasksSectionHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isAllTasksCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
+                  <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">รายการงานทั้งหมดในทีม</h3>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${displayedTasks.length} รายการ</span>
+                    ${!isCollapsed ? `
+                      <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center space-x-1">
+                        <span>📅 เรียงตามกำหนดส่ง (Deadline)</span>
+                      </span>
+                    ` : ''}
+                  </div>
+                  <div class="flex items-center space-x-1.5 flex-wrap gap-y-1 w-full sm:w-auto justify-between sm:justify-start">
+                    <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer">
+                      <span>📦</span>
+                      <span>คลังงานที่ทำแล้ว</span>
+                      <span class="px-1.5 py-0.2 rounded-full text-[10px] ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
+                    </button>
+                    <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl space-x-1">
+                      <button onclick="window.appActions.setManagerTaskView('kanban')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'kanban' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
+                        📊 Kanban รวม
+                      </button>
+                      <button onclick="window.appActions.setManagerTaskView('list')" class="flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg text-xs font-medium transition ${managerTaskView === 'list' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}">
+                        📋 ตารางงาน
+                      </button>
+                    </div>
+                    ${!forceOpen ? `
+                      <button onclick="window.appActions.toggleAllTasksCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isCollapsed ? 'คลิกเพื่อแสดงรายการงานทั้งหมด' : 'คลิกเพื่อซ่อนรายการงานทั้งหมด'}">
+                        <span>${isCollapsed ? '▼ แสดงรายการงาน' : '▲ ซ่อนรายการงาน'}</span>
+                      </button>
+                    ` : ''}
                   </div>
                 </div>
 
-                <!-- Content: Kanban or Table -->
-                <div id="taskBoardContainer">
-                  ${managerTaskView === 'kanban' ? renderKanban(displayedTasks, true) : renderTable(displayedTasks)}
-                </div>
-              ` : ''}
-            </div>
-          `;
+                ${!isCollapsed ? `
+                  <!-- Filter Bar -->
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div class="relative">
+                      <input type="text" id="searchInput" value="${escapeHtml(searchQuery)}" placeholder="🔍 ค้นหาชื่องาน หรือรายละเอียด..." class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs">
+                    </div>
+                    <div>
+                      <select id="filterAssigneeSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                        <option value="all" ${filterAssignee === 'all' ? 'selected' : ''}>👥 กรองตามผู้รับผิดชอบ: ทุกคน</option>
+                        ${TEAM_MEMBERS.map(m => `<option value="${m.id}" ${filterAssignee === m.id ? 'selected' : ''}>${m.avatar} ${m.name}</option>`).join('')}
+                      </select>
+                    </div>
+                    <div>
+                      <select id="filterStatusSelect" class="w-full py-2 px-3 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer">
+                        <option value="all" ${filterStatus === 'all' ? 'selected' : ''}>📌 กรองตามสถานะ: ทั้งหมด</option>
+                        <option value="todo" ${filterStatus === 'todo' ? 'selected' : ''}>รอดำเนินการ (To Do)</option>
+                        <option value="in-progress" ${filterStatus === 'in-progress' ? 'selected' : ''}>กำลังทำ (In Progress)</option>
+                        <option value="done" ${filterStatus === 'done' ? 'selected' : ''}>เสร็จสิ้น (Done)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Content: Kanban or Table -->
+                  <div id="taskBoardContainer">
+                    ${managerTaskView === 'kanban' ? renderKanban(displayedTasks, true) : renderTable(displayedTasks)}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          };
+
+          if (activeViewTab === 'kanban') {
+            contentHtml = statsSummaryHtml + tasksSectionHtml(true);
+          } else if (activeViewTab === 'calendar') {
+            contentHtml = calendarSectionHtml(true);
+          } else if (activeViewTab === 'daily') {
+            contentHtml = dailySectionHtml(true);
+          } else if (activeViewTab === 'analytics') {
+            contentHtml = statsSummaryHtml + monthlySectionHtml(true) + workloadSectionHtml(true);
+          } else {
+            // 'all' view shows all sections with collapse toggles
+            contentHtml = statsSummaryHtml + monthlySectionHtml(false) + calendarSectionHtml(false) + dailySectionHtml(false) + workloadSectionHtml(false) + tasksSectionHtml(false);
+          }
 
         } else {
-          /* ================= TEAM MEMBER VIEW ================= */
+          /* ================= TEAM MEMBER VIEW SECTIONS ================= */
           const memberOverdueCount = displayedTasks.filter(t => {
             if (t.status === 'done' || !t.deadline) return false;
             const d = parseDateLocal(t.deadline);
             return d && d < todayObj;
           }).length;
 
-          // 1. Member Header & Quick Stats
-          html += `
+          const memberHeaderStatsHtml = `
             <div class="space-y-4">
               <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center space-x-2.5 sm:space-x-3">
                   <span class="text-2xl sm:text-3xl">${currentUser.avatar}</span>
                   <div>
                     <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">พื้นที่จัดการงานของ: ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">ตรวจสอบปฏิทิน เช็กลิสต์รายวัน และจัดการสถานะงานผ่าน Kanban ด้านล่าง</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">ตรวจสอบปฏิทิน เช็กลิสต์รายวัน และจัดการสถานะงานผ่านแท็บด้านบน</p>
                   </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs w-full sm:w-auto">
@@ -3159,83 +3262,121 @@
                 </div>
               </div>
             </div>
-
-            <!-- 1.5 Monthly Content Output Counter for Member -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isMonthlyCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isMonthlyCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
-                <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
-                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} ของ ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ยอดส่งมอบผลงานคอนเทนต์และงานสำเร็จของคุณในเดือนนี้: Long Form 🎬, Short 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
-                  </div>
-                </div>
-                <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
-                  <span>${isMonthlyCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
-                </button>
-              </div>
-              ${!isMonthlyCollapsed ? renderMonthlyOutput(displayedTasks, false) : ''}
-            </div>
-
-            <!-- 2. Separated Timeline Calendar for Member (Top) -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📅</span>
-                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ปฏิทินไทม์ไลน์ของ ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ตรวจสอบกำหนดการงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁)</p>
-                  </div>
-                </div>
-                <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
-                  <span>${isCalendarCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
-                </button>
-              </div>
-              ${!isCalendarCollapsed ? renderCalendar(displayedTasks, false) : ''}
-            </div>
-
-            <!-- 3. Separated Daily Summary for Member (Top) -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div class="flex items-center space-x-2.5">
-                  <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
-                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของ ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานที่ต้องทำในแต่ละวัน • ลากเพื่อปรับลำดับความสำคัญ (บน-ล่าง) ⇅ • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
-                  </div>
-                </div>
-                <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
-                  <span>${isDailyCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
-                </button>
-              </div>
-              ${!isDailyCollapsed ? renderDailySummary(tasks, false) : ''}
-            </div>
-
-            <!-- 4. Member Kanban Board -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isMemberKanbanCollapsed ? 'space-y-3' : ''}">
-              <div class="flex items-center justify-between ${!isMemberKanbanCollapsed ? 'pb-2 border-b border-slate-100 dark:border-slate-800' : ''}">
-                <div class="flex items-center space-x-2">
-                  <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">กระดานงาน Kanban ของ: ${currentUser.name}</h3>
-                  <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-full font-semibold">${displayedTasks.length} งาน</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer">
-                    <span>📦</span>
-                    <span>คลังงานที่ทำแล้ว</span>
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
-                  </button>
-                  <button onclick="window.appActions.toggleMemberKanbanCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isMemberKanbanCollapsed ? 'คลิกเพื่อแสดงกระดานงาน' : 'คลิกเพื่อซ่อนกระดานงาน'}">
-                    <span>${isMemberKanbanCollapsed ? '▼ แสดงกระดานงาน' : '▲ ซ่อนกระดานงาน'}</span>
-                  </button>
-                  <span class="text-xs text-slate-400 hidden lg:inline">ลากการ์ดเพื่อย้ายสถานะ</span>
-                </div>
-              </div>
-              ${!isMemberKanbanCollapsed ? renderKanban(displayedTasks, false) : ''}
-            </div>
           `;
+
+          const memberMonthlyHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isMonthlyCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3.5 sm:space-y-4' : ''}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${!isCollapsed ? 'pb-3 border-b border-slate-100 dark:border-slate-800' : ''}">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🏆</span>
+                    <div>
+                      <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปยอดผลงานประจำเดือน ${THAI_MONTHS[new Date().getMonth()]} ${new Date().getFullYear() + 543} ของ ${currentUser.name}</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ยอดส่งมอบผลงานคอนเทนต์และงานสำเร็จของคุณในเดือนนี้: Long Form 🎬, Short 📱, ตัดต่อ ✂️, เขียนสคริปต์ 📝 และกราฟฟิก 🎨</p>
+                    </div>
+                  </div>
+                  ${!forceOpen ? `
+                    <button onclick="window.appActions.toggleMonthlyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto cursor-pointer">
+                      <span>${isCollapsed ? '▼ ขยายสรุปผลงาน' : '▲ ย่อสรุปผลงาน'}</span>
+                    </button>
+                  ` : ''}
+                </div>
+                ${!isCollapsed ? renderMonthlyOutput(displayedTasks, false) : ''}
+              </div>
+            `;
+          };
+
+          const memberCalendarHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isCalendarCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 max-w-full overflow-hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="p-2 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📅</span>
+                    <div>
+                      <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">ปฏิทินไทม์ไลน์ของ ${currentUser.name}</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ตรวจสอบกำหนดการงานตามช่วงเวลาจริง (วันเริ่ม 🚩 → วันกำหนดส่ง 🏁)</p>
+                    </div>
+                  </div>
+                  ${!forceOpen ? `
+                    <button onclick="window.appActions.toggleCalendarCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                      <span>${isCollapsed ? '▼ ขยายปฏิทิน' : '▲ ย่อปฏิทิน'}</span>
+                    </button>
+                  ` : ''}
+                </div>
+                ${!isCollapsed ? renderCalendar(displayedTasks, false) : ''}
+              </div>
+            `;
+          };
+
+          const memberDailyHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isDailyCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
+                    <div>
+                      <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของ ${currentUser.name}</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานที่ต้องทำในแต่ละวัน • ลากเพื่อปรับลำดับความสำคัญ (บน-ล่าง) ⇅ • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                    </div>
+                  </div>
+                  ${!forceOpen ? `
+                    <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
+                      <span>${isCollapsed ? '▼ ขยายสรุปรายวัน' : '▲ ย่อสรุปรายวัน'}</span>
+                    </button>
+                  ` : ''}
+                </div>
+                ${!isCollapsed ? renderDailySummary(tasks, false) : ''}
+              </div>
+            `;
+          };
+
+          const memberKanbanHtml = (forceOpen = false) => {
+            const isCollapsed = forceOpen ? false : isMemberKanbanCollapsed;
+            return `
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs ${!isCollapsed ? 'space-y-3' : ''}">
+                <div class="flex items-center justify-between ${!isCollapsed ? 'pb-2 border-b border-slate-100 dark:border-slate-800' : ''}">
+                  <div class="flex items-center space-x-2">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">กระดานงาน Kanban ของ: ${currentUser.name}</h3>
+                    <span class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-full font-semibold">${displayedTasks.length} งาน</span>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button type="button" onclick="window.appActions.openArchiveModal()" title="เปิดดูคลังประวัติงานที่ทำเสร็จแล้ว" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer">
+                      <span>📦</span>
+                      <span>คลังงานที่ทำแล้ว</span>
+                      <span class="px-1.5 py-0.2 rounded-full text-[10px] ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
+                    </button>
+                    ${!forceOpen ? `
+                      <button onclick="window.appActions.toggleMemberKanbanCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs cursor-pointer" title="${isCollapsed ? 'คลิกเพื่อแสดงกระดานงาน' : 'คลิกเพื่อซ่อนกระดานงาน'}">
+                        <span>${isCollapsed ? '▼ แสดงกระดานงาน' : '▲ ซ่อนกระดานงาน'}</span>
+                      </button>
+                    ` : ''}
+                    <span class="text-xs text-slate-400 hidden lg:inline">ลากการ์ดเพื่อย้ายสถานะ</span>
+                  </div>
+                </div>
+                ${!isCollapsed ? renderKanban(displayedTasks, false) : ''}
+              </div>
+            `;
+          };
+
+          if (activeViewTab === 'kanban') {
+            contentHtml = memberHeaderStatsHtml + memberKanbanHtml(true);
+          } else if (activeViewTab === 'calendar') {
+            contentHtml = memberHeaderStatsHtml + memberCalendarHtml(true);
+          } else if (activeViewTab === 'daily') {
+            contentHtml = memberHeaderStatsHtml + memberDailyHtml(true);
+          } else if (activeViewTab === 'analytics') {
+            contentHtml = memberHeaderStatsHtml + memberMonthlyHtml(true);
+          } else {
+            // 'all' view shows all sections with collapse toggles
+            contentHtml = memberHeaderStatsHtml + memberMonthlyHtml(false) + memberCalendarHtml(false) + memberDailyHtml(false) + memberKanbanHtml(false);
+          }
         }
 
-        root.innerHTML = html;
+        const navTabsHtml = renderViewSwitcherNav(activeViewTab, displayedTasks.length, todayDueCount, overdueCount, archivedCount);
+        root.innerHTML = navTabsHtml + contentHtml;
         bindEventListeners();
       };
 
@@ -6308,6 +6449,17 @@ switchUser: (newUserId) => {
             if (sendBtn) sendBtn.disabled = false;
             if (btnIcon) btnIcon.textContent = '🚀';
             if (btnText) btnText.textContent = 'ยืนยันส่งเข้า Lark ทันที';
+          }
+        },
+        setActiveViewTab: (tab) => {
+          activeViewTab = tab;
+          try {
+            localStorage.setItem('team_taskflow_active_view', tab);
+          } catch(e) {}
+          renderApp();
+          const navElem = document.getElementById('viewSwitcherNav');
+          if (navElem) {
+            navElem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           }
         },
         sendDailyDigestToLark: () => {
