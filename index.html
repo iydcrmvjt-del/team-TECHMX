@@ -1151,6 +1151,33 @@
         });
       };
 
+      // Sort tasks for Daily Summary agenda using custom drag-and-drop order with priority fallback
+      const sortDailyList = (list, memberId, groupType) => {
+        if (!Array.isArray(list) || list.length <= 1) return list || [];
+        const selDate = (typeof dailySelectedDate !== 'undefined') ? dailySelectedDate : '';
+        const orderKey = `${memberId}_${selDate}_${groupType}`;
+        const memberKey = `${memberId}_${selDate}`;
+        const fallbackKey = `${memberId}_${groupType}`;
+        const orderList = (typeof dailyOrderMap !== 'undefined' && dailyOrderMap)
+          ? (dailyOrderMap[orderKey] || dailyOrderMap[memberKey] || dailyOrderMap[fallbackKey] || dailyOrderMap[memberId] || [])
+          : [];
+
+        return [...list].sort((a, b) => {
+          const idxA = orderList.indexOf(a.id);
+          const idxB = orderList.indexOf(b.id);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          // Fallback: priority (high -> normal -> low), then deadline
+          const rankA = PRIORITY_ORDER[a.priority] || 2;
+          const rankB = PRIORITY_ORDER[b.priority] || 2;
+          if (rankA !== rankB) return rankA - rankB;
+          const dlA = a.deadline || a.date || '9999-99-99';
+          const dlB = b.deadline || b.date || '9999-99-99';
+          return dlA.localeCompare(dlB);
+        });
+      };
+
       const escapeHtml = (str) => {
         if (!str) return '';
         return str.replace(/[&<>"']/g, function(m) {
@@ -1692,6 +1719,44 @@
         } catch (e) {}
       };
 
+      // Daily agenda task custom order state & cloud sync
+      let dailyOrderMap = {};
+      try {
+        dailyOrderMap = JSON.parse(localStorage.getItem('team_taskflow_daily_order_v1') || '{}');
+      } catch (e) {
+        dailyOrderMap = {};
+      }
+      let dailyDraggedItem = null; // { taskId, memberId, groupType }
+
+      const saveDailyOrder = () => {
+        try {
+          localStorage.setItem('team_taskflow_daily_order_v1', JSON.stringify(dailyOrderMap));
+        } catch (e) {}
+        if (window.location.protocol.startsWith('http')) {
+          fetch('/api/daily-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dailyOrderMap)
+          }).catch(() => {});
+        }
+      };
+
+      const syncDailyOrderFromCloud = async () => {
+        if (!window.location.protocol.startsWith('http')) return;
+        try {
+          const res = await fetch('/api/daily-order');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && data.orderMap) {
+              dailyOrderMap = { ...data.orderMap, ...dailyOrderMap };
+              try {
+                localStorage.setItem('team_taskflow_daily_order_v1', JSON.stringify(dailyOrderMap));
+              } catch (e) {}
+            }
+          }
+        } catch (e) {}
+      };
+
       // =====================================================================
       // Cloudflare D1 Sync Engine & Diagnostics
       // =====================================================================
@@ -2030,6 +2095,7 @@
                   renderApp();
                 }
                 updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
+                syncDailyOrderFromCloud();
                 if (isManual) {
                   showToast(`ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน) ☁️`, 'success');
                 }
@@ -2360,17 +2426,17 @@
 
         targetMembers.forEach(member => {
           const mTasks = taskList.filter(t => t.assigneeIds && t.assigneeIds.includes(member.id));
-          const dueToday = mTasks.filter(t => t.deadline === selectedDate && t.status !== 'done');
-          const inProg = mTasks.filter(t => {
+          const dueToday = sortDailyList(mTasks.filter(t => t.deadline === selectedDate && t.status !== 'done'), member.id, 'due-today');
+          const inProg = sortDailyList(mTasks.filter(t => {
             const s = t.date || t.deadline; const e = t.deadline || t.date;
             return s <= selectedDate && selectedDate <= e && t.deadline !== selectedDate && t.status !== 'done';
-          });
-          const overdue = mTasks.filter(t => t.deadline < selectedDate && t.status !== 'done');
-          const completed = mTasks.filter(t => {
+          }), member.id, 'in-progress');
+          const overdue = sortDailyList(mTasks.filter(t => t.deadline < selectedDate && t.status !== 'done'), member.id, 'overdue');
+          const completed = sortDailyList(mTasks.filter(t => {
             if (t.status !== 'done') return false;
             const s = t.date || t.deadline; const e = t.deadline || t.date;
             return (s <= selectedDate && selectedDate <= e) || t.deadline === selectedDate;
-          });
+          }), member.id, 'completed');
 
           // Track unique tasks for overall type statistics
           [...dueToday, ...inProg, ...overdue, ...completed].forEach(t => {
@@ -2718,7 +2784,7 @@
                   <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
                   <div>
                     <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของแต่ละคน (Daily Summary & Agenda)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานประจำวันของทีมงาน • ลากเพื่อปรับลำดับความสำคัญ (บน-ล่าง) ⇅ • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
                   </div>
                 </div>
                 <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
@@ -2930,7 +2996,7 @@
                   <span class="p-2 bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 rounded-xl text-lg">☀️</span>
                   <div>
                     <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">สรุปงานประจำวันของ ${currentUser.name}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานที่ต้องทำในแต่ละวัน • เรียงตามความสำคัญ (ด่วน 🔥 ➔ ปกติ ➔ ไม่รีบ) • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">เช็กลิสต์งานที่ต้องทำในแต่ละวัน • ลากเพื่อปรับลำดับความสำคัญ (บน-ล่าง) ⇅ • ปรับสถานะงานได้โดยตรง (รอ / กำลังทำ ⚡ / เสร็จสิ้น ✓)</p>
                   </div>
                 </div>
                 <button onclick="window.appActions.toggleDailyCollapse()" class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition flex items-center space-x-1 shadow-xs self-start sm:self-auto">
@@ -3826,17 +3892,17 @@
             <div class="grid gap-3.5 sm:gap-5 ${targetMembers.length > 1 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 w-full'}">
               ${targetMembers.map(member => {
                 const mTasks = taskList.filter(t => t.assigneeIds && t.assigneeIds.includes(member.id));
-                const dueToday = sortByPriority(mTasks.filter(t => t.deadline === dailySelectedDate && t.status !== 'done'));
-                const inProg = sortByPriority(mTasks.filter(t => {
+                const dueToday = sortDailyList(mTasks.filter(t => t.deadline === dailySelectedDate && t.status !== 'done'), member.id, 'due-today');
+                const inProg = sortDailyList(mTasks.filter(t => {
                   const s = t.date || t.deadline; const e = t.deadline || t.date;
                   return s <= dailySelectedDate && dailySelectedDate <= e && t.deadline !== dailySelectedDate && t.status !== 'done';
-                }));
-                const overdue = sortByPriority(mTasks.filter(t => t.deadline < dailySelectedDate && t.status !== 'done'));
-                const completed = sortByPriority(mTasks.filter(t => {
+                }), member.id, 'in-progress');
+                const overdue = sortDailyList(mTasks.filter(t => t.deadline < dailySelectedDate && t.status !== 'done'), member.id, 'overdue');
+                const completed = sortDailyList(mTasks.filter(t => {
                   if (t.status !== 'done') return false;
                   const s = t.date || t.deadline; const e = t.deadline || t.date;
                   return (s <= dailySelectedDate && dailySelectedDate <= e) || t.deadline === dailySelectedDate;
-                }));
+                }), member.id, 'completed');
 
                 const activeTotal = dueToday.length + inProg.length + overdue.length;
                 const grandTotal = activeTotal + completed.length;
@@ -3845,20 +3911,20 @@
                 return `
                   <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-5 shadow-xs flex flex-col justify-between space-y-3.5 sm:space-y-4 hover:shadow-md transition">
                     <div>
-                      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                         <div class="flex items-center space-x-2.5">
-                          <span class="text-2xl p-1 bg-slate-50 rounded-xl border border-slate-200">${member.avatar}</span>
+                          <span class="text-2xl p-1 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">${member.avatar}</span>
                           <div>
-                            <h4 class="font-bold text-slate-800 text-sm">${member.name}</h4>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">${member.name}</h4>
                             <span class="text-[11px] text-slate-400">ภาระงานวันนี้: <strong>${activeTotal}</strong> งาน</span>
                           </div>
                         </div>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${rate === 100 && grandTotal > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full ${rate === 100 && grandTotal > 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}">
                           เสร็จ ${completed.length}/${grandTotal}
                         </span>
                       </div>
                       ${grandTotal > 0 ? `
-                        <div class="mt-3 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div class="mt-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                           <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${rate}%"></div>
                         </div>
                       ` : ''}
@@ -3867,15 +3933,33 @@
                     <div class="space-y-4 flex-1">
                       ${dueToday.length > 0 ? `
                         <div>
-                          <div class="text-xs font-bold text-amber-700 mb-2">🚨 ต้องส่งวันนี้ (${dueToday.length})</div>
-                          <div class="space-y-1.5">${dueToday.map(t => renderDailyItem(t, 'due-today')).join('')}</div>
+                          <div class="text-xs font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center justify-between">
+                            <span>🚨 ต้องส่งวันนี้ (${dueToday.length})</span>
+                            <span class="text-[10px] text-slate-400 font-normal">ลากหรือกด ▲▼ จัดลำดับ</span>
+                          </div>
+                          <div class="daily-group-container space-y-1.5 min-h-[36px] rounded-xl transition"
+                               ondragover="window.appActions.onDailyGroupDragOver(event)"
+                               ondragenter="window.appActions.onDailyGroupDragEnter(event, this)"
+                               ondragleave="window.appActions.onDailyGroupDragLeave(event, this)"
+                               ondrop="window.appActions.onDailyGroupDrop(event, '${member.id}', 'due-today', this)">
+                            ${dueToday.map((t, idx) => renderDailyItem(t, 'due-today', member, idx, dueToday.length)).join('')}
+                          </div>
                         </div>
                       ` : ''}
 
                       ${inProg.length > 0 ? `
                         <div>
-                          <div class="text-xs font-bold text-blue-700 mb-2">⚡ กำลังทำอยู่ (${inProg.length})</div>
-                          <div class="space-y-1.5">${inProg.map(t => renderDailyItem(t, 'in-progress')).join('')}</div>
+                          <div class="text-xs font-bold text-blue-700 dark:text-blue-400 mb-2 flex items-center justify-between">
+                            <span>⚡ กำลังทำอยู่ (${inProg.length})</span>
+                            <span class="text-[10px] text-slate-400 font-normal">ลากหรือกด ▲▼ จัดลำดับ</span>
+                          </div>
+                          <div class="daily-group-container space-y-1.5 min-h-[36px] rounded-xl transition"
+                               ondragover="window.appActions.onDailyGroupDragOver(event)"
+                               ondragenter="window.appActions.onDailyGroupDragEnter(event, this)"
+                               ondragleave="window.appActions.onDailyGroupDragLeave(event, this)"
+                               ondrop="window.appActions.onDailyGroupDrop(event, '${member.id}', 'in-progress', this)">
+                            ${inProg.map((t, idx) => renderDailyItem(t, 'in-progress', member, idx, inProg.length)).join('')}
+                          </div>
                         </div>
                       ` : ''}
 
@@ -3885,28 +3969,43 @@
                             <span>⚠️ งานค้างเกินกำหนด (${overdue.length})</span>
                             <button type="button" onclick="window.appActions.openOverdueModal()" class="text-[10px] text-rose-600 dark:text-rose-400 hover:underline cursor-pointer font-semibold">ดูทั้งหมด ➔</button>
                           </div>
-                          <div class="space-y-1.5">${overdue.map(t => renderDailyItem(t, 'overdue')).join('')}</div>
+                          <div class="daily-group-container space-y-1.5 min-h-[36px] rounded-xl transition"
+                               ondragover="window.appActions.onDailyGroupDragOver(event)"
+                               ondragenter="window.appActions.onDailyGroupDragEnter(event, this)"
+                               ondragleave="window.appActions.onDailyGroupDragLeave(event, this)"
+                               ondrop="window.appActions.onDailyGroupDrop(event, '${member.id}', 'overdue', this)">
+                            ${overdue.map((t, idx) => renderDailyItem(t, 'overdue', member, idx, overdue.length)).join('')}
+                          </div>
                         </div>
                       ` : ''}
 
                       ${completed.length > 0 ? `
                         <div>
-                          <div class="text-xs font-semibold text-emerald-700 mb-2">✅ ทำเสร็จแล้ว (${completed.length})</div>
-                          <div class="space-y-1.5 opacity-80">${completed.map(t => renderDailyItem(t, 'completed')).join('')}</div>
+                          <div class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2 flex items-center justify-between">
+                            <span>✅ ทำเสร็จแล้ว (${completed.length})</span>
+                            <span class="text-[10px] text-slate-400 font-normal">ลากหรือกด ▲▼ จัดลำดับ</span>
+                          </div>
+                          <div class="daily-group-container space-y-1.5 opacity-85 min-h-[36px] rounded-xl transition"
+                               ondragover="window.appActions.onDailyGroupDragOver(event)"
+                               ondragenter="window.appActions.onDailyGroupDragEnter(event, this)"
+                               ondragleave="window.appActions.onDailyGroupDragLeave(event, this)"
+                               ondrop="window.appActions.onDailyGroupDrop(event, '${member.id}', 'completed', this)">
+                            ${completed.map((t, idx) => renderDailyItem(t, 'completed', member, idx, completed.length)).join('')}
+                          </div>
                         </div>
                       ` : ''}
 
                       ${grandTotal === 0 ? `
                         <div class="py-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center space-y-1">
                           <span class="text-2xl">🎉</span>
-                          <span class="font-medium text-slate-600">ไม่มีงานที่ต้องทำในวันนี้</span>
+                          <span class="font-medium text-slate-600 dark:text-slate-300">ไม่มีงานที่ต้องทำในวันนี้</span>
                         </div>
                       ` : ''}
                     </div>
 
-                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                       <span class="text-[11px] text-slate-400">แผนงานวันที่ ${dailySelectedDate}</span>
-                      <button onclick="window.appActions.openCreateModalForDate('${dailySelectedDate}')" class="text-xs text-indigo-600 font-semibold hover:underline">+ เพิ่มงานวันนี้</button>
+                      <button onclick="window.appActions.openCreateModalForDate('${dailySelectedDate}')" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">+ เพิ่มงานวันนี้</button>
                     </div>
                   </div>
                 `;
@@ -3916,7 +4015,7 @@
         `;
       };
 
-      const renderDailyItem = (task, type) => {
+      const renderDailyItem = (task, type, member = null, index = 0, totalInGroup = 1) => {
         const isDone = task.status === 'done';
         const colConf = TASK_COLORS[task.color] || TASK_COLORS['blue'];
         const statusConf = STATUS_CONFIG[task.status] || STATUS_CONFIG['todo'];
@@ -3946,8 +4045,27 @@
           statusIconClass = 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:border-emerald-600 shadow-2xs';
         }
 
+        const memberId = member ? member.id : '';
+
         return `
-          <div class="p-2.5 rounded-xl border flex items-start space-x-2.5 group hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition ${borderClass}">
+          <div class="daily-task-item p-2.5 rounded-xl border flex items-start space-x-2 group hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition relative cursor-grab active:cursor-grabbing ${borderClass}"
+               draggable="true"
+               data-task-id="${task.id}"
+               data-member-id="${memberId}"
+               data-group-type="${type}"
+               ondragstart="window.appActions.onDailyTaskDragStart(event, '${task.id}', '${memberId}', '${type}')"
+               ondragover="window.appActions.onDailyTaskDragOver(event)"
+               ondragleave="window.appActions.onDailyTaskDragLeave(event)"
+               ondrop="window.appActions.onDailyTaskDrop(event, '${task.id}', '${memberId}', '${type}', this)"
+               ondragend="window.appActions.onDailyTaskDragEnd(event)">
+
+            <!-- Drag Handle Icon -->
+            <div class="mt-0.5 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 hover:!text-indigo-600 dark:hover:!text-indigo-400 p-0.5 select-none shrink-0 transition" title="ลากเพื่อขยับจัดลำดับความสำคัญ (ขึ้น/ลง)">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm8-12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+              </svg>
+            </div>
+
             <!-- Left Cycle Status Button -->
             <button type="button" onclick="event.stopPropagation(); window.appActions.cycleDailyStatus('${task.id}')" title="สถานะปัจจุบัน: ${statusConf.label} (คลิกเพื่อเปลี่ยนเป็นสถานะถัดไป)" class="mt-0.5 w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition cursor-pointer ${statusIconClass}">
               ${statusIcon}
@@ -3990,8 +4108,20 @@
               </div>
             </div>
 
-            <!-- Edit Action Button -->
-            <button onclick="window.appActions.openEditModal('${task.id}')" title="แก้ไขงาน" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-indigo-600 rounded cursor-pointer transition">✏️</button>
+            <!-- Action Buttons: Up, Down, Edit -->
+            <div class="flex items-center space-x-0.5 shrink-0 opacity-80 sm:opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
+              ${index > 0 ? `
+                <button type="button" onclick="event.stopPropagation(); window.appActions.moveDailyTask('${task.id}', '${memberId}', '${type}', 'up')" title="เลื่อนงานขึ้น (สำคัญกว่า) ⬆️" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition text-[10px] leading-none">
+                  ▲
+                </button>
+              ` : ''}
+              ${index < totalInGroup - 1 ? `
+                <button type="button" onclick="event.stopPropagation(); window.appActions.moveDailyTask('${task.id}', '${memberId}', '${type}', 'down')" title="เลื่อนงานลง ⬇️" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition text-[10px] leading-none">
+                  ▼
+                </button>
+              ` : ''}
+              <button onclick="window.appActions.openEditModal('${task.id}')" title="แก้ไขงาน" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition text-[11px]">✏️</button>
+            </div>
           </div>
         `;
       };
@@ -4551,6 +4681,90 @@
         }
       };
 
+      const applyDailyReorder = (draggedTaskId, targetTaskId, memberId, sourceGroupType, targetGroupType, isAfter) => {
+        if (!draggedTaskId || !memberId) return;
+
+        // 1. If group changed, update task properties
+        if (sourceGroupType !== targetGroupType) {
+          let updated = null;
+          let oldStatus = null;
+          tasks = tasks.map(t => {
+            if (t.id === draggedTaskId) {
+              oldStatus = t.status;
+              const mut = { ...t };
+              if (targetGroupType === 'due-today') {
+                mut.deadline = dailySelectedDate;
+                if (mut.status === 'done') mut.status = 'in-progress';
+              } else if (targetGroupType === 'in-progress') {
+                if (mut.status === 'done') mut.status = 'in-progress';
+              } else if (targetGroupType === 'completed') {
+                mut.status = 'done';
+              }
+              updated = mut;
+              return mut;
+            }
+            return t;
+          });
+          if (updated) {
+            saveTasks(updated, 'save');
+            if (targetGroupType === 'completed' && oldStatus !== 'done') {
+              notifyLarkTaskDone(updated);
+            }
+          }
+        }
+
+        // 2. Fetch the target group's task list
+        let targetList = [];
+        if (targetGroupType === 'due-today') {
+          targetList = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(memberId) && t.deadline === dailySelectedDate && t.status !== 'done');
+        } else if (targetGroupType === 'in-progress') {
+          targetList = tasks.filter(t => {
+            if (!t.assigneeIds || !t.assigneeIds.includes(memberId) || t.status === 'done') return false;
+            const s = t.date || t.deadline; const e = t.deadline || t.date;
+            return s <= dailySelectedDate && dailySelectedDate <= e && t.deadline !== dailySelectedDate;
+          });
+        } else if (targetGroupType === 'overdue') {
+          targetList = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(memberId) && t.deadline < dailySelectedDate && t.status !== 'done');
+        } else if (targetGroupType === 'completed') {
+          targetList = tasks.filter(t => {
+            if (!t.assigneeIds || !t.assigneeIds.includes(memberId) || t.status !== 'done') return false;
+            const s = t.date || t.deadline; const e = t.deadline || t.date;
+            return (s <= dailySelectedDate && dailySelectedDate <= e) || t.deadline === dailySelectedDate;
+          });
+        }
+
+        // Sort targetList with existing order
+        targetList = sortDailyList(targetList, memberId, targetGroupType);
+
+        let ids = targetList.map(t => t.id);
+        ids = ids.filter(id => id !== draggedTaskId);
+
+        if (targetTaskId) {
+          const targetIdx = ids.indexOf(targetTaskId);
+          if (targetIdx !== -1) {
+            const insertIdx = isAfter ? targetIdx + 1 : targetIdx;
+            ids.splice(insertIdx, 0, draggedTaskId);
+          } else {
+            ids.push(draggedTaskId);
+          }
+        } else {
+          ids.push(draggedTaskId);
+        }
+
+        // Save order for this group
+        const orderKey = `${memberId}_${dailySelectedDate}_${targetGroupType}`;
+        dailyOrderMap[orderKey] = ids;
+
+        // Also update general member order for this date
+        const memberKey = `${memberId}_${dailySelectedDate}`;
+        const prevMemberOrder = (dailyOrderMap[memberKey] || []).filter(id => id !== draggedTaskId);
+        dailyOrderMap[memberKey] = [draggedTaskId, ...prevMemberOrder];
+
+        saveDailyOrder();
+        renderApp();
+        showToast('จัดลำดับความสำคัญงานเรียบร้อย 📌', 'info', 1500);
+      };
+
       window.appActions = {
         openOverdueModal: () => {
           try {
@@ -5067,6 +5281,158 @@ switchUser: (newUserId) => {
               notifyLarkTaskDone(updated);
             }
           }
+        },
+        onDailyTaskDragStart: (e, taskId, memberId, groupType) => {
+          if (e.target.closest('button, input, select, textarea, a')) {
+            return;
+          }
+          dailyDraggedItem = { taskId, memberId, groupType };
+          try {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', taskId);
+            e.dataTransfer.setData('application/json', JSON.stringify({ taskId, memberId, groupType }));
+          } catch(err) {}
+          if (e.currentTarget) {
+            e.currentTarget.classList.add('opacity-40');
+          }
+        },
+        onDailyTaskDragOver: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          try { e.dataTransfer.dropEffect = 'move'; } catch(err) {}
+          const target = e.currentTarget;
+          if (!target) return;
+          const rect = target.getBoundingClientRect();
+          const isAfter = (e.clientY - rect.top) > (rect.height / 2);
+          target.classList.remove('border-t-2', 'border-b-2', '!border-indigo-500');
+          if (isAfter) {
+            target.classList.add('border-b-2', '!border-indigo-500');
+          } else {
+            target.classList.add('border-t-2', '!border-indigo-500');
+          }
+        },
+        onDailyTaskDragLeave: (e) => {
+          const target = e.currentTarget;
+          if (target && !target.contains(e.relatedTarget)) {
+            target.classList.remove('border-t-2', 'border-b-2', '!border-indigo-500');
+          }
+        },
+        onDailyTaskDragEnd: (e) => {
+          if (e.currentTarget) {
+            e.currentTarget.classList.remove('opacity-40');
+          }
+          document.querySelectorAll('.daily-task-item').forEach(el => {
+            el.classList.remove('border-t-2', 'border-b-2', '!border-indigo-500');
+          });
+          document.querySelectorAll('.daily-group-container').forEach(el => {
+            el.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50/20');
+          });
+          setTimeout(() => {
+            dailyDraggedItem = null;
+          }, 100);
+        },
+        onDailyTaskDrop: (e, targetTaskId, targetMemberId, targetGroupType, elem) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (elem) {
+            elem.classList.remove('border-t-2', 'border-b-2', '!border-indigo-500');
+          }
+          document.querySelectorAll('.daily-task-item').forEach(el => {
+            el.classList.remove('border-t-2', 'border-b-2', '!border-indigo-500');
+          });
+
+          let dragData = dailyDraggedItem;
+          if (!dragData) {
+            try {
+              const raw = e.dataTransfer.getData('application/json');
+              if (raw) dragData = JSON.parse(raw);
+            } catch(err) {}
+          }
+          if (!dragData || !dragData.taskId) return;
+          const { taskId, memberId: sourceMemberId, groupType: sourceGroupType } = dragData;
+          if (taskId === targetTaskId) return;
+          if (sourceMemberId && targetMemberId && sourceMemberId !== targetMemberId) {
+            showToast('จัดลำดับความสำคัญเฉพาะภายในตารางงานของบุคคลเดียวกันครับ', 'info');
+            return;
+          }
+
+          const rect = elem ? elem.getBoundingClientRect() : { top: 0, height: 0 };
+          const isAfter = (e.clientY - rect.top) > (rect.height / 2);
+
+          applyDailyReorder(taskId, targetTaskId, targetMemberId, sourceGroupType, targetGroupType, isAfter);
+        },
+        onDailyGroupDragOver: (e) => {
+          e.preventDefault();
+          try { e.dataTransfer.dropEffect = 'move'; } catch(err) {}
+        },
+        onDailyGroupDragEnter: (e, elem) => {
+          e.preventDefault();
+          if (elem) elem.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-50/20');
+        },
+        onDailyGroupDragLeave: (e, elem) => {
+          if (elem && !elem.contains(e.relatedTarget)) {
+            elem.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50/20');
+          }
+        },
+        onDailyGroupDrop: (e, targetMemberId, targetGroupType, elem) => {
+          e.preventDefault();
+          if (elem) elem.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50/20');
+          let dragData = dailyDraggedItem;
+          if (!dragData) {
+            try {
+              const raw = e.dataTransfer.getData('application/json');
+              if (raw) dragData = JSON.parse(raw);
+            } catch(err) {}
+          }
+          if (!dragData || !dragData.taskId) return;
+          const { taskId, memberId: sourceMemberId, groupType: sourceGroupType } = dragData;
+          if (sourceMemberId && targetMemberId && sourceMemberId !== targetMemberId) return;
+
+          applyDailyReorder(taskId, null, targetMemberId, sourceGroupType, targetGroupType, true);
+        },
+        moveDailyTask: (taskId, memberId, groupType, direction) => {
+          if (!taskId || !memberId || !groupType) return;
+          let targetList = [];
+          if (groupType === 'due-today') {
+            targetList = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(memberId) && t.deadline === dailySelectedDate && t.status !== 'done');
+          } else if (groupType === 'in-progress') {
+            targetList = tasks.filter(t => {
+              if (!t.assigneeIds || !t.assigneeIds.includes(memberId) || t.status === 'done') return false;
+              const s = t.date || t.deadline; const e = t.deadline || t.date;
+              return s <= dailySelectedDate && dailySelectedDate <= e && t.deadline !== dailySelectedDate;
+            });
+          } else if (groupType === 'overdue') {
+            targetList = tasks.filter(t => t.assigneeIds && t.assigneeIds.includes(memberId) && t.deadline < dailySelectedDate && t.status !== 'done');
+          } else if (groupType === 'completed') {
+            targetList = tasks.filter(t => {
+              if (!t.assigneeIds || !t.assigneeIds.includes(memberId) || t.status === 'done') return false;
+              const s = t.date || t.deadline; const e = t.deadline || t.date;
+              return (s <= dailySelectedDate && dailySelectedDate <= e) || t.deadline === dailySelectedDate;
+            });
+          }
+
+          targetList = sortDailyList(targetList, memberId, groupType);
+          let ids = targetList.map(t => t.id);
+          const currentIdx = ids.indexOf(taskId);
+          if (currentIdx === -1) return;
+
+          if (direction === 'up' && currentIdx > 0) {
+            const temp = ids[currentIdx];
+            ids[currentIdx] = ids[currentIdx - 1];
+            ids[currentIdx - 1] = temp;
+          } else if (direction === 'down' && currentIdx < ids.length - 1) {
+            const temp = ids[currentIdx];
+            ids[currentIdx] = ids[currentIdx + 1];
+            ids[currentIdx + 1] = temp;
+          } else {
+            return;
+          }
+
+          const orderKey = `${memberId}_${dailySelectedDate}_${groupType}`;
+          dailyOrderMap[orderKey] = ids;
+          saveDailyOrder();
+          renderApp();
+          showToast(direction === 'up' ? 'เลื่อนงานขึ้นเรียบร้อย ⬆️' : 'เลื่อนงานลงเรียบร้อย ⬇️', 'info', 1500);
         },
         onCalendarTaskDragStart: (e, taskId, originDate) => {
           isDraggingCalendarTask = true;
