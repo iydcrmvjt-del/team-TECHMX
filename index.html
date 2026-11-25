@@ -360,7 +360,7 @@
   </div>
 
   <!-- Main Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-3.5 sm:py-6 space-y-3.5 sm:space-y-6 overflow-x-hidden">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 pt-3 sm:pt-6 pb-28 md:pb-6 space-y-3.5 sm:space-y-6 overflow-x-hidden">
     <!-- Cloud Sync Alert Banner (shown when running locally on file:// or D1 not bound) -->
     <div id="cloudSyncAlertBanner" class="hidden"></div>
 
@@ -1023,11 +1023,19 @@
     </div>
   </div>
 
+  <!-- Mobile-First Floating Action Button (FAB) for New Task (md:hidden) -->
+  <button id="mobileCreateFab" onclick="window.appActions.openCreateModal()" title="เพิ่มงานใหม่" class="fixed bottom-20 right-4 z-40 md:hidden flex items-center justify-center w-13 h-13 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-600 to-violet-600 active:from-indigo-700 active:to-violet-700 text-white shadow-xl shadow-indigo-500/40 border-2 border-white dark:border-slate-800 active:scale-90 hover:scale-105 transition-all cursor-pointer">
+    <svg class="w-6 h-6 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+  </button>
+
+  <!-- Mobile-First Bottom Navigation Bar Container (md:hidden) -->
+  <div id="mobileBottomNavContainer"></div>
+
   <!-- Toast Notification Container -->
-  <div id="toastContainer" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+  <div id="toastContainer" class="fixed bottom-20 md:bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
   <!-- Footer -->
-  <footer class="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+  <footer class="mt-auto border-t border-slate-200 bg-white py-4 pb-24 md:pb-4 text-center text-xs text-slate-500">
     <p>ระบบจัดการงานทีมแบบ Kanban, Timeline Calendar & Daily Summary • นนท์, อั๋น, อายตา, หรั่ง, ธัญญ่า, ฟร้องซ์</p>
   </footer>
 
@@ -2837,10 +2845,43 @@
       };
 
       // 3. Render Helpers
-      // View Switcher Navigation Bar (Direction 1: Clean Docked Segmented Control)
+      // View Switcher Navigation Bar (Desktop Segmented Control & Mobile Quick Status Bar)
       const renderViewSwitcherNav = (activeTab, tasksCount, todayDueCount, overdueCount, archivedCount) => {
+        const getTabTitle = (tab) => {
+          switch(tab) {
+            case 'calendar': return '📅 ปฏิทินไทม์ไลน์';
+            case 'daily': return '☀️ สรุปงานประจำวัน';
+            case 'kanban': return '📊 กระดาน Kanban';
+            case 'analytics': return '🏆 สถิติ & สรุปผลงาน';
+            case 'all': return '🎛️ ดูรวมทั้งหมด';
+            default: return '📅 ปฏิทินไทม์ไลน์';
+          }
+        };
+
         return `
-          <div id="viewSwitcherNav" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 sm:p-2.5 shadow-xs transition-colors">
+          <!-- Mobile Top Quick Bar (md:hidden) -->
+          <div class="md:hidden flex items-center justify-between gap-2 px-1 py-1 bg-white/70 dark:bg-slate-900/70 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs backdrop-blur-xs">
+            <div class="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium pl-1">
+              <span>มุมมอง:</span>
+              <span class="font-bold text-indigo-600 dark:text-indigo-400">${getTabTitle(activeTab)}</span>
+            </div>
+            <div class="flex items-center space-x-1.5 shrink-0">
+              ${overdueCount > 0 ? `
+                <button type="button" onclick="window.appActions.openOverdueModal()" class="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/70 shadow-2xs active:scale-95 transition cursor-pointer animate-pulse" title="มีงานค้างเกินกำหนด ${overdueCount} รายการ คลิกเพื่อดู">
+                  <span>🚨 ค้างส่ง</span>
+                  <span class="font-black">${overdueCount}</span>
+                </button>
+              ` : ''}
+
+              <button type="button" onclick="window.appActions.openArchiveModal()" class="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition shadow-2xs active:scale-95 cursor-pointer" title="ดูคลังประวัติงานที่ทำเสร็จแล้ว">
+                <span>📦 คลัง</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold ${archivedCount > 0 ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}">${archivedCount}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Desktop / Tablet Segmented Docked Card (hidden md:block) -->
+          <div id="viewSwitcherNav" class="hidden md:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 sm:p-2.5 shadow-xs transition-colors">
             <div class="flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar no-scrollbar py-0.5">
               <!-- View Tabs Group (Segmented Pill Style) -->
               <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/60 text-xs sm:text-sm font-semibold gap-1 shrink-0">
@@ -2896,6 +2937,62 @@
               </div>
             </div>
           </div>
+        `;
+      };
+
+      // Direction 3: Mobile-First Bottom Navigation Bar
+      const renderMobileBottomNav = (activeTab, tasksCount, todayDueCount, overdueCount, archivedCount) => {
+        return `
+          <nav id="mobileBottomNav" class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] pb-[calc(env(safe-area-inset-bottom,0px)+0.2rem)] select-none">
+            <div class="max-w-md mx-auto grid grid-cols-5 items-stretch h-[60px] px-1 py-1 gap-0.5">
+              <!-- 1. ปฏิทินไทม์ไลน์ -->
+              <button type="button" onclick="window.appActions.setActiveViewTab('calendar')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'calendar' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+                <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
+                  <span class="text-xl">📅</span>
+                </div>
+                <span class="text-[10px] leading-tight font-medium tracking-tight">ปฏิทิน</span>
+              </button>
+
+              <!-- 2. สรุปงานประจำวัน -->
+              <button type="button" onclick="window.appActions.setActiveViewTab('daily')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'daily' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+                <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
+                  <span class="text-xl">☀️</span>
+                  ${todayDueCount > 0 ? `
+                    <span class="absolute -top-1 -right-2 px-1 min-w-[15px] h-[15px] flex items-center justify-center text-[9px] font-black bg-rose-500 text-white rounded-full ring-2 ring-white dark:ring-slate-900">${todayDueCount}</span>
+                  ` : ''}
+                </div>
+                <span class="text-[10px] leading-tight font-medium tracking-tight">รายวัน</span>
+              </button>
+
+              <!-- 3. กระดาน Kanban -->
+              <button type="button" onclick="window.appActions.setActiveViewTab('kanban')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'kanban' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+                <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
+                  <span class="text-xl">📊</span>
+                  <span class="absolute -top-1 -right-2.5 px-1 min-w-[15px] h-[15px] flex items-center justify-center text-[9px] font-bold ${activeTab === 'kanban' ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'} rounded-full ring-2 ring-white dark:ring-slate-900">${tasksCount}</span>
+                </div>
+                <span class="text-[10px] leading-tight font-medium tracking-tight">Kanban</span>
+              </button>
+
+              <!-- 4. สถิติ & สรุปผลงาน -->
+              <button type="button" onclick="window.appActions.setActiveViewTab('analytics')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'analytics' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+                <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
+                  <span class="text-xl">🏆</span>
+                  ${overdueCount > 0 ? `
+                    <span class="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"></span>
+                  ` : ''}
+                </div>
+                <span class="text-[10px] leading-tight font-medium tracking-tight">สถิติ</span>
+              </button>
+
+              <!-- 5. ดูรวมทั้งหมด -->
+              <button type="button" onclick="window.appActions.setActiveViewTab('all')" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer active:scale-95 ${activeTab === 'all' ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50/90 dark:bg-indigo-950/60 shadow-2xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}">
+                <div class="relative inline-flex items-center justify-center leading-none mb-0.5">
+                  <span class="text-xl">🎛️</span>
+                </div>
+                <span class="text-[10px] leading-tight font-medium tracking-tight">รวม</span>
+              </button>
+            </div>
+          </nav>
         `;
       };
 
@@ -3382,6 +3479,17 @@
 
         const navTabsHtml = renderViewSwitcherNav(activeViewTab, displayedTasks.length, todayDueCount, overdueCount, archivedCount);
         root.innerHTML = navTabsHtml + contentHtml;
+
+        // Render Mobile-First Bottom Navigation Bar & Sync FAB Tooltip
+        const mobileNavContainer = document.getElementById('mobileBottomNavContainer');
+        if (mobileNavContainer) {
+          mobileNavContainer.innerHTML = renderMobileBottomNav(activeViewTab, displayedTasks.length, todayDueCount, overdueCount, archivedCount);
+        }
+        const mobileFab = document.getElementById('mobileCreateFab');
+        if (mobileFab) {
+          mobileFab.title = isManager ? 'มอบหมายงานใหม่' : 'เพิ่มงานใหม่';
+        }
+
         bindEventListeners();
       };
 
@@ -6455,6 +6563,9 @@ switchUser: (newUserId) => {
             if (btnIcon) btnIcon.textContent = '🚀';
             if (btnText) btnText.textContent = 'ยืนยันส่งเข้า Lark ทันที';
           }
+        },
+        openCreateModal: () => {
+          openModal();
         },
         setActiveViewTab: (tab) => {
           activeViewTab = tab;
