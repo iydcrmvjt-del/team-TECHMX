@@ -1530,20 +1530,6 @@
     </div>
   </div>
 
-  <!-- Mobile-First Floating Action Button (FAB) for New Task (md:hidden) -->
-  <button id="mobileCreateFab" onclick="window.appActions.openCreateModal()" title="เพิ่มงานใหม่" class="group fixed bottom-[4.75rem] right-3.5 sm:right-4 z-40 md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-700 text-white shadow-[0_8px_18px_-2px_rgba(147,51,234,0.55),0_3px_8px_-2px_rgba(168,85,247,0.35)] ring-[3px] ring-white/95 dark:ring-slate-900/95 border border-purple-300/40 active:scale-90 hover:scale-105 transition-all duration-200 cursor-pointer select-none">
-    <!-- Wide Outer Purple Ambient Halo -->
-    <span class="absolute -inset-1 rounded-full bg-gradient-to-tr from-purple-600 via-fuchsia-500 to-violet-500 blur-md opacity-75 animate-pulse -z-20"></span>
-    <!-- Tight Electric Purple Corona -->
-    <span class="absolute -inset-0.5 rounded-full bg-gradient-to-r from-violet-400 via-purple-500 to-fuchsia-400 blur-xs opacity-90 -z-10 group-hover:scale-110 transition-transform"></span>
-    <!-- Glass Highlight Sheen -->
-    <span class="absolute inset-0 rounded-full bg-gradient-to-b from-white/40 via-purple-200/10 to-transparent pointer-events-none"></span>
-    <!-- Inner Top Arc Reflection -->
-    <span class="absolute top-1 left-2 right-2 h-2.5 rounded-full bg-gradient-to-b from-white/45 to-transparent blur-[0.5px] pointer-events-none"></span>
-    <svg class="w-5 h-5 stroke-[2.8] filter drop-shadow-[0_1.5px_2.5px_rgba(76,29,149,0.7)] relative z-10 transition-transform group-hover:rotate-90 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-    </svg>
-  </button>
 
   <!-- Mobile-First Bottom Navigation Bar Container (md:hidden) -->
   <div id="mobileBottomNavContainer"></div>
@@ -4187,14 +4173,10 @@
         const navTabsHtml = renderViewSwitcherNav(activeViewTab, displayedTasks.length, todayDueCount, overdueCount, archivedCount);
         root.innerHTML = navTabsHtml + contentHtml;
 
-        // Render Mobile-First Bottom Navigation Bar & Sync FAB Tooltip
+        // Render Mobile-First Bottom Navigation Bar
         const mobileNavContainer = document.getElementById('mobileBottomNavContainer');
         if (mobileNavContainer) {
           mobileNavContainer.innerHTML = renderMobileBottomNav(activeViewTab, displayedTasks.length, todayDueCount, overdueCount, archivedCount);
-        }
-        const mobileFab = document.getElementById('mobileCreateFab');
-        if (mobileFab) {
-          mobileFab.title = isManager ? 'มอบหมายงานใหม่' : 'เพิ่มงานใหม่';
         }
 
         bindEventListeners();
