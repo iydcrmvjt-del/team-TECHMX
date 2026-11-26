@@ -56,7 +56,12 @@ export async function onRequestGet(context) {
     const row = await db.prepare("SELECT value FROM meta WHERE key = 'leaves_data'").first();
     let leaves = [];
     if (row && row.value) {
-      try { leaves = JSON.parse(row.value); } catch(e) {}
+      try {
+        const parsed = JSON.parse(row.value);
+        if (Array.isArray(parsed)) {
+          leaves = parsed.filter(l => l && (!l.id || !String(l.id).startsWith("leave-sample-")));
+        }
+      } catch(e) {}
     }
     return new Response(JSON.stringify({ success: true, leaves }), { headers: jsonHeaders });
   } catch(err) {
@@ -72,9 +77,11 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const body = await request.json();
+    let body = await request.json();
+    let leavesArray = Array.isArray(body) ? body : (body && body.leaves ? body.leaves : []);
+    leavesArray = leavesArray.filter(l => l && (!l.id || !String(l.id).startsWith("leave-sample-")));
     await ensureTable(db);
-    const val = typeof body === 'string' ? body : JSON.stringify(body || []);
+    const val = JSON.stringify(leavesArray);
     await db.prepare("INSERT INTO meta (key, value) VALUES ('leaves_data', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(val).run();
     return new Response(JSON.stringify({ success: true, message: 'Leaves saved successfully' }), { headers: jsonHeaders });
   } catch(err) {

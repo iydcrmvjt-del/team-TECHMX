@@ -2378,7 +2378,9 @@
           const saved = localStorage.getItem('team_taskflow_leaves_v1');
           if (saved) {
             const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed)) return parsed;
+            if (Array.isArray(parsed)) {
+              return parsed.filter(l => l && (!l.id || !String(l.id).startsWith('leave-sample-')));
+            }
           }
         } catch(e) {}
         return [];
@@ -5596,10 +5598,11 @@ const renderTaskCard = (task, isManager) => {
           if (res.ok) {
             const data = await res.json();
             if (data && data.success && Array.isArray(data.leaves)) {
+              const cleanLeaves = data.leaves.filter(l => l && (!l.id || !String(l.id).startsWith('leave-sample-')));
               const oldHash = JSON.stringify(teamLeaves);
-              const newHash = JSON.stringify(data.leaves);
+              const newHash = JSON.stringify(cleanLeaves);
               if (oldHash !== newHash) {
-                teamLeaves = data.leaves;
+                teamLeaves = cleanLeaves;
                 localStorage.setItem('team_taskflow_leaves_v1', JSON.stringify(teamLeaves));
                 renderApp();
                 updateLeaveBadge();
