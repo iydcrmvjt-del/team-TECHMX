@@ -440,44 +440,50 @@
           <input type="text" id="formTitle" required placeholder="เช่น ออกแบบหน้าเว็บ, ถ่ายทำคลิปรีวิว iPhone 16 Pro Max, ตัดต่อคลิปท่องเที่ยว..." class="w-full px-4 py-2.5 text-sm sm:text-base bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
         </div>
 
-        <!-- Video Format Selector: Long Form vs Short Clip -->
-        <div class="bg-gradient-to-r from-purple-50/50 via-slate-50 to-pink-50/50 dark:from-purple-950/30 dark:via-slate-800/50 dark:to-pink-950/30 p-3 sm:p-3.5 rounded-2xl border border-purple-200/70 dark:border-purple-800/70 space-y-2">
+        <!-- Work Format Selector: Long Form vs Short vs Graphic -->
+        <div class="bg-gradient-to-r from-purple-50/50 via-slate-50 to-emerald-50/50 dark:from-purple-950/30 dark:via-slate-800/50 dark:to-emerald-950/30 p-3 sm:p-3.5 rounded-2xl border border-purple-200/70 dark:border-purple-800/70 space-y-2">
           <div class="flex items-center justify-between">
             <label class="block text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-1.5">
-              <span>🎞️</span>
-              <span>รูปแบบวิดีโอ (Video Format)</span>
+              <span>🏷️</span>
+              <span>รูปแบบงาน (Work Format)</span>
               <span class="text-rose-500">*</span>
             </label>
-            <span id="selectedVideoFormatBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">🎬 คลิปยาว (Long Form)</span>
+            <span id="selectedVideoFormatBadge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">🎬 Long Form</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 sm:gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5">
             <!-- Option 1: Long Form -->
             <div id="videoFormatCardLong" onclick="window.appActions.onVideoFormatChange('long')" class="flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-blue-500 bg-blue-50/80 dark:bg-blue-950/60 transition cursor-pointer select-none shadow-xs ring-1 ring-blue-300/40">
               <input type="radio" name="formVideoFormat" id="videoFormatLong" value="long" checked class="sr-only">
               <div class="flex items-center space-x-2.5 min-w-0">
                 <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base shrink-0">🎬</div>
                 <div class="min-w-0">
-                  <div class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate flex items-center space-x-1">
-                    <span>คลิปยาว</span>
-                    <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">(Long)</span>
-                  </div>
+                  <div class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">Long Form</div>
                   <div class="text-[10px] text-slate-400 dark:text-slate-500 truncate">YouTube Main, รีวิวเต็ม</div>
                 </div>
               </div>
             </div>
 
-            <!-- Option 2: Short Clip -->
+            <!-- Option 2: Short -->
             <div id="videoFormatCardShort" onclick="window.appActions.onVideoFormatChange('short')" class="flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition cursor-pointer select-none hover:border-slate-300 dark:hover:border-slate-600">
               <input type="radio" name="formVideoFormat" id="videoFormatShort" value="short" class="sr-only">
               <div class="flex items-center space-x-2.5 min-w-0">
                 <div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center text-base shrink-0">📱</div>
                 <div class="min-w-0">
-                  <div class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate flex items-center space-x-1">
-                    <span>คลิปสั้น</span>
-                    <span class="text-[10px] font-semibold text-rose-600 dark:text-rose-400">(Short)</span>
-                  </div>
+                  <div class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">Short</div>
                   <div class="text-[10px] text-slate-400 dark:text-slate-500 truncate">TikTok, Reels, Shorts</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Option 3: Graphic -->
+            <div id="videoFormatCardGraphic" onclick="window.appActions.onVideoFormatChange('graphic')" class="flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition cursor-pointer select-none hover:border-slate-300 dark:hover:border-slate-600">
+              <input type="radio" name="formVideoFormat" id="videoFormatGraphic" value="graphic" class="sr-only">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base shrink-0">🎨</div>
+                <div class="min-w-0">
+                  <div class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">Graphic</div>
+                  <div class="text-[10px] text-slate-400 dark:text-slate-500 truncate">ปกคลิป, โพสต์ภาพ, Artwork</div>
                 </div>
               </div>
             </div>
@@ -1991,9 +1997,11 @@
         const startTime = (typeof t.startTime === 'string') ? t.startTime : ((typeof t.start_time === 'string') ? t.start_time : '');
         const endTime = (typeof t.endTime === 'string') ? t.endTime : ((typeof t.end_time === 'string') ? t.end_time : '');
 
-                let videoFormat = t.videoFormat || t.video_format;
+                let videoFormat = t.videoFormat || t.video_format || t.workFormat || t.work_format;
         if (!videoFormat) {
-          if ((Array.isArray(t.options) && t.options.includes('Short')) || 
+          if (typeof t.title === 'string' && (t.title.toLowerCase().includes('graphic') || t.title.includes('กราฟฟิก') || t.title.includes('Thumbnail') || t.title.includes('ปก'))) {
+            videoFormat = 'graphic';
+          } else if ((Array.isArray(t.options) && t.options.includes('Short')) || 
               (typeof t.title === 'string' && (t.title.toLowerCase().includes('short') || t.title.includes('คลิปสั้น')))) {
             videoFormat = 'short';
           } else {
@@ -3816,9 +3824,15 @@
 
         const longForm = calcFormatMetric('long');
         const shorts = calcFormatMetric('short');
+        const graphicFormat = calcFormatMetric('graphic');
         const edits = calcMetric('ตัดต่อ');
         const scripts = calcMetric('เขียนสคริปต์');
-        const graphics = calcMetric('กราฟฟิก');
+        const graphics = {
+          total: monthTasks.filter(t => ((t.videoFormat || t.workFormat) === 'graphic' || (Array.isArray(t.options) && t.options.includes('กราฟฟิก')))).length,
+          done: doneTasks.filter(t => ((t.videoFormat || t.workFormat) === 'graphic' || (Array.isArray(t.options) && t.options.includes('กราฟฟิก'))) && t.status === 'done').length,
+          pct: 0
+        };
+        graphics.pct = graphics.total > 0 ? Math.round((graphics.done / graphics.total) * 100) : 0;
 
         const totalPlanned = monthTasks.length;
         const totalDone = doneTasks.length;
@@ -4036,7 +4050,26 @@
         `;
       };
 
-      const renderTaskCard = (task, isManager) => {
+            const renderWorkFormatBadge = (fmt) => {
+        if (fmt === 'short') {
+          return `<span class="inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shadow-2xs" title="รูปแบบงาน: Short">
+            <span>📱</span>
+            <span>Short</span>
+          </span>`;
+        }
+        if (fmt === 'graphic') {
+          return `<span class="inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs" title="รูปแบบงาน: Graphic">
+            <span>🎨</span>
+            <span>Graphic</span>
+          </span>`;
+        }
+        return `<span class="inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-2xs" title="รูปแบบงาน: Long Form">
+          <span>🎬</span>
+          <span>Long Form</span>
+        </span>`;
+      };
+
+const renderTaskCard = (task, isManager) => {
         const deadlineInfo = getDeadlineInfo(task.deadline, task.status);
         const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
         const otherAssignees = isManager ? [] : assignees.filter(m => m.id !== currentUserId);
@@ -4046,17 +4079,7 @@
           <div draggable="true" ondragstart="window.appActions.onDragStart(event, '${task.id}')" class="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 border-l-4 ${colConf.borderL} shadow-xs hover:shadow-[0_10px_25px_-5px_rgba(147,51,234,0.18),0_4px_10px_-2px_rgba(0,0,0,0.05)] hover:border-purple-300/80 dark:hover:border-purple-800/80 hover:-translate-y-0.5 transition-all duration-200 cursor-grab active:cursor-grabbing group relative">
             <div class="flex items-center justify-between gap-2 mb-2">
               <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
-                ${task.videoFormat === 'short' ? `
-                  <span class="inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shadow-2xs" title="รูปแบบ: คลิปสั้น (TikTok / Reels / Shorts)">
-                    <span>📱</span>
-                    <span>คลิปสั้น (Short)</span>
-                  </span>
-                ` : `
-                  <span class="inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-2xs" title="รูปแบบ: คลิปยาว (Long Form / YouTube)">
-                    <span>🎬</span>
-                    <span>คลิปยาว (Long)</span>
-                  </span>
-                `}
+                ${renderWorkFormatBadge(task.videoFormat || task.workFormat)}
                 <span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full border ${colConf.badge}" title="สีกำกับในปฏิทิน: ${colConf.name}">
                   <span class="w-1.5 h-1.5 rounded-full ${colConf.dot}"></span>
                   <span>${colConf.name}</span>
@@ -4168,15 +4191,7 @@
                     <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
                       <td class="py-3 px-4 max-w-xs sm:max-w-md">
                         <div class="flex items-center space-x-1.5">
-                          ${task.videoFormat === 'short' ? `
-                            <span class="inline-flex items-center space-x-1 text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0">
-                              <span>📱 Short</span>
-                            </span>
-                          ` : `
-                            <span class="inline-flex items-center space-x-1 text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shrink-0">
-                              <span>🎬 Long</span>
-                            </span>
-                          `}
+                          ${renderWorkFormatBadge(task.videoFormat || task.workFormat)}
                           <span class="inline-flex items-center space-x-1 text-[10px] px-1.5 py-0.2 rounded-full border ${colConf.badge}">
                             <span class="w-1.5 h-1.5 rounded-full ${colConf.dot}"></span>
                             <span>${colConf.name}</span>
@@ -4315,7 +4330,7 @@
 
         let filteredCalendarTasks = taskList;
         if (calendarVideoFormatFilter !== 'all') {
-          filteredCalendarTasks = filteredCalendarTasks.filter(t => t.videoFormat === calendarVideoFormatFilter);
+          filteredCalendarTasks = filteredCalendarTasks.filter(t => (t.videoFormat || t.workFormat || 'long') === calendarVideoFormatFilter);
         }
         if (currentSelectedTypes.length > 0) {
           filteredCalendarTasks = filteredCalendarTasks.filter(t => 
@@ -4480,20 +4495,23 @@
                 `}
               </div>
 
-              <!-- Video Format Quick Filter Bar (คลิปยาว vs คลิปสั้น) -->
+              <!-- Work Format Quick Filter Bar (Long Form vs Short vs Graphic) -->
               <div class="flex items-center gap-1.5 pt-2 text-xs overflow-x-auto flex-nowrap sm:flex-wrap pb-0.5 custom-scrollbar">
                 <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center space-x-1 shrink-0">
-                  <span>🎞️</span>
-                  <span>รูปแบบวิดีโอ:</span>
+                  <span>🏷️</span>
+                  <span>รูปแบบงาน:</span>
                 </span>
                 <button type="button" onclick="window.appActions.setCalendarVideoFormatFilter('all')" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${calendarVideoFormatFilter === 'all' ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white border-purple-500 shadow-2xs font-bold ring-1 ring-purple-300/40' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'}">
                   ทุกรูปแบบ (${taskList.length})
                 </button>
                 <button type="button" onclick="window.appActions.setCalendarVideoFormatFilter('long')" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${calendarVideoFormatFilter === 'long' ? 'bg-blue-600 text-white border-blue-600 shadow-2xs font-bold ring-1 ring-blue-300/40' : 'bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/40'}">
-                  🎬 คลิปยาว Long Form (${taskList.filter(t => t.videoFormat !== 'short').length})
+                  🎬 Long Form (${taskList.filter(t => (t.videoFormat || t.workFormat) === 'long' || (!t.videoFormat && !t.workFormat)).length})
                 </button>
                 <button type="button" onclick="window.appActions.setCalendarVideoFormatFilter('short')" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${calendarVideoFormatFilter === 'short' ? 'bg-rose-600 text-white border-rose-600 shadow-2xs font-bold ring-1 ring-rose-300/40' : 'bg-white dark:bg-slate-800 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40'}">
-                  📱 คลิปสั้น Short (${taskList.filter(t => t.videoFormat === 'short').length})
+                  📱 Short (${taskList.filter(t => (t.videoFormat || t.workFormat) === 'short').length})
+                </button>
+                <button type="button" onclick="window.appActions.setCalendarVideoFormatFilter('graphic')" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${calendarVideoFormatFilter === 'graphic' ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs font-bold ring-1 ring-emerald-300/40' : 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'}">
+                  🎨 Graphic (${taskList.filter(t => (t.videoFormat || t.workFormat) === 'graphic').length})
                 </button>
               </div>
 
@@ -4622,7 +4640,7 @@
                                  class="h-[23px] px-1.5 flex items-center space-x-1 cursor-grab active:cursor-grabbing select-none shadow-xs hover:brightness-110 active:scale-[0.99] transition ${shapeClass} ${colorClass}" 
                                  title="${escapeHtml(task.title)}${!task.isAllDay && (task.startTime || task.endTime) ? ' [⏰ ' + task.startTime + (task.endTime ? '-' + task.endTime : '') + ' น.]' : ''}${assigneeNames ? ' (' + escapeHtml(assigneeNames) + ')' : ''} • ลากเพื่อย้ายวันที่ในปฏิทิน (คลิกดูรายละเอียด)">
                               <span class="text-[9px] shrink-0 leading-none opacity-90">${prefix}</span>
-                              ${task.videoFormat === "short" ? '<span class="text-[9px] px-1 py-0.2 rounded bg-rose-500/90 text-white font-bold shrink-0 leading-none mr-0.5" title="คลิปสั้น">📱 Short</span>' : '<span class="text-[9px] px-1 py-0.2 rounded bg-blue-500/90 text-white font-bold shrink-0 leading-none mr-0.5" title="คลิปยาว">🎬 Long</span>'}
+                              ${task.videoFormat === "short" ? '<span class="text-[9px] px-1 py-0.2 rounded bg-rose-500/90 text-white font-bold shrink-0 leading-none mr-0.5" title="Short">📱 Short</span>' : (task.videoFormat === "graphic" ? '<span class="text-[9px] px-1 py-0.2 rounded bg-emerald-600/90 text-white font-bold shrink-0 leading-none mr-0.5" title="Graphic">🎨 Graphic</span>' : '<span class="text-[9px] px-1 py-0.2 rounded bg-blue-500/90 text-white font-bold shrink-0 leading-none mr-0.5" title="Long Form">🎬 Long</span>')}
                               ${timeChip}
                               <span class="font-semibold truncate flex-1 leading-none text-[11px]">${escapeHtml(task.title)}</span>
                               ${optIcons ? `<span class="text-[9.5px] shrink-0 leading-none ml-0.5 tracking-tight" title="ลักษณะงาน: ${(task.options || []).join(', ')}">${optIcons}</span>` : ''}
@@ -4909,7 +4927,7 @@
               <div class="flex items-center justify-between gap-1">
                 <div class="flex items-center space-x-1.5 truncate">
                   <span class="w-2 h-2 rounded-full ${colConf.dot} shrink-0" title="สีปฏิทิน: ${colConf.name}"></span>
-                  ${task.videoFormat === 'short' ? '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold shrink-0">📱 Short</span>' : '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 font-bold shrink-0">🎬 Long</span>'}
+                  ${renderWorkFormatBadge(task.videoFormat || task.workFormat)}
                   <span class="text-xs font-semibold leading-snug truncate ${isDone ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}">${escapeHtml(task.title)}</span>
                 </div>
                 ${priorityBadge}
@@ -5047,8 +5065,8 @@
         document.getElementById('formDate').value = task ? task.date : (defaultDate || getTodayStr(0));
         document.getElementById('formDeadline').value = task ? task.deadline : (defaultDeadline || getTodayStr(2));
 
-        const vFormat = (task && task.videoFormat) 
-          ? task.videoFormat 
+        const vFormat = (task && (task.videoFormat || task.workFormat)) 
+          ? (task.videoFormat || task.workFormat) 
           : ((task && Array.isArray(task.options) && task.options.includes('Short')) ? 'short' : 'long');
         if (typeof window.appActions.updateVideoFormatUI === 'function') {
           window.appActions.updateVideoFormatUI(vFormat);
@@ -5168,17 +5186,7 @@
                 <span class="w-1.5 h-1.5 rounded-full ${statusConf.dot}"></span>
                 <span>สถานะ: ${statusConf.label}</span>
               </span>
-              ${task.videoFormat === 'short' ? `
-                <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 font-bold text-xs border border-rose-200 dark:border-rose-800 shadow-2xs">
-                  <span>📱</span>
-                  <span>คลิปสั้น (Short Form)</span>
-                </span>
-              ` : `
-                <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 font-bold text-xs border border-blue-200 dark:border-blue-800 shadow-2xs">
-                  <span>🎬</span>
-                  <span>คลิปยาว (Long Form)</span>
-                </span>
-              `}
+${renderWorkFormatBadge(task.videoFormat || task.workFormat)}
               ${task.sheetRow ? `
                 <a href="https://docs.google.com/spreadsheets/d/1I94nTxERcyRfhy4vWEK4FLH0cQhygBiQnsjXi7cWhVs/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/70 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition" title="เปิดดูรายการนี้ใน Google Sheet Process Bar แถวที่ ${task.sheetRow}">
                   <span>📊 Process Bar แถว ${task.sheetRow}</span>
@@ -5826,33 +5834,45 @@ function doGet(e) {
 
       window.appActions = {
         updateVideoFormatUI: (format) => {
-          const isShort = format === 'short';
           const radioLong = document.getElementById('videoFormatLong');
           const radioShort = document.getElementById('videoFormatShort');
+          const radioGraphic = document.getElementById('videoFormatGraphic');
           const cardLong = document.getElementById('videoFormatCardLong');
           const cardShort = document.getElementById('videoFormatCardShort');
+          const cardGraphic = document.getElementById('videoFormatCardGraphic');
           const badge = document.getElementById('selectedVideoFormatBadge');
 
-          if (radioLong) radioLong.checked = !isShort;
-          if (radioShort) radioShort.checked = isShort;
+          if (radioLong) radioLong.checked = format === 'long';
+          if (radioShort) radioShort.checked = format === 'short';
+          if (radioGraphic) radioGraphic.checked = format === 'graphic';
 
-          if (cardLong && cardShort) {
-            if (isShort) {
-              cardLong.className = "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition cursor-pointer select-none";
-              cardShort.className = "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-rose-500 bg-rose-50/80 dark:bg-rose-950/60 transition cursor-pointer select-none shadow-xs ring-1 ring-rose-300/40";
-            } else {
-              cardLong.className = "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-blue-500 bg-blue-50/80 dark:bg-blue-950/60 transition cursor-pointer select-none shadow-xs ring-1 ring-blue-300/40";
-              cardShort.className = "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition cursor-pointer select-none";
-            }
+          const unselectedClass = "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition cursor-pointer select-none hover:border-slate-300 dark:hover:border-slate-600";
+          if (cardLong) {
+            cardLong.className = format === 'long' 
+              ? "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-blue-500 bg-blue-50/80 dark:bg-blue-950/60 transition cursor-pointer select-none shadow-xs ring-1 ring-blue-300/40"
+              : unselectedClass;
+          }
+          if (cardShort) {
+            cardShort.className = format === 'short'
+              ? "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-rose-500 bg-rose-50/80 dark:bg-rose-950/60 transition cursor-pointer select-none shadow-xs ring-1 ring-rose-300/40"
+              : unselectedClass;
+          }
+          if (cardGraphic) {
+            cardGraphic.className = format === 'graphic'
+              ? "flex items-center p-2.5 sm:p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/60 transition cursor-pointer select-none shadow-xs ring-1 ring-emerald-300/40"
+              : unselectedClass;
           }
 
           if (badge) {
-            if (isShort) {
-              badge.textContent = "📱 คลิปสั้น (Short Form)";
-              badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800";
+            if (format === 'short') {
+              badge.textContent = "📱 Short";
+              badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800";
+            } else if (format === 'graphic') {
+              badge.textContent = "🎨 Graphic";
+              badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800";
             } else {
-              badge.textContent = "🎬 คลิปยาว (Long Form)";
-              badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800";
+              badge.textContent = "🎬 Long Form";
+              badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800";
             }
           }
         },
@@ -6057,17 +6077,27 @@ function doGet(e) {
             const payload = {
               action: "push",
               webhookUrl: googleSheetsConfig.webhookUrl,
-              tasks: taskList.map(t => ({
-                sheetRow: t.sheetRow,
-                title: (t.videoFormat === 'short' && !t.title.toLowerCase().includes('short')) ? (t.title + ' (Short)') : t.title,
-                videoFormat: t.videoFormat || 'long',
-                sow: t.sow || (t.videoFormat === 'short' ? 'Short' : ''),
-                postDate: t.deadline,
-                startTime: t.startTime,
-                status: t.status,
-                options: t.options || [],
-                date: t.date
-              }))
+              tasks: taskList.map(t => {
+                const fmt = t.videoFormat || t.workFormat || 'long';
+                let titleWithFmt = t.title;
+                if (fmt === 'short' && !titleWithFmt.toLowerCase().includes('short')) {
+                  titleWithFmt += ' (Short)';
+                } else if (fmt === 'graphic' && !titleWithFmt.toLowerCase().includes('graphic') && !titleWithFmt.includes('กราฟฟิก') && !titleWithFmt.includes('ปก')) {
+                  titleWithFmt += ' (Graphic)';
+                }
+                return {
+                  sheetRow: t.sheetRow,
+                  title: titleWithFmt,
+                  videoFormat: fmt,
+                  workFormat: fmt,
+                  sow: t.sow || (fmt === 'short' ? 'Short' : (fmt === 'graphic' ? 'Graphic' : 'Long Form')),
+                  postDate: t.deadline,
+                  startTime: t.startTime,
+                  status: t.status,
+                  options: t.options || [],
+                  date: t.date
+                };
+              })
             };
 
             const res = await fetch('/api/sheets-sync', {
@@ -7844,8 +7874,13 @@ switchUser: (newUserId) => {
         const endTime = !isAllDay && document.getElementById('formEndTime') ? document.getElementById('formEndTime').value.trim() : '';
 
         const radioShort = document.getElementById('videoFormatShort');
-        const isShortFormat = radioShort ? radioShort.checked : false;
-        const videoFormat = isShortFormat ? 'short' : 'long';
+        const radioGraphic = document.getElementById('videoFormatGraphic');
+        let videoFormat = 'long';
+        if (radioShort && radioShort.checked) {
+          videoFormat = 'short';
+        } else if (radioGraphic && radioGraphic.checked) {
+          videoFormat = 'graphic';
+        }
 
         const sheetRowInput = document.getElementById('formSheetRow');
         const sheetRowVal = sheetRowInput ? sheetRowInput.value.trim() : '';
@@ -7866,6 +7901,7 @@ switchUser: (newUserId) => {
           status: document.getElementById('formStatus').value,
           priority: document.getElementById('formPriority').value,
           videoFormat: videoFormat,
+          workFormat: videoFormat,
           sheetRow: sheetRowVal ? parseInt(sheetRowVal, 10) : null,
           sheetId: SPREADSHEET_ID
         };
