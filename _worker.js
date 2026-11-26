@@ -344,6 +344,70 @@ export default {
       }
     }
 
+    // 5. API: /api/leaves (Get & Save Team Leaves in Cloudflare D1 meta table)
+    if (url.pathname === '/api/leaves') {
+      const db = getDb(env);
+      if (!db) {
+        return new Response(JSON.stringify({ success: false, error: 'Database not bound' }), { status: 503, headers: jsonHeaders });
+      }
+      if (request.method === 'GET') {
+        try {
+          await ensureTable(db);
+          const row = await db.prepare("SELECT value FROM meta WHERE key = 'leaves_data'").first();
+          let leaves = [];
+          if (row && row.value) {
+            try { leaves = JSON.parse(row.value); } catch(e) {}
+          }
+          return new Response(JSON.stringify({ success: true, leaves }), { headers: jsonHeaders });
+        } catch(err) {
+          return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });
+        }
+      }
+      if (request.method === 'POST') {
+        try {
+          const body = await request.json();
+          await ensureTable(db);
+          const val = typeof body === 'string' ? body : JSON.stringify(body || []);
+          await db.prepare("INSERT INTO meta (key, value) VALUES ('leaves_data', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(val).run();
+          return new Response(JSON.stringify({ success: true, message: 'Leaves saved successfully' }), { headers: jsonHeaders });
+        } catch(err) {
+          return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });
+        }
+      }
+    }
+
+    // 6. API: /api/daily-order (Store & retrieve daily agenda custom task order)
+    if (url.pathname === '/api/daily-order') {
+      const db = getDb(env);
+      if (!db) {
+        return new Response(JSON.stringify({ success: false, error: 'Database not bound' }), { status: 503, headers: jsonHeaders });
+      }
+      if (request.method === 'GET') {
+        try {
+          await ensureTable(db);
+          const row = await db.prepare("SELECT value FROM meta WHERE key = 'daily_order'").first();
+          let orderMap = {};
+          if (row && row.value) {
+            try { orderMap = JSON.parse(row.value); } catch(e) {}
+          }
+          return new Response(JSON.stringify({ success: true, orderMap }), { headers: jsonHeaders });
+        } catch(err) {
+          return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });
+        }
+      }
+      if (request.method === 'POST') {
+        try {
+          const body = await request.json();
+          await ensureTable(db);
+          const val = typeof body === 'string' ? body : JSON.stringify(body || {});
+          await db.prepare("INSERT INTO meta (key, value) VALUES ('daily_order', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(val).run();
+          return new Response(JSON.stringify({ success: true, message: 'Daily order saved' }), { headers: jsonHeaders });
+        } catch(err) {
+          return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: jsonHeaders });
+        }
+      }
+    }
+
     // 5. Default: Serve static assets (index.html, etc.) via Pages asset handler
     if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
       return env.ASSETS.fetch(request);

@@ -4944,6 +4944,37 @@ const renderTaskCard = (task, isManager) => {
               </div>
             </div>
 
+            <!-- Month Team Leaves Banner -->
+            ${(() => {
+              const currentMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+              const monthLeaves = teamLeaves.filter(lv => {
+                const s = lv.startDate || lv.endDate || '';
+                const e = lv.endDate || lv.startDate || '';
+                return (s.startsWith(currentMonthStr) || e.startsWith(currentMonthStr));
+              });
+              if (monthLeaves.length === 0) return '';
+              return `
+                <div class="flex items-center gap-1.5 p-2 rounded-xl bg-amber-50/90 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-900/60 text-xs overflow-x-auto flex-nowrap custom-scrollbar">
+                  <span class="text-[11px] font-bold text-amber-800 dark:text-amber-300 flex items-center space-x-1 shrink-0">
+                    <span>🌴</span>
+                    <span>วันลาในเดือนนี้ (${monthLeaves.length}):</span>
+                  </span>
+                  ${monthLeaves.map(lv => {
+                    const m = TEAM_MEMBERS.find(tm => tm.id === lv.userId);
+                    const tConf = LEAVE_TYPES[lv.type] || { name: lv.type, icon: '🌴', badgeBg: 'bg-amber-100 text-amber-800 border-amber-300' };
+                    const dateRangeText = lv.startDate === lv.endDate ? lv.startDate.slice(5) : `${lv.startDate.slice(5)} - ${lv.endDate.slice(5)}`;
+                    return `
+                      <button type="button" onclick="window.appActions.openLeaveModal('history')" class="shrink-0 px-2 py-0.5 rounded-lg border text-[10.5px] font-semibold flex items-center space-x-1 transition cursor-pointer select-none shadow-2xs hover:scale-105 ${tConf.badgeBg}">
+                        <span>${tConf.icon}</span>
+                        <span><strong>${escapeHtml(m ? m.name : lv.userName)}</strong> (${tConf.name})</span>
+                        <span class="opacity-80 font-mono text-[9.5px]">${dateRangeText}</span>
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+              `;
+            })()}
+
             <!-- Weekday Headers & Calendar Grid (Scrollable on Mobile, Pinch-to-Zoom Supported) -->
             <div id="calendarScrollContainer" class="overflow-x-auto -mx-3 sm:mx-0 px-1 sm:px-0 pb-1.5 custom-scrollbar touch-pan-x touch-pan-y">
               <div id="calendarGridWrapper" style="min-width: ${currentCalWidth}px;" class="${calendarZoomScale < 0.65 ? 'cal-compact-view' : ''} lg:min-w-0 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-xs transition-[min-width] duration-75">
@@ -4956,6 +4987,8 @@ const renderTaskCard = (task, isManager) => {
                   const isToday = cell.dateStr === todayStr;
                   const holiday = getThaiHoliday(cell.dateStr);
                   const isHoliday = !!holiday && cell.isCurrentMonth;
+                  const cellLeaves = getLeavesOnDate(cell.dateStr);
+                  const hasLeaves = cellLeaves.length > 0 && cell.isCurrentMonth;
 
                   return `
                     <div ${isToday ? 'id="todayCalendarCell"' : ''} 
@@ -4963,12 +4996,18 @@ const renderTaskCard = (task, isManager) => {
                          ondragenter="window.appActions.onCalendarCellDragEnter(event, this)" 
                          ondragleave="window.appActions.onCalendarCellDragLeave(event, this)" 
                          ondrop="window.appActions.onCalendarCellDrop(event, '${cell.dateStr}', this)"
-                         class="calendar-cell p-1.5 sm:p-2 transition flex flex-col justify-start group relative ${!cell.isCurrentMonth ? 'bg-slate-50/60 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600' : (isHoliday ? 'bg-rose-50/35 dark:bg-rose-950/25 hover:bg-rose-50/55 dark:hover:bg-rose-900/35' : 'bg-white dark:bg-slate-900/40 hover:bg-slate-50/30 dark:hover:bg-slate-800/30')}">
+                         class="calendar-cell p-1.5 sm:p-2 transition flex flex-col justify-start group relative ${!cell.isCurrentMonth ? 'bg-slate-50/60 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600' : (hasLeaves ? 'bg-amber-50/45 dark:bg-amber-950/30 border-t-2 border-t-amber-500/80 hover:bg-amber-50/65 dark:hover:bg-amber-900/40' : (isHoliday ? 'bg-rose-50/35 dark:bg-rose-950/25 hover:bg-rose-50/55 dark:hover:bg-rose-900/35' : 'bg-white dark:bg-slate-900/40 hover:bg-slate-50/30 dark:hover:bg-slate-800/30'))}">
                       <div class="flex items-center justify-between mb-1 px-1 h-6 shrink-0">
                         <div class="flex items-center space-x-1 min-w-0">
                           <span class="text-xs font-semibold inline-flex items-center justify-center ${isToday ? 'w-6 h-6 rounded-full bg-gradient-to-tr from-violet-600 to-purple-600 text-white font-bold shadow-[0_2px_8px_rgba(147,51,234,0.45)] ring-1 ring-purple-300/50' : (isHoliday ? 'w-6 h-6 rounded-full text-rose-600 dark:text-rose-400 font-bold bg-rose-100/90 dark:bg-rose-900/60' : 'w-6 h-6 text-slate-700 dark:text-slate-300')}">
                             ${cell.dayNumber}
                           </span>
+                          ${hasLeaves ? `
+                            <span onclick="window.appActions.openLeaveModal('history')" class="text-[9.5px] px-1 py-0.2 rounded-md bg-amber-100/90 dark:bg-amber-900/80 text-amber-800 dark:text-amber-200 border border-amber-300/80 dark:border-amber-700 font-bold truncate max-w-[75px] sm:max-w-[110px] inline-flex items-center space-x-0.5 shrink-0 shadow-2xs cursor-pointer" title="${cellLeaves.map(lv => (TEAM_MEMBERS.find(tm => tm.id === lv.userId)?.name || lv.userName) + ' (' + (LEAVE_TYPES[lv.type]?.name || lv.type) + ')').join(', ')}">
+                              <span class="text-[9px]">${cellLeaves[0].type === 'swap' ? '🔄' : '🌴'}</span>
+                              <span class="truncate">${escapeHtml(TEAM_MEMBERS.find(tm => tm.id === cellLeaves[0].userId)?.name || cellLeaves[0].userName)}${cellLeaves.length > 1 ? ` +${cellLeaves.length - 1}` : ''}</span>
+                            </span>
+                          ` : ''}
                           ${isHoliday ? `
                             <span class="text-[9.5px] px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-300 border border-rose-200/90 dark:border-rose-900/70 font-semibold truncate max-w-[85px] sm:max-w-[125px] inline-flex items-center space-x-0.5 shrink-0 shadow-2xs" title="วันหยุดนักขัตฤกษ์: ${escapeHtml(holiday)}">
                               <span class="text-[9px]">🇹🇭</span>
@@ -4983,16 +5022,15 @@ const renderTaskCard = (task, isManager) => {
 
                       <!-- Team Leaves on this day -->
                       ${(() => {
-                        const cellLeaves = getLeavesOnDate(cell.dateStr);
                         if (cellLeaves.length === 0) return '';
                         return `
-                          <div class="space-y-1 mb-1">
+                          <div class="space-y-1 mb-1 w-full">
                             ${cellLeaves.map(lv => {
                               const m = TEAM_MEMBERS.find(tm => tm.id === lv.userId);
                               const tConf = LEAVE_TYPES[lv.type] || { name: lv.type, icon: '🌴', badgeBg: 'bg-amber-100 text-amber-800' };
                               return `
                                 <div onclick="window.appActions.openLeaveModal('history')" title="${escapeHtml(m ? m.name : lv.userName)}: ${tConf.name}${lv.reason ? ' (' + escapeHtml(lv.reason) + ')' : ''}${lv.swapDate ? ' [สลับกับ ' + lv.swapDate + ']' : ''}" class="mx-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold flex items-center space-x-1 border cursor-pointer select-none truncate shadow-2xs hover:scale-[1.02] transition ${tConf.badgeBg}">
-                                  <span>${tConf.icon}</span>
+                                  <span class="shrink-0">${tConf.icon}</span>
                                   <span class="truncate">${escapeHtml(m ? m.name : lv.userName)}</span>
                                   <span class="text-[9px] font-normal opacity-85 truncate">(${tConf.name})</span>
                                 </div>
@@ -5558,17 +5596,23 @@ const renderTaskCard = (task, isManager) => {
           if (res.ok) {
             const data = await res.json();
             if (data && data.success && Array.isArray(data.leaves)) {
+              const oldHash = JSON.stringify(teamLeaves);
+              const newHash = JSON.stringify(data.leaves);
               if (data.leaves.length > 0 || teamLeaves.length === 0) {
-                teamLeaves = data.leaves;
-                localStorage.setItem('team_taskflow_leaves_v1', JSON.stringify(teamLeaves));
-                renderApp();
-                updateLeaveBadge();
+                if (oldHash !== newHash) {
+                  teamLeaves = data.leaves;
+                  localStorage.setItem('team_taskflow_leaves_v1', JSON.stringify(teamLeaves));
+                  renderApp();
+                  updateLeaveBadge();
+                }
               } else if (teamLeaves.length > 0) {
                 saveTeamLeaves();
               }
             }
           }
-        } catch(e) {}
+        } catch(e) {
+          console.warn('Leaves fetch error:', e);
+        }
       };
 
       const isMemberOnLeave = (userId, dateStr) => {
@@ -9494,11 +9538,13 @@ switchUser: (newUserId) => {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && window.location.protocol.startsWith('http')) {
           initCloudSync(false);
+          syncLeavesFromCloud();
         }
       });
       window.addEventListener('focus', () => {
         if (window.location.protocol.startsWith('http')) {
           initCloudSync(false);
+          syncLeavesFromCloud();
         }
       });
 
@@ -9507,6 +9553,7 @@ switchUser: (newUserId) => {
         window.setInterval(() => {
           if (document.visibilityState === 'visible' && window.location.protocol.startsWith('http')) {
             initCloudSync(false);
+            syncLeavesFromCloud();
           }
         }, 25000);
       }
@@ -9557,6 +9604,7 @@ switchUser: (newUserId) => {
       renderApp();
       updateLeaveBadge();
       initCloudSync(false);
+      syncLeavesFromCloud();
     })();
   </script>
 </body>
