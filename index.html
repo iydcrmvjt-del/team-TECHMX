@@ -1530,14 +1530,13 @@
       const TASK_OPTIONS_CONFIG = {
         'Roll A': { name: 'Roll A', icon: '🎬', bg: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800' },
         'ins': { name: 'ins', icon: '📹', bg: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800' },
-        'ตัดต่อ': { name: 'ตัดต่อ', icon: '✂️', bg: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' },
-        'Short': { name: 'Short', icon: '📱', bg: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800' },
         'เขียนสคริปต์': { name: 'เขียนสคริปต์', icon: '📝', bg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' },
+        'ตัดต่อ': { name: 'ตัดต่อ', icon: '✂️', bg: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' },
         'กราฟฟิก': { name: 'กราฟฟิก', icon: '🎨', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800' },
         'ปล่อยงาน': { name: 'ปล่อยงาน', icon: '🚀', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800' },
         'แก้งาน': { name: 'แก้งาน', icon: '🛠️', bg: 'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800' }
       };
-      const TASK_OPTIONS_LIST = ['Roll A', 'ins', 'ตัดต่อ', 'Short', 'เขียนสคริปต์', 'กราฟฟิก', 'ปล่อยงาน', 'แก้งาน'];
+      const TASK_OPTIONS_LIST = ['Roll A', 'ins', 'เขียนสคริปต์', 'ตัดต่อ', 'กราฟฟิก', 'ปล่อยงาน', 'แก้งาน'];
 
       // Priority ordering (ด่วน -> ปกติ -> ไม่รีบ)
       const PRIORITY_ORDER = {
@@ -1972,8 +1971,8 @@
           const defaultCombos = [
             ['Roll A', 'ins'],
             ['เขียนสคริปต์'],
-            ['ตัดต่อ', 'Short'],
-            ['Short', 'กราฟฟิก'],
+            ['ตัดต่อ'],
+            ['กราฟฟิก'],
             ['Roll A', 'เขียนสคริปต์'],
             ['ตัดต่อ', 'กราฟฟิก'],
             ['ins', 'ตัดต่อ'],
@@ -2029,15 +2028,15 @@
       const INITIAL_TASKS = [
         { id: 'task-1', title: 'ถ่ายทำคลิปรีวิว iPhone 16 Pro Max', options: ['Roll A', 'ins'], note: 'สตูดิโอ A • https://drive.google.com/drive/folders/sample-iphone16', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['non', 'france'], priority: 'high', color: 'blue' },
         { id: 'task-2', title: 'เขียนสคริปต์คลิปท่องเที่ยวเชียงใหม่ EP.12', options: ['เขียนสคริปต์'], note: 'ส่งดราฟต์แรกให้รีวิว https://docs.google.com/document/d/sample-script', date: getTodayStr(-1), deadline: getTodayStr(0), status: 'todo', assigneeIds: ['non', 'tanya'], priority: 'normal', color: 'purple' },
-        { id: 'task-3', title: 'ตัดต่อคลิปสั้นไฮไลต์ TikTok & Reels', options: ['ตัดต่อ', 'Short', 'กราฟฟิก'], note: 'เน้นช่วงต้นคลิป 3 วิแรก https://app.frame.io/projects/sample-tiktok', date: getTodayStr(-4), deadline: getTodayStr(-1), status: 'in-progress', assigneeIds: ['aun', 'rang'], priority: 'high', color: 'coral' },
+        { id: 'task-3', title: 'ตัดต่อคลิปสั้นไฮไลต์ TikTok & Reels', videoFormat: 'short', options: ['ตัดต่อ', 'กราฟฟิก'], note: 'เน้นช่วงต้นคลิป 3 วิแรก https://app.frame.io/projects/sample-tiktok', date: getTodayStr(-4), deadline: getTodayStr(-1), status: 'in-progress', assigneeIds: ['aun', 'rang'], priority: 'high', color: 'coral' },
         { id: 'task-4', title: 'ออกแบบภาพ Thumbnail และ Motion Graphics', options: ['กราฟฟิก'], note: 'ขนาด 1920x1080 https://www.figma.com/file/sample-thumbnail', date: getTodayStr(-2), deadline: getTodayStr(1), status: 'done', assigneeIds: ['aun'], priority: 'high', color: 'green' },
         { id: 'task-5', title: 'ถ่าย Ins บรรยากาศงานแถลงข่าวเปิดตัว', options: ['ins', 'Roll A'], note: 'เก็บบรรยากาศผู้ร่วมงาน', date: getTodayStr(-2), deadline: getTodayStr(3), status: 'in-progress', assigneeIds: ['eyeta', 'france'], priority: 'normal', color: 'rose' },
         { id: 'task-6', title: 'ตรวจเช็กความเรียบร้อยและปล่อยงานคลิปสัมภาษณ์', options: ['ปล่อยงาน', 'ตัดต่อ'], note: 'อัปโหลดขึ้น YouTube แล้ว https://youtu.be/sample-interview', date: getTodayStr(0), deadline: getTodayStr(0), status: 'done', assigneeIds: ['eyeta'], priority: 'normal', color: 'teal' },
         { id: 'task-7', title: 'เขียนสคริปต์ Tie-in สปอนเซอร์แคมเปญ 11.11', options: ['เขียนสคริปต์'], note: 'สคริปต์ผ่านแล้ว พร้อมถ่าย https://docs.google.com/document/d/sample-sponsor', date: getTodayStr(-5), deadline: getTodayStr(-2), status: 'done', assigneeIds: ['rang', 'aun'], priority: 'high', color: 'red' },
-        { id: 'task-8', title: 'บันทึกภาพ Roll A ช่วงคุยประเด็นข่าวไอที', options: ['Roll A', 'Short'], note: 'กล้องหลัก 4K 60fps', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'done', assigneeIds: ['rang'], priority: 'normal', color: 'indigo' },
-        { id: 'task-9', title: 'ทำกราฟฟิก Intro และ Transition รายการ', options: ['กราฟฟิก', 'Short'], note: 'ธีมสีใหม่ https://www.canva.com/design/sample-intro', date: getTodayStr(-2), deadline: getTodayStr(4), status: 'todo', assigneeIds: ['tanya'], priority: 'normal', color: 'yellow' },
+        { id: 'task-8', title: 'บันทึกภาพ Roll A ช่วงคุยประเด็นข่าวไอที', videoFormat: 'long', options: ['Roll A'], note: 'กล้องหลัก 4K 60fps', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'done', assigneeIds: ['rang'], priority: 'normal', color: 'indigo' },
+        { id: 'task-9', title: 'ทำกราฟฟิก Intro และ Transition รายการ', videoFormat: 'long', options: ['กราฟฟิก'], note: 'ธีมสีใหม่ https://www.canva.com/design/sample-intro', date: getTodayStr(-2), deadline: getTodayStr(4), status: 'todo', assigneeIds: ['tanya'], priority: 'normal', color: 'yellow' },
         { id: 'task-10', title: 'ถ่ายทำ Footage Ins ประกอบบทวิเคราะห์', options: ['ins'], note: 'ภาพ B-Roll สินค้า https://www.dropbox.com/sh/sample-broll', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['tanya', 'non'], priority: 'low', color: 'cyan' },
-        { id: 'task-11', title: 'ตัดต่อและปล่อยงานคลิป Short รายวัน', options: ['ตัดต่อ', 'Short', 'ปล่อยงาน'], note: 'ความยาวไม่เกิน 60 วิ https://drive.google.com/drive/folders/sample-shorts', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'in-progress', assigneeIds: ['france'], priority: 'high', color: 'fuchsia' },
+        { id: 'task-11', title: 'ตัดต่อและปล่อยงานคลิป Short รายวัน', videoFormat: 'short', options: ['ตัดต่อ', 'ปล่อยงาน'], note: 'ความยาวไม่เกิน 60 วิ https://drive.google.com/drive/folders/sample-shorts', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'in-progress', assigneeIds: ['france'], priority: 'high', color: 'fuchsia' },
         { id: 'task-12', title: 'ตรวจสีเกรดดิ้งและตัดต่อคลิปยาวฉบับเต็ม', options: ['Roll A', 'ตัดต่อ', 'ปล่อยงาน'], note: 'Export ProRes 422 https://drive.google.com/drive/folders/sample-master', date: getTodayStr(-4), deadline: getTodayStr(5), status: 'todo', assigneeIds: ['france', 'non'], priority: 'low', color: 'lime' },
         { id: 'task-13', title: 'แก้งานตัดต่อคลิปและเสียงรอบที่ 1 ตามฟีดแบ็กลูกค้า', options: ['แก้งาน', 'ตัดต่อ'], note: 'แก้เสียงบรรยายและปรับคัลเลอร์เกรด https://app.frame.io/projects/sample-revision', date: getTodayStr(-1), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['aun', 'france'], priority: 'high', color: 'brown' }
       ];
@@ -3808,8 +3807,15 @@
           return { total, done, pct };
         };
 
-        const longForm = calcMetric('ปล่อยงาน');
-        const shorts = calcMetric('Short');
+        const calcFormatMetric = (fmt) => {
+          const total = monthTasks.filter(t => t.videoFormat === fmt).length;
+          const done = doneTasks.filter(t => t.videoFormat === fmt && t.status === 'done').length;
+          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+          return { total, done, pct };
+        };
+
+        const longForm = calcFormatMetric('long');
+        const shorts = calcFormatMetric('short');
         const edits = calcMetric('ตัดต่อ');
         const scripts = calcMetric('เขียนสคริปต์');
         const graphics = calcMetric('กราฟฟิก');
@@ -5853,17 +5859,6 @@ function doGet(e) {
 
         onVideoFormatChange: (format) => {
           window.appActions.updateVideoFormatUI(format);
-          if (format === 'short') {
-            if (!modalSelectedOptions.includes('Short')) {
-              modalSelectedOptions.push('Short');
-              renderModalOptions();
-            }
-          } else {
-            if (modalSelectedOptions.includes('Short')) {
-              modalSelectedOptions = modalSelectedOptions.filter(o => o !== 'Short');
-              renderModalOptions();
-            }
-          }
         },
 
         setCalendarVideoFormatFilter: (fmt) => {
