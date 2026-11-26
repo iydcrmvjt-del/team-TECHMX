@@ -5930,7 +5930,7 @@ function doPost(e) {
 
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName("ชีต1") || ss.getActiveSheet();
+    var sheet = ss.getSheetByName("VDO Process bar") || ss.getSheetByName("ชีต1") || ss.getActiveSheet();
     var contents = e.postData ? e.postData.contents : "{}";
     var payload = JSON.parse(contents);
     var action = payload.action || "upsert";
@@ -5949,7 +5949,7 @@ function doPost(e) {
       var tasks = payload.tasks || [];
       var results = [];
       var lastRow = sheet.getLastRow();
-      var data = lastRow > 0 ? sheet.getRange(1, 1, lastRow, 20).getValues() : [];
+      var data = lastRow > 0 ? sheet.getRange(1, 1, lastRow, 22).getValues() : [];
 
       for (var i = 0; i < tasks.length; i++) {
         var r = upsertSingleTask(sheet, data, tasks[i]);
@@ -5961,7 +5961,7 @@ function doPost(e) {
 
     if (action === "upsert") {
       var lastRow = sheet.getLastRow();
-      var data = lastRow > 0 ? sheet.getRange(1, 1, lastRow, 20).getValues() : [];
+      var data = lastRow > 0 ? sheet.getRange(1, 1, lastRow, 22).getValues() : [];
       var res = upsertSingleTask(sheet, data, payload.task || payload);
       return ContentService.createTextOutput(JSON.stringify({ success: true, result: res }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -5979,6 +5979,13 @@ function doPost(e) {
 
 function formatThaiSheetDate(dStr) {
   if (!dStr) return "";
+  dStr = dStr.toString().trim();
+  if (dStr.indexOf(" - ") !== -1) {
+    var parts = dStr.split(" - ");
+    var p0 = formatThaiSheetDate(parts[0]);
+    var p1 = formatThaiSheetDate(parts[1]);
+    return p0 + " - " + p1;
+  }
   if (dStr.indexOf("-") !== -1) {
     var p = dStr.split("-");
     if (p.length === 3) {
@@ -5995,10 +6002,10 @@ function formatThaiSheetDate(dStr) {
 
 function formatSheetTime(tStr) {
   if (!tStr) return "";
-  var p = tStr.split(":");
+  var p = tStr.toString().trim().split(":");
   if (p.length >= 2) {
     var h = parseInt(p[0], 10);
-    var m = p[1];
+    var m = p[1].substring(0, 2);
     var ampm = h >= 12 ? "PM" : "AM";
     var h12 = h % 12;
     if (h12 === 0) h12 = 12;
@@ -6029,47 +6036,86 @@ function upsertSingleTask(sheet, data, task) {
     sheet.getRange(targetRow, 1).setValue(productName);
   }
 
-  // Column A: Product
+  // Column A (1): Product / ชื่อโปรเจค
   if (productName) sheet.getRange(targetRow, 1).setValue(productName);
   
-  // Column B: Type of SOW
+  // Column B (2): Type of SOW
   if (task.sow) sheet.getRange(targetRow, 2).setValue(task.sow);
   
-  // Column C: Post Date (formatted Thai date e.g. 28 พ.ย.)
+  // Column C (3): Post Date (วันปล่อยงาน ON❗️)
   var postDateVal = task.postDate || task.deadline;
   if (postDateVal) {
     sheet.getRange(targetRow, 3).setValue(formatThaiSheetDate(postDateVal));
   }
   
-  // Column D: Post Time (formatted e.g. 7:00 PM)
+  // Column D (4): Post Time (เวลาที่โพสต์คลิป)
   var postTimeVal = task.startTime || task.postTime;
   if (postTimeVal) {
     sheet.getRange(targetRow, 4).setValue(formatSheetTime(postTimeVal));
   }
 
-  // Options & Milestones mapping
+  // Column J (10): Storyline ส่ง (วันส่งงานของ เขียนบทสคริปต์ Script)
+  var storylineVal = task.storylineDate || task.scriptDate;
+  if (storylineVal) {
+    sheet.getRange(targetRow, 10).setValue(formatThaiSheetDate(storylineVal));
+  }
+
+  // Column M (13): ถ่าย Roll A (วันถ่ายทำ Shooting❗️ Roll A)
+  var rollAVal = task.rollA;
+  if (rollAVal) {
+    sheet.getRange(targetRow, 13).setValue(formatThaiSheetDate(rollAVal));
+  }
+
+  // Column N (14): ถ่าย Roll B (วันถ่ายภาพแทรก ins / B-Roll: วันเริ่ม - วันสุดท้าย)
+  var rollBVal = task.rollB;
+  if (rollBVal) {
+    sheet.getRange(targetRow, 14).setValue(formatThaiSheetDate(rollBVal));
+  }
+
+  // Column P (16): ตัดต่อ (วันที่ของตัดต่อคลิป Edit: วันเริ่ม - วันสุดท้าย)
+  var editVal = task.editDate;
+  if (editVal) {
+    sheet.getRange(targetRow, 16).setValue(formatThaiSheetDate(editVal));
+  }
+
+  // Column Q (17): ส่ง Draft+caption (วันสุดท้ายที่ส่งงานของตัดต่อคลิป Edit)
+  var draftVal = task.draftDate || task.editEndDate;
+  if (draftVal) {
+    sheet.getRange(targetRow, 17).setValue(formatThaiSheetDate(draftVal));
+  }
+
+  // Column R (18): ปกงาน (ออกแบบภาพปก / ปกคลิป)
+  var coverVal = task.coverDate;
+  if (coverVal) {
+    sheet.getRange(targetRow, 18).setValue(formatThaiSheetDate(coverVal));
+  }
+
+  // Column S (19): All Process Finish
+  var finishVal = task.finishDate || postDateVal;
+  if (finishVal) {
+    sheet.getRange(targetRow, 19).setValue(formatThaiSheetDate(finishVal));
+  }
+
+  // Single task fallback
   var opts = Array.isArray(task.options) ? task.options : [];
   var rawDate = task.date || Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd");
   var thaiDate = formatThaiSheetDate(rawDate);
 
-  if (opts.indexOf("เขียนสคริปต์") !== -1 || task.scriptDate) {
-    sheet.getRange(targetRow, 12).setValue(formatThaiSheetDate(task.scriptDate) || thaiDate);
+  if ((opts.indexOf("เขียนสคริปต์") !== -1 || opts.indexOf("Script") !== -1) && !storylineVal) {
+    sheet.getRange(targetRow, 10).setValue(thaiDate);
   }
-  if (opts.indexOf("Roll A") !== -1 || task.rollA) {
-    sheet.getRange(targetRow, 13).setValue(formatThaiSheetDate(task.rollA) || thaiDate);
+  if (opts.indexOf("Roll A") !== -1 && !rollAVal) {
+    sheet.getRange(targetRow, 13).setValue(thaiDate);
   }
-  if (opts.indexOf("ins") !== -1 || task.rollB) {
-    sheet.getRange(targetRow, 14).setValue(formatThaiSheetDate(task.rollB) || thaiDate);
+  if (opts.indexOf("ins") !== -1 && !rollBVal) {
+    sheet.getRange(targetRow, 14).setValue(thaiDate);
   }
-  if (opts.indexOf("ตัดต่อ") !== -1 || task.editDate) {
-    sheet.getRange(targetRow, 16).setValue(formatThaiSheetDate(task.editDate) || thaiDate);
+  if ((opts.indexOf("ตัดต่อ") !== -1 || opts.indexOf("Edit") !== -1) && !editVal) {
+    sheet.getRange(targetRow, 16).setValue(thaiDate);
+    if (!draftVal) sheet.getRange(targetRow, 17).setValue(thaiDate);
   }
-  if (opts.indexOf("กราฟฟิก") !== -1 || task.coverDate) {
-    sheet.getRange(targetRow, 18).setValue(formatThaiSheetDate(task.coverDate) || thaiDate);
-  }
-  if (task.status === "done" || task.finishDate) {
-    var finDate = task.finishDate ? formatThaiSheetDate(task.finishDate) : formatThaiSheetDate(Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd"));
-    sheet.getRange(targetRow, 19).setValue(finDate);
+  if ((opts.indexOf("ปกคลิป") !== -1 || opts.indexOf("กราฟฟิก") !== -1 || opts.indexOf("Photo Album") !== -1) && !coverVal) {
+    sheet.getRange(targetRow, 18).setValue(thaiDate);
   }
 
   return { rowIndex: targetRow, product: productName, updated: true };
@@ -6078,7 +6124,7 @@ function upsertSingleTask(sheet, data, task) {
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: "active",
-    name: "Taskflow Google Sheets Process Bar 1-Way Push Webhook",
+    name: "Taskflow Google Sheets Process Bar Push Webhook",
     timestamp: new Date().toISOString()
   })).setMimeType(ContentService.MimeType.JSON);
 }`;
@@ -6580,30 +6626,86 @@ function doGet(e) {
 
           try {
             const taskList = specificTask ? [specificTask] : tasks.filter(t => !t.archived);
+            
+            // Group tasks by projectId so each project is represented as 1 horizontal row
+            const projectMap = {};
+            const standaloneTasks = [];
+
+            taskList.forEach(t => {
+              if (t.projectId) {
+                if (!projectMap[t.projectId]) projectMap[t.projectId] = [];
+                projectMap[t.projectId].push(t);
+              } else {
+                standaloneTasks.push(t);
+              }
+            });
+
+            const tasksPayload = [];
+
+            Object.values(projectMap).forEach(projTasks => {
+              const first = projTasks[0];
+              const pTitle = first.projectTitle || first.title.replace(/ \((Script|Roll A|ins|Edit|ตัดต่อ|ปกคลิป|ปล่อยงาน|Photo Album).*\)/, '').replace(/^(Shooting❗️ |ON❗️ )/, '');
+              const fmt = first.videoFormat || first.workFormat || 'long';
+              const stageScript = projTasks.find(t => t.options && (t.options.includes('Script') || t.options.includes('เขียนสคริปต์')));
+              const stageRollA = projTasks.find(t => t.options && t.options.includes('Roll A'));
+              const stageRollB = projTasks.find(t => t.options && t.options.includes('ins'));
+              const stageEdit = projTasks.find(t => t.options && (t.options.includes('Edit') || t.options.includes('ตัดต่อ')));
+              const stageCover = projTasks.find(t => t.options && (t.options.includes('ปกคลิป') || t.options.includes('Photo Album')));
+              const stagePublish = projTasks.find(t => t.options && (t.options.includes('ปล่อยงาน') || t.options.includes('ON❗️')));
+
+              const rollBStr = (stageRollB && stageRollB.date && stageRollB.deadline)
+                ? `${stageRollB.date} - ${stageRollB.deadline}`
+                : (stageRollB ? (stageRollB.date || stageRollB.deadline || '') : '');
+
+              const editStr = (stageEdit && stageEdit.date && stageEdit.deadline)
+                ? `${stageEdit.date} - ${stageEdit.deadline}`
+                : (stageEdit ? (stageEdit.date || stageEdit.deadline || '') : '');
+
+              tasksPayload.push({
+                sheetRow: first.sheetRow,
+                title: pTitle,
+                videoFormat: fmt,
+                workFormat: fmt,
+                sow: fmt === 'short' ? 'Short' : (fmt === 'graphic' ? 'Graphic' : 'Buy'),
+                postDate: (stagePublish && (stagePublish.deadline || stagePublish.date)) || first.deadline,
+                postTime: (stagePublish && stagePublish.startTime) || '19:00',
+                storylineDate: (stageScript && (stageScript.deadline || stageScript.date)) || '',
+                rollA: (stageRollA && (stageRollA.date || stageRollA.deadline)) || '',
+                rollB: rollBStr,
+                editDate: editStr,
+                draftDate: (stageEdit && (stageEdit.deadline || stageEdit.date)) || '',
+                coverDate: (stageCover && (stageCover.deadline || stageCover.date)) || '',
+                finishDate: (stagePublish && (stagePublish.deadline || stagePublish.date)) || first.deadline,
+                status: first.status
+              });
+            });
+
+            standaloneTasks.forEach(t => {
+              const fmt = t.videoFormat || t.workFormat || 'long';
+              let titleWithFmt = t.title;
+              if (fmt === 'short' && !titleWithFmt.toLowerCase().includes('short')) {
+                titleWithFmt += ' (Short)';
+              } else if (fmt === 'graphic' && !titleWithFmt.toLowerCase().includes('graphic') && !titleWithFmt.includes('กราฟฟิก') && !titleWithFmt.includes('ปก')) {
+                titleWithFmt += ' (Graphic)';
+              }
+              tasksPayload.push({
+                sheetRow: t.sheetRow,
+                title: titleWithFmt,
+                videoFormat: fmt,
+                workFormat: fmt,
+                sow: t.sow || (fmt === 'short' ? 'Short' : (fmt === 'graphic' ? 'Graphic' : 'Long Form')),
+                postDate: t.deadline,
+                startTime: t.startTime,
+                status: t.status,
+                options: t.options || [],
+                date: t.date
+              });
+            });
+
             const payload = {
               action: "push",
               webhookUrl: googleSheetsConfig.webhookUrl,
-              tasks: taskList.map(t => {
-                const fmt = t.videoFormat || t.workFormat || 'long';
-                let titleWithFmt = t.title;
-                if (fmt === 'short' && !titleWithFmt.toLowerCase().includes('short')) {
-                  titleWithFmt += ' (Short)';
-                } else if (fmt === 'graphic' && !titleWithFmt.toLowerCase().includes('graphic') && !titleWithFmt.includes('กราฟฟิก') && !titleWithFmt.includes('ปก')) {
-                  titleWithFmt += ' (Graphic)';
-                }
-                return {
-                  sheetRow: t.sheetRow,
-                  title: titleWithFmt,
-                  videoFormat: fmt,
-                  workFormat: fmt,
-                  sow: t.sow || (fmt === 'short' ? 'Short' : (fmt === 'graphic' ? 'Graphic' : 'Long Form')),
-                  postDate: t.deadline,
-                  startTime: t.startTime,
-                  status: t.status,
-                  options: t.options || [],
-                  date: t.date
-                };
-              })
+              tasks: tasksPayload
             };
 
             const res = await fetch('/api/sheets-sync', {
@@ -6619,10 +6721,10 @@ function doGet(e) {
               localStorage.setItem('team_taskflow_sheets_last_sync', nowStr);
               window.appActions.updateSheetsStatusUI();
               if (statusText) {
-                statusText.textContent = `ส่งข้อมูลสำเร็จ ${taskList.length} งาน เมื่อ ${new Date().toLocaleTimeString('th-TH')} ✅`;
+                statusText.textContent = `ส่งข้อมูลสำเร็จ ${tasksPayload.length} รายการ เมื่อ ${new Date().toLocaleTimeString('th-TH')} ✅`;
                 statusText.className = 'text-[11px] text-emerald-600 font-bold';
               }
-              showToast(`ส่งข้อมูลเข้า Google Sheet Process Bar เรียบร้อยแล้ว (${taskList.length} งาน) 🚀`, 'success');
+              showToast(`ส่งข้อมูลเข้า Google Sheet Process Bar เรียบร้อยแล้ว (${tasksPayload.length} รายการ) 🚀`, 'success');
             } else {
               throw new Error((data && data.error) || 'Push failed');
             }
@@ -6639,6 +6741,27 @@ function doGet(e) {
               btn.disabled = false;
             }
           }
+        },
+
+        pushProjectToGoogleSheets: async (projectData) => {
+          if (!googleSheetsConfig.webhookUrl && !window.location.protocol.startsWith('http')) return;
+          try {
+            fetch('/api/sheets-sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: "push",
+                webhookUrl: googleSheetsConfig.webhookUrl,
+                tasks: [projectData]
+              })
+            }).then(r => r.json()).then(data => {
+              if (data && data.success) {
+                showToast(`ส่งข้อมูลโปรเจกต์ "${projectData.title}" เข้า Google Sheet Process Bar เรียบร้อยแล้ว 📊✅`, 'success');
+              }
+            }).catch(err => {
+              console.warn('Project sheet sync error:', err);
+            });
+          } catch(e) {}
         },
 
         pushSingleTaskToGoogleSheets: async (task) => {
@@ -8439,9 +8562,41 @@ switchUser: (newUserId) => {
           if (newTasks.length > 0) {
             notifyLarkTaskCreated(newTasks[0]);
           }
-          if (syncToSheet || googleSheetsConfig.autoSync) {
-            newTasks.forEach(t => window.appActions.pushSingleTaskToGoogleSheets(t));
-          }
+          // Auto-sync project row horizontally to Google Sheets Process Bar
+          const stageScript = enabledStages.find(s => s.id === 'Script');
+          const stageRollA = enabledStages.find(s => s.id === 'Roll A');
+          const stageRollB = enabledStages.find(s => s.id === 'ins');
+          const stageEdit = enabledStages.find(s => s.id === 'Edit');
+          const stageCover = enabledStages.find(s => s.id === 'ปกคลิป' || s.id === 'Photo Album');
+          const stagePublish = enabledStages.find(s => s.id === 'ปล่อยงาน');
+
+          const rollBDateStr = (stageRollB && stageRollB.startDate && stageRollB.endDate)
+            ? `${stageRollB.startDate} - ${stageRollB.endDate}`
+            : (stageRollB ? (stageRollB.startDate || stageRollB.endDate || '') : '');
+
+          const editDateStr = (stageEdit && stageEdit.startDate && stageEdit.endDate)
+            ? `${stageEdit.startDate} - ${stageEdit.endDate}`
+            : (stageEdit ? (stageEdit.startDate || stageEdit.endDate || '') : '');
+
+          const projectSheetData = {
+            sheetRow: sheetRowVal ? parseInt(sheetRowVal, 10) : null,
+            title: title,
+            sow: currentModalFormat === 'short' ? 'Short' : (currentModalFormat === 'graphic' ? 'Graphic' : 'Buy'),
+            videoFormat: currentModalFormat,
+            workFormat: currentModalFormat,
+            postDate: (stagePublish && (stagePublish.endDate || stagePublish.startDate)) || launchDate,
+            postTime: (stagePublish && stagePublish.startTime) || launchTime || '19:00',
+            storylineDate: (stageScript && (stageScript.endDate || stageScript.startDate)) || '',
+            rollA: (stageRollA && (stageRollA.startDate || stageRollA.endDate)) || '',
+            rollB: rollBDateStr,
+            editDate: editDateStr,
+            draftDate: (stageEdit && (stageEdit.endDate || stageEdit.startDate)) || '',
+            coverDate: (stageCover && (stageCover.endDate || stageCover.startDate)) || '',
+            finishDate: (stagePublish && (stagePublish.endDate || stagePublish.startDate)) || launchDate,
+            status: statusVal
+          };
+
+          window.appActions.pushProjectToGoogleSheets(projectSheetData);
           return;
         }
 
