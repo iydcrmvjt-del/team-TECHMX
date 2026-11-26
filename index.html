@@ -2373,42 +2373,15 @@
         half: { id: 'half', name: 'ลาครึ่งวัน', icon: '⏳', color: 'yellow', badgeBg: 'bg-yellow-100 dark:bg-yellow-950 text-yellow-800 dark:text-yellow-300 border-yellow-300/80 dark:border-yellow-700/80', desc: 'ครึ่งวันเช้า (09:00-13:00) / บ่าย (13:00-18:00)' }
       };
 
-      const INITIAL_LEAVES = [
-        {
-          id: 'leave-sample-1',
-          userId: 'rang',
-          userName: 'หรั่ง',
-          type: 'vacation',
-          startDate: '2026-11-28',
-          endDate: '2026-11-30',
-          halfDayType: 'all_day',
-          swapDate: '',
-          reason: 'พักผ่อนต่างจังหวัด (เคลียร์งานตัดต่อเรียบร้อย)',
-          createdAt: '2026-11-26T10:00:00.000Z'
-        },
-        {
-          id: 'leave-sample-2',
-          userId: 'non',
-          userName: 'นนท์',
-          type: 'swap',
-          startDate: '2026-11-27',
-          endDate: '2026-11-27',
-          halfDayType: 'all_day',
-          swapDate: '2026-12-01',
-          reason: 'มาถ่ายงานด่วนวันพุธ ขอย้ายไปหยุดวันอังคารหน้าแทน',
-          createdAt: '2026-11-26T11:00:00.000Z'
-        }
-      ];
-
       let teamLeaves = (function() {
         try {
           const saved = localStorage.getItem('team_taskflow_leaves_v1');
           if (saved) {
             const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            if (Array.isArray(parsed)) return parsed;
           }
         } catch(e) {}
-        return [...INITIAL_LEAVES];
+        return [];
       })();
 
       let activeLeaveTab = 'new';
@@ -5625,15 +5598,14 @@ const renderTaskCard = (task, isManager) => {
             if (data && data.success && Array.isArray(data.leaves)) {
               const oldHash = JSON.stringify(teamLeaves);
               const newHash = JSON.stringify(data.leaves);
-              if (data.leaves.length > 0 || teamLeaves.length === 0) {
-                if (oldHash !== newHash) {
-                  teamLeaves = data.leaves;
-                  localStorage.setItem('team_taskflow_leaves_v1', JSON.stringify(teamLeaves));
-                  renderApp();
-                  updateLeaveBadge();
+              if (oldHash !== newHash) {
+                teamLeaves = data.leaves;
+                localStorage.setItem('team_taskflow_leaves_v1', JSON.stringify(teamLeaves));
+                renderApp();
+                updateLeaveBadge();
+                if (window.appActions && typeof window.appActions.renderLeaveStats === 'function') {
+                  window.appActions.renderLeaveStats();
                 }
-              } else if (teamLeaves.length > 0) {
-                saveTeamLeaves();
               }
             }
           }

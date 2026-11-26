@@ -1,5 +1,5 @@
 // Team TaskFlow Service Worker (PWA Offline & App Shell Support)
-const CACHE_NAME = 'team-taskflow-v2';
+const CACHE_NAME = 'team-taskflow-v3';
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
