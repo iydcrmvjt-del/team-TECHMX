@@ -2097,8 +2097,9 @@
           } else {
             if (t.title.includes('ตัดต่อ') && !options.includes('Edit')) options.push('Edit');
             if (t.title.includes('สคริปต์') && !options.includes('Script')) options.push('Script');
-            if (t.title.includes('Roll A') && !options.includes('Roll A')) options.push('Roll A');
+            if ((t.title.includes('Roll A') || t.title.includes('Shooting')) && !options.includes('Roll A')) options.push('Roll A');
             if (t.title.includes('ins') && !options.includes('ins')) options.push('ins');
+            if ((t.title.includes('ปล่อยงาน') || t.title.includes('ON❗️') || t.title.startsWith('ON!')) && !options.includes('ปล่อยงาน')) options.push('ปล่อยงาน');
             if (t.title.includes('แก้งาน') && !options.includes('แก้งาน')) options.push('แก้งาน');
           }
         }
@@ -2317,18 +2318,18 @@
       const PIPELINE_TEMPLATES = {
         'long': [
           { id: 'Script', name: 'เขียนบทสคริปต์ (Script)', desc: 'วางโครงเรื่อง เขียนสคริปต์ฉบับสมบูรณ์', icon: '📝', defaultAssignees: ['non'], deltaStart: -9, deltaEnd: -7 },
-          { id: 'Roll A', name: 'ถ่ายทำหลัก (Roll A)', desc: 'บันทึกภาพพิธีกร/กล้องหลักในสตูดิโอ', icon: '🎬', defaultAssignees: ['france', 'rang'], deltaStart: -6, deltaEnd: -6 },
+          { id: 'Roll A', name: 'วันถ่ายทำ Shooting❗️ (Roll A)', desc: 'วันถ่ายทำหลัก บันทึกชื่อ Shooting❗️ [ชื่อโปรเจกต์]', icon: '🎬', defaultAssignees: ['france', 'rang'], deltaStart: -6, deltaEnd: -6 },
           { id: 'ins', name: 'ถ่ายภาพแทรก (ins / B-Roll)', desc: 'ถ่าย Footage เจาะดีเทลสินค้า', icon: '📹', defaultAssignees: ['eyeta'], deltaStart: -5, deltaEnd: -5 },
           { id: 'Edit', name: 'ตัดต่อคลิป (Edit)', desc: 'ลำดับภาพ ใส่อนิเมชัน ปรับสีและเสียง', icon: '✂️', defaultAssignees: ['aun'], deltaStart: -4, deltaEnd: -2 },
           { id: 'ปกคลิป', name: 'ออกแบบภาพปก (Thumbnail)', desc: 'จัดทำรูปภาพหน้าปก YouTube 1920x1080', icon: '🖼️', defaultAssignees: ['tanya'], deltaStart: -3, deltaEnd: -1 },
-          { id: 'ปล่อยงาน', name: 'ตรวจความเรียบร้อย & ปล่อยงาน (Launch)', desc: 'อัปโหลด ตั้งค่าโพสต์ และเผยแพร่คลิป', icon: '🚀', defaultAssignees: ['non'], deltaStart: 0, deltaEnd: 0, defaultTime: '19:00' }
+          { id: 'ปล่อยงาน', name: 'วันปล่อยงาน ON❗️ (Launch)', desc: 'วันเผยแพร่คลิปจริง บันทึกชื่อ ON❗️ [ชื่อโปรเจกต์]', icon: '🚀', defaultAssignees: ['non'], deltaStart: 0, deltaEnd: 0, defaultTime: '19:00' }
         ],
         'short': [
           { id: 'Script', name: 'เขียนบทคลิปสั้น (Script)', desc: 'คิด Hook 3 วินาทีแรกและเนื้อเรื่องสั้น', icon: '📝', defaultAssignees: ['non'], deltaStart: -5, deltaEnd: -4 },
-          { id: 'Roll A', name: 'ถ่ายทำคลิปสั้น (Roll A)', desc: 'ถ่ายแนวตั้ง 9:16 ด้วยมือถือ/กล้องหลัก', icon: '🎬', defaultAssignees: ['france', 'rang'], deltaStart: -3, deltaEnd: -3 },
+          { id: 'Roll A', name: 'วันถ่ายทำ Shooting❗️ (Roll A)', desc: 'วันถ่ายทำคลิปสั้น บันทึกชื่อ Shooting❗️ [ชื่อโปรเจกต์]', icon: '🎬', defaultAssignees: ['france', 'rang'], deltaStart: -3, deltaEnd: -3 },
           { id: 'ins', name: 'ถ่าย Footage แทรก (ins)', desc: 'ถ่ายภาพเจาะประกอบความเร็วสูง', icon: '📹', defaultAssignees: ['eyeta'], deltaStart: -3, deltaEnd: -3 },
           { id: 'Edit', name: 'ตัดต่อและใส่ซับ (Edit)', desc: 'ตัดต่อ Pace กระชับ ใส่ Subtitle เคลื่อนไหว', icon: '✂️', defaultAssignees: ['aun'], deltaStart: -2, deltaEnd: -1 },
-          { id: 'ปล่อยงาน', name: 'ปล่อยคลิปสั้น (Launch)', desc: 'โพสต์ลง TikTok, Reels, Shorts', icon: '🚀', defaultAssignees: ['non'], deltaStart: 0, deltaEnd: 0, defaultTime: '19:00' }
+          { id: 'ปล่อยงาน', name: 'วันปล่อยงาน ON❗️ (Launch)', desc: 'วันปล่อยคลิปจริง บันทึกชื่อ ON❗️ [ชื่อโปรเจกต์]', icon: '🚀', defaultAssignees: ['non'], deltaStart: 0, deltaEnd: 0, defaultTime: '19:00' }
         ],
         'graphic': [
           { id: 'ปกคลิป', name: 'ออกแบบปกคลิป (Cover Design)', desc: 'ออกแบบ Key Visual และ Thumbnail', icon: '🖼️', defaultAssignees: ['tanya'], deltaStart: -3, deltaEnd: -1 },
@@ -5400,10 +5401,11 @@ const renderTaskCard = (task, isManager) => {
                       const m = TEAM_MEMBERS.find(tm => tm.id === id);
                       return m ? m.name : id;
                     }).join(', ');
+                    const stageLabel = st.title.startsWith('Shooting❗️') ? 'Shooting❗️' : st.title.startsWith('ON❗️') ? 'ON❗️' : conf.name;
                     return `
                       <div onclick="window.appActions.openTaskDetails('${st.id}')" class="p-2 rounded-lg border transition cursor-pointer select-none ${isCur ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-2 ring-indigo-300 dark:ring-indigo-700 font-bold' : isDone ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'}">
                         <div class="flex items-center justify-between">
-                          <span class="truncate flex items-center space-x-1"><span>${conf.icon}</span><span>${conf.name}</span></span>
+                          <span class="truncate flex items-center space-x-1"><span>${conf.icon}</span><span>${stageLabel}</span></span>
                           <span class="text-[10px]">${isDone ? '✓' : isCur ? '⚡' : '⏳'}</span>
                         </div>
                         <div class="text-[10px] truncate opacity-90 mt-0.5">${assigneesStr}</div>
@@ -8385,11 +8387,18 @@ switchUser: (newUserId) => {
           const newTasks = enabledStages.map((st, idx) => {
             const conf = TASK_OPTIONS_CONFIG[st.id] || { name: st.id, icon: '🏷️' };
             const isPublishStage = st.id === 'ปล่อยงาน';
+            let stageTitle = `${title} (${conf.name})`;
+            if (st.id === 'Roll A') {
+              stageTitle = title.startsWith('Shooting❗️') ? title : `Shooting❗️ ${title}`;
+            } else if (st.id === 'ปล่อยงาน') {
+              stageTitle = title.startsWith('ON❗️') ? title : `ON❗️ ${title}`;
+            }
+
             return normalizeTask({
               id: 'task-' + Date.now() + '-' + idx,
               projectId: projectId,
               projectTitle: title,
-              title: `${title} (${conf.name})`,
+              title: stageTitle,
               options: [st.id],
               note: note,
               description: `${conf.name}${note ? ' (' + note + ')' : ''}`,
