@@ -4669,15 +4669,31 @@ const renderTaskCard = (task, isManager) => {
                           }
 
                           const assignees = (task.assigneeIds || []).map(id => TEAM_MEMBERS.find(m => m.id === id)).filter(Boolean);
-                          const optIcons = Array.isArray(task.options) ? task.options.map(o => (TASK_OPTIONS_CONFIG[o] ? TASK_OPTIONS_CONFIG[o].icon : '')).join('') : '';
                           const assigneeNames = assignees.map(a => a.name).join(', ');
                           const timeChip = (!task.isAllDay && task.startTime) ? `<span class="text-[9px] px-1 py-0.2 rounded bg-black/25 dark:bg-white/20 font-mono shrink-0 leading-none mr-0.5">${task.startTime}</span>` : '';
                           const fmt = task.videoFormat || task.workFormat || 'long';
-                          const formatCircle = fmt === 'short'
-                            ? '<span class="w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0 leading-none shadow-2xs mr-0.5" title="Short">📱</span>'
-                            : (fmt === 'graphic'
-                              ? '<span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0 leading-none shadow-2xs mr-0.5" title="Graphic">🎨</span>'
-                              : '<span class="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0 leading-none shadow-2xs mr-0.5" title="Long Form">🎬</span>');
+                          let fmtIcon = '🎬';
+                          let bgCircleClass = 'bg-blue-500';
+                          let fmtLabel = 'Long Form';
+                          if (fmt === 'short') {
+                            fmtIcon = '📱';
+                            bgCircleClass = 'bg-rose-500';
+                            fmtLabel = 'Short';
+                          } else if (fmt === 'graphic') {
+                            fmtIcon = '🎨';
+                            bgCircleClass = 'bg-emerald-600';
+                            fmtLabel = 'Graphic';
+                          }
+
+                          const optIcons = Array.isArray(task.options)
+                            ? task.options.map(o => (TASK_OPTIONS_CONFIG[o] ? TASK_OPTIONS_CONFIG[o].icon : '')).filter(Boolean).join('')
+                            : '';
+                          const optsTitle = Array.isArray(task.options) && task.options.length ? ` • ${task.options.join(', ')}` : '';
+                          const badgeTitle = `${fmtLabel}${optsTitle}`;
+
+                          const formatBadge = optIcons
+                            ? `<span class="h-[17px] px-1.5 rounded-full ${bgCircleClass} text-white inline-flex items-center space-x-0.5 text-[9px] font-bold shrink-0 leading-none shadow-2xs mr-0.5" title="${badgeTitle}"><span>${fmtIcon}</span><span class="tracking-tight">${optIcons}</span></span>`
+                            : `<span class="w-[17px] h-[17px] rounded-full ${bgCircleClass} text-white flex items-center justify-center text-[9px] font-bold shrink-0 leading-none shadow-2xs mr-0.5" title="${badgeTitle}">${fmtIcon}</span>`;
 
                           return `
                             <div draggable="true" 
@@ -4687,10 +4703,9 @@ const renderTaskCard = (task, isManager) => {
                                  class="h-[23px] px-1.5 flex items-center space-x-1 cursor-grab active:cursor-grabbing select-none shadow-xs hover:brightness-110 active:scale-[0.99] transition ${shapeClass} ${colorClass}" 
                                  title="${escapeHtml(task.title)}${!task.isAllDay && (task.startTime || task.endTime) ? ' [⏰ ' + task.startTime + (task.endTime ? '-' + task.endTime : '') + ' น.]' : ''}${assigneeNames ? ' (' + escapeHtml(assigneeNames) + ')' : ''} • ลากเพื่อย้ายวันที่ในปฏิทิน (คลิกดูรายละเอียด)">
                               <span class="text-[9px] shrink-0 leading-none opacity-90">${prefix}</span>
-                              ${formatCircle}
+                              ${formatBadge}
                               ${timeChip}
                               <span class="font-semibold truncate flex-1 leading-none text-[11px]">${escapeHtml(task.title)}</span>
-                              ${optIcons ? `<span class="text-[9.5px] shrink-0 leading-none ml-0.5 tracking-tight" title="ลักษณะงาน: ${(task.options || []).join(', ')}">${optIcons}</span>` : ''}
                               ${task.status === 'done' ? '<span class="text-[9px] text-white bg-black/35 px-1 rounded font-bold shrink-0 leading-none">✓</span>' : ''}
                               ${isOverdue ? '<span class="text-[8.5px] shrink-0 leading-none" title="เลยกำหนดส่ง">⚠️</span>' : ''}
                             </div>
