@@ -325,6 +325,13 @@
             <span class="hidden md:inline text-xs">Lark</span>
           </button>
 
+          <!-- Leave System Button -->
+          <button type="button" id="btnOpenLeaveModal" onclick="window.appActions.openLeaveModal()" title="ระบบวันลาของทีม (บันทึกวันลาทันที & ย้ายวันหยุด)" class="flex items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/70 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300 font-semibold text-xs transition shadow-xs hover:shadow-[0_2px_12px_rgba(245,158,11,0.25)] cursor-pointer shrink-0">
+            <span class="text-xs">🌴</span>
+            <span class="hidden md:inline text-xs">วันลาของทีม</span>
+            <span id="headerLeaveBadge" class="hidden px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500 text-white font-bold leading-none">0</span>
+          </button>
+
           <!-- PWA Install Button (Dynamic) -->
           <button type="button" id="btnPWAInstall" onclick="window.appActions.triggerPWAInstall()" title="ติดตั้งเป็นแอปบนอุปกรณ์ (Install App)" class="hidden items-center space-x-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold text-xs transition shadow-xs hover:shadow-[0_2px_12px_rgba(99,102,241,0.25)] cursor-pointer shrink-0">
             <span class="text-xs">📲</span>
@@ -600,6 +607,15 @@
           </div>
           <div id="assigneesPillGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-2.5">
             <!-- Will be rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Leave Conflict Warning Alert in Task Modal -->
+        <div id="formLeaveConflictNotice" class="hidden p-3 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex items-start space-x-2.5">
+          <span class="text-base shrink-0 mt-0.5">⚠️</span>
+          <div>
+            <div class="font-bold">ตรวจพบผู้รับผิดชอบลางานในช่วงเวลานี้:</div>
+            <div id="formLeaveConflictText" class="mt-0.5 text-[11px] leading-relaxed"></div>
           </div>
         </div>
 
@@ -1039,6 +1055,157 @@
         <button type="button" onclick="window.appActions.closeSheetsSyncModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer">
           ปิดหน้าต่าง
         </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Team Leave & Swap Day Off Modal (ระบบวันลา & สลับวันหยุด) -->
+  <div id="leaveModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden space-y-4">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <div class="flex items-center space-x-3">
+          <span class="p-2.5 bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 rounded-2xl text-xl shadow-xs ring-1 ring-amber-300/40">🌴</span>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base sm:text-lg">ระบบวันลา & ย้ายวันหยุดของทีม</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">บันทึกทันที</span>
+            </div>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500">ลงบันทึกวันลา ลาป่วย ลากิจ WFH และย้ายวันหยุด พร้อมเตือนอัตโนมัติไม่ให้จ่ายงานชน</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.appActions.closeLeaveModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Tab Buttons: New Leave vs History & Stats -->
+      <div class="flex items-center space-x-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl shrink-0">
+        <button type="button" id="tabBtnNewLeave" onclick="window.appActions.switchLeaveTab('new')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs">
+          <span>➕</span>
+          <span>บันทึกวันลาใหม่</span>
+        </button>
+        <button type="button" id="tabBtnLeaveHistory" onclick="window.appActions.switchLeaveTab('history')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+          <span>📋</span>
+          <span>ประวัติวันลา & สถิติ (<span id="leaveHistoryCountBadge">0</span>)</span>
+        </button>
+      </div>
+
+      <!-- Tab 1: Form New Leave -->
+      <div id="tabContentNewLeave" class="flex-1 min-h-0 overflow-y-auto space-y-4 custom-scrollbar pr-1">
+        <form id="leaveForm" onsubmit="window.appActions.submitNewLeave(event)" class="space-y-4">
+          <!-- Select Team Member -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+              👤 ผู้ขอลางาน / ย้ายวันหยุด <span class="text-rose-500">*</span>
+            </label>
+            <div id="leaveMemberSelectorGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <!-- Dynamically populated from TEAM_MEMBERS -->
+            </div>
+            <input type="hidden" id="leaveUserId" value="non" required>
+          </div>
+
+          <!-- Select Leave Type -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
+              🏷️ ประเภทการลา <span class="text-rose-500">*</span>
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="leaveTypeGrid">
+              <!-- 6 Types: Vacation, Sick, Personal, Swap, WFH, Half -->
+            </div>
+            <input type="hidden" id="leaveType" value="vacation" required>
+          </div>
+
+          <!-- Date Range & Time Duration -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  📅 วันที่เริ่มต้นลา <span class="text-rose-500">*</span>
+                </label>
+                <input type="date" id="leaveStartDate" required class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  📅 ถึงวันที่ (สิ้นสุด) <span class="text-rose-500">*</span>
+                </label>
+                <input type="date" id="leaveEndDate" required class="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+              </div>
+            </div>
+
+            <!-- Half Day Selector -->
+            <div id="leaveHalfDaySelectorSection" class="pt-2 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-700 dark:text-slate-300">ช่วงเวลา:</span>
+              <div class="flex items-center space-x-2">
+                <label class="inline-flex items-center space-x-1 cursor-pointer">
+                  <input type="radio" name="leaveHalfDayType" value="all_day" checked class="text-amber-600 focus:ring-amber-500">
+                  <span class="text-slate-700 dark:text-slate-300">ทั้งวัน</span>
+                </label>
+                <label class="inline-flex items-center space-x-1 cursor-pointer">
+                  <input type="radio" name="leaveHalfDayType" value="morning" class="text-amber-600 focus:ring-amber-500">
+                  <span class="text-slate-700 dark:text-slate-300">ครึ่งวันเช้า</span>
+                </label>
+                <label class="inline-flex items-center space-x-1 cursor-pointer">
+                  <input type="radio" name="leaveHalfDayType" value="afternoon" class="text-amber-600 focus:ring-amber-500">
+                  <span class="text-slate-700 dark:text-slate-300">ครึ่งวันบ่าย</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Specific field for 'ย้ายวันหยุด (Swap Day Off)' -->
+            <div id="leaveSwapDateSection" class="hidden pt-2 border-t border-sky-200 dark:border-sky-800 space-y-1.5">
+              <label class="block text-xs font-bold text-sky-700 dark:text-sky-300 flex items-center space-x-1.5">
+                <span>🔄</span>
+                <span>สลับกับวันทำงาน (เช่น วันเสาร์/อาทิตย์ที่มาออกกอง หรือวันหยุดที่สลับ):</span>
+              </label>
+              <input type="date" id="leaveSwapDate" class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-sky-300 dark:border-sky-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium">
+              <p class="text-[10.5px] text-slate-500 dark:text-slate-400">ระบุวันที่มาทำงานชดเชย หรือวันที่เคยมาออกกองนอกเวลา</p>
+            </div>
+          </div>
+
+          <!-- Reason / Note -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+              📝 เหตุผล / รายละเอียดเพิ่มเติม (ไม่บังคับ)
+            </label>
+            <input type="text" id="leaveReason" placeholder="เช่น ไปต่างจังหวัด, นัดตรวจสุขภาพ, สลับวันหยุดจากการออกกองวันเสาร์..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+
+          <!-- Submit Buttons -->
+          <div class="pt-2 flex items-center justify-end space-x-2">
+            <button type="button" onclick="window.appActions.closeLeaveModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+              ยกเลิก
+            </button>
+            <button type="submit" id="btnSubmitLeave" class="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl shadow-md shadow-amber-500/25 active:scale-95 transition cursor-pointer flex items-center space-x-1.5">
+              <span>💾</span>
+              <span>บันทึกวันลาทันที</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tab 2: History & Stats -->
+      <div id="tabContentLeaveHistory" class="hidden flex-1 min-h-0 overflow-y-auto space-y-4 custom-scrollbar pr-1">
+        <!-- Team Leave Stats Cards Grid -->
+        <div id="leaveStatsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Filter & Search Bar for Leaves -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+          <span class="text-xs font-bold text-slate-700 dark:text-slate-300">รายการประวัติวันลาทั้งหมด:</span>
+          <select id="leaveHistoryFilterUser" onchange="window.appActions.renderLeaveHistory()" class="text-xs py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+            <option value="all">ทุกคนในทีม</option>
+            <!-- Populated with TEAM_MEMBERS -->
+          </select>
+        </div>
+
+        <!-- Leaves List -->
+        <div id="leaveHistoryList" class="space-y-2">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
     </div>
   </div>
@@ -2204,6 +2371,31 @@
         return INITIAL_TASKS.map((t, i) => normalizeTask(t, i));
       })();
 
+      // Leave System State
+      const LEAVE_TYPES = {
+        vacation: { id: 'vacation', name: 'ลาพักร้อน', icon: '🌴', color: 'amber', badgeBg: 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300/80 dark:border-amber-700/80', desc: 'พักผ่อนประจำปี (เต็มวัน/หลายวัน)' },
+        sick: { id: 'sick', name: 'ลาป่วย', icon: '🤒', color: 'rose', badgeBg: 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border-rose-300/80 dark:border-rose-700/80', desc: 'ลาป่วยฉุกเฉิน / พบแพทย์' },
+        personal: { id: 'personal', name: 'ลากิจ', icon: '💼', color: 'purple', badgeBg: 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border-purple-300/80 dark:border-purple-700/80', desc: 'ธุระส่วนตัว / ราชการ' },
+        swap: { id: 'swap', name: 'ย้ายวันหยุด', icon: '🔄', color: 'sky', badgeBg: 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border-sky-300/80 dark:border-sky-700/80', desc: 'สลับวันหยุด (เช่น มาออกกอง สลับหยุดวันอื่น)' },
+        wfh: { id: 'wfh', name: 'WFH', icon: '🏡', color: 'emerald', badgeBg: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300/80 dark:border-emerald-700/80', desc: 'ทำงานนอกสถานที่ / สแตนด์บายตอบแชท' },
+        half: { id: 'half', name: 'ลาครึ่งวัน', icon: '⏳', color: 'yellow', badgeBg: 'bg-yellow-100 dark:bg-yellow-950 text-yellow-800 dark:text-yellow-300 border-yellow-300/80 dark:border-yellow-700/80', desc: 'ครึ่งวันเช้า (09:00-13:00) / บ่าย (13:00-18:00)' }
+      };
+
+      let teamLeaves = (function() {
+        try {
+          const saved = localStorage.getItem('team_taskflow_leaves_v1');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) return parsed;
+          }
+        } catch(e) {}
+        return [];
+      })();
+
+      let activeLeaveTab = 'new';
+      let selectedLeaveType = 'vacation';
+      let selectedLeaveUserId = 'non';
+
       let currentUserId = 'manager';
       let calendarVideoFormatFilter = 'all';
       let managerTaskView = 'list';   // 'list' | 'kanban' (ค่าเริ่มต้น: ตารางงาน)
@@ -2726,6 +2918,7 @@
                 }
                 updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
                 syncDailyOrderFromCloud();
+                syncLeavesFromCloud();
                 if (isManual) {
                   showToast(`ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน) ☁️`, 'success');
                 }
@@ -3287,6 +3480,54 @@
         const result = await sendToLark(card);
         if (result && result.success) {
           showToast(`ส่งแจ้งเตือนงานใหม่ "${task.title}" เข้า Lark แล้ว! 🦜`, 'lark');
+        }
+      };
+
+      const notifyLarkLeaveCreated = async (leave) => {
+        const config = getLarkConfig();
+        if (!config.webhookUrl) return;
+        const mem = TEAM_MEMBERS.find(m => m.id === leave.userId) || { name: leave.userName || 'ทีมงาน', avatar: '👤' };
+        const tConf = LEAVE_TYPES[leave.type] || { name: leave.type, icon: '🌴', color: 'orange' };
+        const dateRangeStr = leave.startDate === leave.endDate 
+          ? leave.startDate 
+          : `${leave.startDate} ถึง ${leave.endDate}`;
+
+        const card = {
+          msg_type: "interactive",
+          card: {
+            config: { wide_screen_mode: true },
+            header: {
+              title: { tag: "plain_text", content: `${tConf.icon} บันทึกวันลา: ${mem.avatar} ${mem.name}` },
+              template: tConf.color === 'rose' ? 'red' : (tConf.color === 'sky' ? 'turquoise' : (tConf.color === 'emerald' ? 'green' : 'orange'))
+            },
+            elements: [
+              {
+                tag: "div",
+                fields: [
+                  { is_short: true, text: { tag: "lark_md", content: `**ประเภทการลา:**\n${tConf.icon} ${tConf.name}` } },
+                  { is_short: true, text: { tag: "lark_md", content: `**ช่วงเวลา:**\n📅 ${dateRangeStr}` } }
+                ]
+              },
+              leave.swapDate ? {
+                tag: "div",
+                text: { tag: "lark_md", content: `**🔄 สลับกับวันทำงาน:** ${leave.swapDate}` }
+              } : null,
+              leave.reason ? {
+                tag: "div",
+                text: { tag: "lark_md", content: `**📝 เหตุผล/รายละเอียด:** ${escapeHtml(leave.reason)}` }
+              } : null,
+              {
+                tag: "note",
+                elements: [
+                  { tag: "plain_text", content: `บันทึกทันทีผ่าน Team TaskFlow • ${new Date().toLocaleTimeString('th-TH')}` }
+                ]
+              }
+            ].filter(Boolean)
+          }
+        };
+        const result = await sendToLark(card);
+        if (result && result.success) {
+          showToast(`ส่งแจ้งเตือนวันลาของ "${mem.name}" เข้า Lark เรียบร้อยแล้ว! 🌴🦜`, 'lark');
         }
       };
 
@@ -4752,6 +4993,27 @@ const renderTaskCard = (task, isManager) => {
                         </button>
                       </div>
 
+                      <!-- Team Leaves on this day -->
+                      ${(() => {
+                        const cellLeaves = getLeavesOnDate(cell.dateStr);
+                        if (cellLeaves.length === 0) return '';
+                        return `
+                          <div class="space-y-1 mb-1">
+                            ${cellLeaves.map(lv => {
+                              const m = TEAM_MEMBERS.find(tm => tm.id === lv.userId);
+                              const tConf = LEAVE_TYPES[lv.type] || { name: lv.type, icon: '🌴', badgeBg: 'bg-amber-100 text-amber-800' };
+                              return `
+                                <div onclick="window.appActions.openLeaveModal('history')" title="${escapeHtml(m ? m.name : lv.userName)}: ${tConf.name}${lv.reason ? ' (' + escapeHtml(lv.reason) + ')' : ''}${lv.swapDate ? ' [สลับกับ ' + lv.swapDate + ']' : ''}" class="mx-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold flex items-center space-x-1 border cursor-pointer select-none truncate shadow-2xs hover:scale-[1.02] transition ${tConf.badgeBg}">
+                                  <span>${tConf.icon}</span>
+                                  <span class="truncate">${escapeHtml(m ? m.name : lv.userName)}</span>
+                                  <span class="text-[9px] font-normal opacity-85 truncate">(${tConf.name})</span>
+                                </div>
+                              `;
+                            }).join('')}
+                          </div>
+                        `;
+                      })()}
+
                       <div class="space-y-1 flex-1">
                         ${dayItems.map(item => {
                           if (!item) {
@@ -4893,6 +5155,46 @@ const renderTaskCard = (task, isManager) => {
               </div>
             </div>
 
+            <!-- Team Leave Alert Banner for the Selected Day -->
+            ${(() => {
+              const leavesToday = getLeavesOnDate(dailySelectedDate);
+              if (leavesToday.length === 0) return '';
+              return `
+                <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50/70 dark:from-amber-950/70 dark:via-orange-950/50 dark:to-slate-900 border border-amber-200/90 dark:border-amber-900/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                  <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shadow-xs border border-amber-200/60 dark:border-amber-900/60 shrink-0">
+                      🌴
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center space-x-2">
+                        <h4 class="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
+                          มีสมาชิกในทีมลางานในวันนี้ (${leavesToday.length} คน)
+                        </h4>
+                        <span class="text-[10px] px-2 py-0.2 rounded-full bg-amber-200/80 dark:bg-amber-900 text-amber-800 dark:text-amber-300 font-semibold">วันลาของทีม</span>
+                      </div>
+                      <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                        ${leavesToday.map(lv => {
+                          const m = TEAM_MEMBERS.find(tm => tm.id === lv.userId);
+                          const tConf = LEAVE_TYPES[lv.type] || { name: lv.type, icon: '🌴' };
+                          return `
+                            <span class="inline-flex items-center space-x-1 text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-white/90 dark:bg-slate-800/90 text-amber-900 dark:text-amber-100 border border-amber-300/60 dark:border-amber-700/60 shadow-2xs">
+                              <span>${m ? m.avatar : '👤'}</span>
+                              <span class="font-bold">${escapeHtml(m ? m.name : lv.userName)}:</span>
+                              <span class="text-amber-700 dark:text-amber-300">${tConf.icon} ${tConf.name}</span>
+                              ${lv.swapDate ? `<span class="text-[10px] opacity-75">(สลับกับ ${lv.swapDate})</span>` : ''}
+                            </span>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" onclick="window.appActions.openLeaveModal('history')" class="text-xs px-3.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 text-amber-800 dark:text-amber-200 font-bold hover:bg-amber-100 dark:hover:bg-amber-900 transition shrink-0 self-start sm:self-auto cursor-pointer shadow-xs">
+                    ดูรายละเอียดวันลา ➔
+                  </button>
+                </div>
+              `;
+            })()}
+
             <!-- Thai Public Holiday Alert Banner for the Selected Day -->
             ${dailyHoliday ? `
               <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50 dark:from-rose-950/70 dark:via-pink-950/50 dark:to-slate-900 border border-rose-200/90 dark:border-rose-900/70 flex items-center justify-between gap-3 shadow-xs">
@@ -4954,6 +5256,21 @@ const renderTaskCard = (task, isManager) => {
                           <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${rate}%"></div>
                         </div>
                       ` : ''}
+                      
+                      ${(() => {
+                        const mLeave = isMemberOnLeave(member.id, dailySelectedDate);
+                        if (!mLeave) return '';
+                        const tConf = LEAVE_TYPES[mLeave.type] || { name: mLeave.type, icon: '🌴' };
+                        return `
+                          <div class="mt-2.5 p-2 rounded-xl bg-amber-50 dark:bg-amber-950/80 border border-amber-300/80 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex items-center space-x-2 shadow-2xs">
+                            <span class="text-base shrink-0">${tConf.icon}</span>
+                            <div class="min-w-0 flex-1 truncate">
+                              <div class="font-bold truncate">วันนี้ลางาน: ${tConf.name}</div>
+                              <div class="text-[10px] opacity-80 truncate">${escapeHtml(mLeave.reason || 'ไม่มีหมายเหตุ')}${mLeave.swapDate ? ' (สลับกับ ' + mLeave.swapDate + ')' : ''}</div>
+                            </div>
+                          </div>
+                        `;
+                      })()}
                     </div>
 
                     <div class="space-y-4 flex-1">
@@ -5232,6 +5549,114 @@ const renderTaskCard = (task, isManager) => {
         }
       };
 
+      const saveTeamLeaves = async () => {
+        try {
+          localStorage.setItem('team_taskflow_leaves_v1', JSON.stringify(teamLeaves));
+          if (window.location.protocol.startsWith('http')) {
+            fetch('/api/leaves', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(teamLeaves)
+            }).catch(err => console.warn('Leaves sync err:', err));
+          }
+        } catch(e) {}
+        updateLeaveBadge();
+      };
+
+      const syncLeavesFromCloud = async () => {
+        if (!window.location.protocol.startsWith('http')) return;
+        try {
+          const res = await fetch('/api/leaves');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.leaves)) {
+              if (data.leaves.length > 0 || teamLeaves.length === 0) {
+                teamLeaves = data.leaves;
+                localStorage.setItem('team_taskflow_leaves_v1', JSON.stringify(teamLeaves));
+                renderApp();
+                updateLeaveBadge();
+              } else if (teamLeaves.length > 0) {
+                saveTeamLeaves();
+              }
+            }
+          }
+        } catch(e) {}
+      };
+
+      const isMemberOnLeave = (userId, dateStr) => {
+        if (!userId || !dateStr) return null;
+        return teamLeaves.find(lv => {
+          if (lv.userId !== userId) return false;
+          const s = lv.startDate || lv.endDate;
+          const e = lv.endDate || lv.startDate;
+          return dateStr >= s && dateStr <= e;
+        }) || null;
+      };
+
+      const getLeavesOnDate = (dateStr) => {
+        if (!dateStr) return [];
+        return teamLeaves.filter(lv => {
+          const s = lv.startDate || lv.endDate;
+          const e = lv.endDate || lv.startDate;
+          return dateStr >= s && dateStr <= e;
+        });
+      };
+
+      const updateLeaveBadge = () => {
+        const todayStr = getTodayStr(0);
+        const leavesToday = getLeavesOnDate(todayStr);
+        const badge = document.getElementById('headerLeaveBadge');
+        if (badge) {
+          if (leavesToday.length > 0) {
+            badge.textContent = leavesToday.length;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+      };
+
+      const updateModalLeaveConflicts = () => {
+        const fDate = document.getElementById('formDate') ? document.getElementById('formDate').value : '';
+        const fDead = document.getElementById('formDeadline') ? document.getElementById('formDeadline').value : '';
+        const conflictBox = document.getElementById('formLeaveConflictNotice');
+        const conflictText = document.getElementById('formLeaveConflictText');
+        if (!conflictBox || !conflictText) return;
+
+        if (!fDate && !fDead) {
+          conflictBox.classList.add('hidden');
+          return;
+        }
+
+        const minD = (fDate && fDead) ? (fDate <= fDead ? fDate : fDead) : (fDate || fDead);
+        const maxD = (fDate && fDead) ? (fDate <= fDead ? fDead : fDate) : (fDate || fDead);
+
+        const conflicts = [];
+        modalSelectedAssignees.forEach(uid => {
+          const mem = TEAM_MEMBERS.find(m => m.id === uid);
+          const lv = teamLeaves.find(l => {
+            if (l.userId !== uid) return false;
+            const s = l.startDate || l.endDate;
+            const e = l.endDate || l.startDate;
+            return !(e < minD || s > maxD);
+          });
+          if (lv && mem) {
+            conflicts.push({ member: mem, leave: lv });
+          }
+        });
+
+        if (conflicts.length > 0) {
+          conflictBox.classList.remove('hidden');
+          conflictText.innerHTML = conflicts.map(c => {
+            const tConf = LEAVE_TYPES[c.leave.type] || { name: c.leave.type, icon: '🌴' };
+            const dateStr = c.leave.startDate === c.leave.endDate ? c.leave.startDate : `${c.leave.startDate} ถึง ${c.leave.endDate}`;
+            return `<div class="mt-0.5">• <strong>${escapeHtml(c.member.name)}</strong>: ${tConf.icon} ${tConf.name} (${dateStr})${c.leave.swapDate ? ' [สลับกับ ' + c.leave.swapDate + ']' : ''}${c.leave.reason ? ' - ' + escapeHtml(c.leave.reason) : ''}</div>`;
+          }).join('');
+        } else {
+          conflictBox.classList.add('hidden');
+        }
+      };
+
       const updateHolidayNotice = (inputElem, noticeElem) => {
         if (!inputElem || !noticeElem) return;
         const val = inputElem.value;
@@ -5299,6 +5724,7 @@ const renderTaskCard = (task, isManager) => {
 
         updateHolidayNotice(document.getElementById('formDate'), document.getElementById('formDateHolidayNotice'));
         updateHolidayNotice(document.getElementById('formDeadline'), document.getElementById('formDeadlineHolidayNotice'));
+        updateModalLeaveConflicts();
 
         const validOptions = getTaskOptionsForFormat(vFormat);
         if (task && Array.isArray(task.options) && task.options.length > 0) {
@@ -6178,6 +6604,282 @@ function doGet(e) {
 }`;
 
       window.appActions = {
+        // ==============================================================================
+        // Team Leaves & Swap Day Off Actions
+        // ==============================================================================
+        openLeaveModal: (tab = 'new') => {
+          activeLeaveTab = tab;
+          const modal = document.getElementById('leaveModal');
+          if (!modal) return;
+          modal.classList.remove('hidden');
+
+          // Default values
+          const today = getTodayStr(0);
+          const startInput = document.getElementById('leaveStartDate');
+          const endInput = document.getElementById('leaveEndDate');
+          if (startInput && !startInput.value) startInput.value = today;
+          if (endInput && !endInput.value) endInput.value = today;
+
+          window.appActions.renderLeaveMemberSelector();
+          window.appActions.renderLeaveTypeSelector();
+          window.appActions.switchLeaveTab(activeLeaveTab);
+        },
+
+        closeLeaveModal: () => {
+          const modal = document.getElementById('leaveModal');
+          if (modal) modal.classList.add('hidden');
+        },
+
+        switchLeaveTab: (tab) => {
+          activeLeaveTab = tab;
+          const tabBtnNew = document.getElementById('tabBtnNewLeave');
+          const tabBtnHist = document.getElementById('tabBtnLeaveHistory');
+          const contentNew = document.getElementById('tabContentNewLeave');
+          const contentHist = document.getElementById('tabContentLeaveHistory');
+
+          if (tab === 'new') {
+            if (tabBtnNew) tabBtnNew.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs";
+            if (tabBtnHist) tabBtnHist.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200";
+            if (contentNew) contentNew.classList.remove('hidden');
+            if (contentHist) contentHist.classList.add('hidden');
+          } else {
+            if (tabBtnNew) tabBtnNew.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200";
+            if (tabBtnHist) tabBtnHist.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs";
+            if (contentNew) contentNew.classList.add('hidden');
+            if (contentHist) contentHist.classList.remove('hidden');
+
+            window.appActions.renderLeaveStats();
+            window.appActions.renderLeaveHistory();
+          }
+        },
+
+        selectLeaveUser: (userId) => {
+          selectedLeaveUserId = userId;
+          const input = document.getElementById('leaveUserId');
+          if (input) input.value = userId;
+          window.appActions.renderLeaveMemberSelector();
+        },
+
+        renderLeaveMemberSelector: () => {
+          const grid = document.getElementById('leaveMemberSelectorGrid');
+          if (!grid) return;
+          grid.innerHTML = TEAM_MEMBERS.map(m => {
+            const isSel = m.id === selectedLeaveUserId;
+            return `
+              <button type="button" onclick="window.appActions.selectLeaveUser('${m.id}')" class="flex items-center space-x-2 p-2 rounded-xl border text-xs font-semibold transition cursor-pointer select-none ${isSel ? 'bg-amber-50 dark:bg-amber-950/70 border-amber-500 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/20 shadow-xs' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'}">
+                <span class="text-lg">${m.avatar}</span>
+                <span class="font-bold truncate">${m.name}</span>
+                ${isSel ? '<span class="ml-auto text-amber-600 dark:text-amber-400 text-xs font-bold">✓</span>' : ''}
+              </button>
+            `;
+          }).join('');
+        },
+
+        selectLeaveType: (typeId) => {
+          selectedLeaveType = typeId;
+          const input = document.getElementById('leaveType');
+          if (input) input.value = typeId;
+
+          // Show/Hide swapDateSection
+          const swapSec = document.getElementById('leaveSwapDateSection');
+          if (swapSec) {
+            if (typeId === 'swap') {
+              swapSec.classList.remove('hidden');
+            } else {
+              swapSec.classList.add('hidden');
+            }
+          }
+          window.appActions.renderLeaveTypeSelector();
+        },
+
+        renderLeaveTypeSelector: () => {
+          const grid = document.getElementById('leaveTypeGrid');
+          if (!grid) return;
+          grid.innerHTML = Object.values(LEAVE_TYPES).map(t => {
+            const isSel = t.id === selectedLeaveType;
+            return `
+              <button type="button" onclick="window.appActions.selectLeaveType('${t.id}')" class="flex items-center space-x-2 p-2.5 rounded-xl border text-xs font-semibold transition cursor-pointer select-none text-left ${isSel ? 'bg-amber-50 dark:bg-amber-950/70 border-amber-500 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/30 shadow-xs font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'}">
+                <span class="text-xl shrink-0">${t.icon}</span>
+                <div class="min-w-0 flex-1">
+                  <div class="truncate">${t.name}</div>
+                  <div class="text-[9.5px] opacity-70 font-normal truncate">${t.desc}</div>
+                </div>
+              </button>
+            `;
+          }).join('');
+        },
+
+        submitNewLeave: (e) => {
+          if (e && e.preventDefault) e.preventDefault();
+          const userId = document.getElementById('leaveUserId').value;
+          const type = document.getElementById('leaveType').value || selectedLeaveType;
+          const startDate = document.getElementById('leaveStartDate').value;
+          const endDate = document.getElementById('leaveEndDate').value;
+          const reason = document.getElementById('leaveReason').value.trim();
+          const swapDate = document.getElementById('leaveSwapDate') ? document.getElementById('leaveSwapDate').value : '';
+
+          let halfDayType = 'all_day';
+          const halfRadios = document.getElementsByName('leaveHalfDayType');
+          for (const r of halfRadios) {
+            if (r.checked) { halfDayType = r.value; break; }
+          }
+
+          if (!userId) { alert('กรุณาเลือกผู้ขอลางาน'); return; }
+          if (!startDate || !endDate) { alert('กรุณาระบุวันที่เริ่มต้นและสิ้นสุด'); return; }
+          if (startDate > endDate) { alert('วันที่เริ่มต้นต้องไม่มากกว่าวันที่สิ้นสุด'); return; }
+
+          const member = TEAM_MEMBERS.find(m => m.id === userId) || { name: 'ทีมงาน' };
+          const newLeave = {
+            id: 'leave-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+            userId,
+            userName: member.name,
+            type,
+            startDate,
+            endDate,
+            halfDayType,
+            swapDate: type === 'swap' ? swapDate : '',
+            reason,
+            createdAt: new Date().toISOString()
+          };
+
+          teamLeaves.unshift(newLeave);
+          saveTeamLeaves();
+          renderApp();
+
+          // Reset inputs
+          document.getElementById('leaveReason').value = '';
+          if (document.getElementById('leaveSwapDate')) document.getElementById('leaveSwapDate').value = '';
+
+          const tConf = LEAVE_TYPES[type] || { name: type, icon: '🌴' };
+          showToast(`บันทึกวันลาสำเร็จ: ${member.name} (${tConf.icon} ${tConf.name}) เรียบร้อยแล้ว! ✅`, 'success');
+
+          // Send Lark notification
+          notifyLarkLeaveCreated(newLeave);
+
+          // Switch to history tab to view result
+          window.appActions.switchLeaveTab('history');
+        },
+
+        deleteLeave: (leaveId) => {
+          const lv = teamLeaves.find(l => l.id === leaveId);
+          if (!lv) return;
+          const mem = TEAM_MEMBERS.find(m => m.id === lv.userId) || { name: lv.userName || 'ทีมงาน' };
+          const tConf = LEAVE_TYPES[lv.type] || { name: lv.type };
+          if (!confirm(`ต้องการยกเลิกวันลาของ "${mem.name}" (${tConf.name}: ${lv.startDate}) ใช่หรือไม่?`)) return;
+
+          teamLeaves = teamLeaves.filter(l => l.id !== leaveId);
+          saveTeamLeaves();
+          renderApp();
+          window.appActions.renderLeaveStats();
+          window.appActions.renderLeaveHistory();
+          showToast(`ยกเลิกวันลาของ "${mem.name}" เรียบร้อยแล้ว 🗑️`, 'info');
+        },
+
+        renderLeaveStats: () => {
+          const grid = document.getElementById('leaveStatsGrid');
+          if (!grid) return;
+
+          grid.innerHTML = TEAM_MEMBERS.map(m => {
+            const mLeaves = teamLeaves.filter(l => l.userId === m.id);
+            const vacCount = mLeaves.filter(l => l.type === 'vacation').reduce((acc, l) => {
+              const d1 = parseDateLocal(l.startDate);
+              const d2 = parseDateLocal(l.endDate);
+              const days = (d1 && d2) ? Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1) : 1;
+              return acc + days;
+            }, 0);
+
+            const swapCount = mLeaves.filter(l => l.type === 'swap').length;
+            const sickCount = mLeaves.filter(l => l.type === 'sick').length;
+            const otherCount = mLeaves.filter(l => !['vacation', 'swap', 'sick'].includes(l.type)).length;
+
+            return `
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1.5 shadow-2xs">
+                <div class="flex items-center space-x-2">
+                  <span class="text-xl">${m.avatar}</span>
+                  <div class="min-w-0">
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${m.name}</div>
+                    <div class="text-[10px] text-slate-400">วันลาทั้งหมด: ${mLeaves.length} ครั้ง</div>
+                  </div>
+                </div>
+                <div class="pt-1.5 border-t border-slate-200/80 dark:border-slate-700 flex flex-wrap gap-1 text-[10px]">
+                  <span class="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-semibold" title="พักร้อน">🌴 ${vacCount} วัน</span>
+                  <span class="px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 font-semibold" title="ย้ายวันหยุด">🔄 ${swapCount}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 font-semibold" title="ลาป่วย">🤒 ${sickCount}</span>
+                  ${otherCount > 0 ? `<span class="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 font-semibold">อื่น ${otherCount}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+        },
+
+        renderLeaveHistory: () => {
+          const list = document.getElementById('leaveHistoryList');
+          const badge = document.getElementById('leaveHistoryCountBadge');
+          if (badge) badge.textContent = teamLeaves.length;
+          if (!list) return;
+
+          const filterSelect = document.getElementById('leaveHistoryFilterUser');
+          const filterUser = filterSelect ? filterSelect.value : 'all';
+
+          // Ensure options in filterSelect
+          if (filterSelect && filterSelect.options.length <= 1) {
+            filterSelect.innerHTML = `<option value="all">ทุกคนในทีม (${teamLeaves.length})</option>` + 
+              TEAM_MEMBERS.map(m => `<option value="${m.id}">${m.avatar} ${m.name}</option>`).join('');
+            filterSelect.value = filterUser;
+          }
+
+          let displayLeaves = teamLeaves;
+          if (filterUser !== 'all') {
+            displayLeaves = displayLeaves.filter(l => l.userId === filterUser);
+          }
+
+          if (displayLeaves.length === 0) {
+            list.innerHTML = `
+              <div class="py-8 text-center text-slate-400 dark:text-slate-500 text-xs space-y-1">
+                <span class="text-3xl block">🏖️</span>
+                <div>ยังไม่มีประวัติการลางาน${filterUser !== 'all' ? 'ของสมาชิกท่านนี้' : ''}</div>
+              </div>
+            `;
+            return;
+          }
+
+          list.innerHTML = displayLeaves.map(lv => {
+            const m = TEAM_MEMBERS.find(tm => tm.id === lv.userId) || { name: lv.userName || 'ทีมงาน', avatar: '👤' };
+            const tConf = LEAVE_TYPES[lv.type] || { name: lv.type, icon: '🌴', badgeBg: 'bg-amber-100 text-amber-800' };
+            const dateStr = lv.startDate === lv.endDate ? lv.startDate : `${lv.startDate} ถึง ${lv.endDate}`;
+
+            return `
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-3 shadow-2xs hover:border-amber-300 dark:hover:border-amber-700 transition">
+                <div class="flex items-center space-x-3 min-w-0">
+                  <span class="text-2xl p-1.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">${m.avatar}</span>
+                  <div class="min-w-0">
+                    <div class="flex items-center space-x-2 flex-wrap">
+                      <span class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">${escapeHtml(m.name)}</span>
+                      <span class="text-[10.5px] px-2 py-0.2 rounded-md font-bold border ${tConf.badgeBg}">
+                        ${tConf.icon} ${tConf.name}
+                      </span>
+                      ${lv.halfDayType && lv.halfDayType !== 'all_day' ? `<span class="text-[10px] px-1.5 py-0.2 rounded bg-yellow-100 dark:bg-yellow-950 text-yellow-800 dark:text-yellow-300 font-semibold">${lv.halfDayType === 'morning' ? 'ครึ่งวันเช้า' : 'ครึ่งวันบ่าย'}</span>` : ''}
+                    </div>
+                    <div class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 flex items-center space-x-1">
+                      <span>📅</span>
+                      <span class="font-semibold">${dateStr}</span>
+                    </div>
+                    ${lv.swapDate ? `
+                      <div class="text-[11px] text-sky-600 dark:text-sky-400 font-medium mt-0.5 flex items-center space-x-1">
+                        <span>🔄 สลับกับวัน:</span>
+                        <strong class="font-bold">${lv.swapDate}</strong>
+                      </div>
+                    ` : ''}
+                    ${lv.reason ? `<div class="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">หมายเหตุ: ${escapeHtml(lv.reason)}</div>` : ''}
+                  </div>
+                </div>
+                <button type="button" onclick="window.appActions.deleteLeave('${lv.id}')" title="ยกเลิก/ลบวันลานี้" class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition shrink-0 cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            `;
+          }).join('');
+        },
         updateVideoFormatUI: (format) => {
           const radioLong = document.getElementById('videoFormatLong');
           const radioShort = document.getElementById('videoFormatShort');
@@ -6374,9 +7076,11 @@ function doGet(e) {
                     <span class="text-[10.5px] font-semibold text-slate-400 mr-1">ผู้รับผิดชอบ:</span>
                     ${TEAM_MEMBERS.map(m => {
                       const isAssigned = stage.assigneeIds.includes(m.id);
+                      const mLeave = isAssigned && (isMemberOnLeave(m.id, stage.startDate) || isMemberOnLeave(m.id, stage.endDate));
+                      const leaveBadge = mLeave ? `<span class="text-[9px] text-amber-300 font-bold ml-0.5" title="${m.name} ลางานในช่วงนี้">⚠️ลา</span>` : '';
                       return `
-                        <button type="button" onclick="window.appActions.toggleProjectStageAssignee('${stage.id}', '${m.id}')" class="px-2 py-0.5 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${isAssigned ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'}">
-                          <span>${m.avatar}</span> <span>${m.name}</span>
+                        <button type="button" onclick="window.appActions.toggleProjectStageAssignee('${stage.id}', '${m.id}')" class="px-2 py-0.5 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${isAssigned ? (mLeave ? 'bg-amber-600 text-white border-amber-600 shadow-2xs font-bold ring-1 ring-amber-400' : 'bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold') : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'}">
+                          <span>${m.avatar}</span> <span>${m.name}</span>${leaveBadge}
                         </button>
                       `;
                     }).join('')}
@@ -7362,6 +8066,7 @@ switchUser: (newUserId) => {
             modalSelectedAssignees.push(memberId);
           }
           renderModalAssignees();
+          updateModalLeaveConflicts();
         },
         toggleModalOption: (optName) => {
           if (modalSelectedOptions.includes(optName)) {
@@ -8394,9 +9099,11 @@ switchUser: (newUserId) => {
 
       document.getElementById('formDate')?.addEventListener('change', (e) => {
         updateHolidayNotice(e.target, document.getElementById('formDateHolidayNotice'));
+        updateModalLeaveConflicts();
       });
       document.getElementById('formDeadline')?.addEventListener('change', (e) => {
         updateHolidayNotice(e.target, document.getElementById('formDeadlineHolidayNotice'));
+        updateModalLeaveConflicts();
       });
 
       const btnCloseDetailModal = document.getElementById('btnCloseDetailModal');
@@ -8497,16 +9204,19 @@ switchUser: (newUserId) => {
           window.appActions.closeOverdueModal();
           window.appActions.closeLarkPreviewModal();
           window.appActions.closeArchiveModal();
+          window.appActions.closeLeaveModal();
         }
       });
 
       document.getElementById('btnSelectAllAssignees').onclick = () => {
         modalSelectedAssignees = TEAM_MEMBERS.map(m => m.id);
         renderModalAssignees();
+        updateModalLeaveConflicts();
       };
       document.getElementById('btnSelectOnlyMe').onclick = () => {
         modalSelectedAssignees = [currentUserId === 'manager' ? 'non' : currentUserId];
         renderModalAssignees();
+        updateModalLeaveConflicts();
       };
 
       const btnSelectAllOptions = document.getElementById('btnSelectAllOptions');
@@ -8857,6 +9567,7 @@ switchUser: (newUserId) => {
       // Initial Render & Theme & Cloud Sync
       applyTheme(currentTheme);
       renderApp();
+      updateLeaveBadge();
       initCloudSync(false);
     })();
   </script>
