@@ -5982,9 +5982,24 @@ function formatThaiSheetDate(dStr) {
   dStr = dStr.toString().trim();
   if (dStr.indexOf(" - ") !== -1) {
     var parts = dStr.split(" - ");
-    var p0 = formatThaiSheetDate(parts[0]);
-    var p1 = formatThaiSheetDate(parts[1]);
-    return p0 + " - " + p1;
+    if (parts[0] === parts[1]) {
+      return formatThaiSheetDate(parts[0]);
+    }
+    var p0 = parts[0].split("-");
+    var p1 = parts[1].split("-");
+    var thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+    if (p0.length === 3 && p1.length === 3) {
+      var d0 = parseInt(p0[2], 10);
+      var m0 = parseInt(p0[1], 10);
+      var y0 = parseInt(p0[0], 10);
+      var d1 = parseInt(p1[2], 10);
+      var m1 = parseInt(p1[1], 10);
+      var y1 = parseInt(p1[0], 10);
+      if (m0 === m1 && y0 === y1 && m0 >= 1 && m0 <= 12) {
+        return d0 + "-" + d1 + " " + thaiMonths[m0 - 1];
+      }
+    }
+    return formatThaiSheetDate(parts[0]) + " - " + formatThaiSheetDate(parts[1]);
   }
   if (dStr.indexOf("-") !== -1) {
     var p = dStr.split("-");
@@ -6002,7 +6017,7 @@ function formatThaiSheetDate(dStr) {
 
 function formatSheetTime(tStr) {
   if (!tStr) return "";
-  var p = tStr.toString().trim().split(":");
+  var p = tStr.toString().trim().replace(".", ":").split(":");
   if (p.length >= 2) {
     var h = parseInt(p[0], 10);
     var m = p[1].substring(0, 2);
@@ -6033,67 +6048,100 @@ function upsertSingleTask(sheet, data, task) {
   // If still not found, append new row
   if (!targetRow) {
     targetRow = sheet.getLastRow() + 1;
-    sheet.getRange(targetRow, 1).setValue(productName);
   }
 
-  // Column A (1): Product / ชื่อโปรเจค
-  if (productName) sheet.getRange(targetRow, 1).setValue(productName);
+  // Dynamic column header mapping with standard fallbacks
+  var colMap = {
+    product: 1,
+    sow: 2,
+    postDate: 3,
+    postTime: 4,
+    storyline: 10,
+    rollA: 13,
+    rollB: 14,
+    edit: 16,
+    draft: 17,
+    cover: 18,
+    finish: 19
+  };
+
+  if (data.length > 0 && Array.isArray(data[0])) {
+    var headers = data[0];
+    for (var c = 0; c < headers.length; c++) {
+      var h = (headers[c] || "").toString().trim().toLowerCase();
+      if (!h) continue;
+      if (h.indexOf("product") !== -1 || h.indexOf("ชื่อโปรเจกต์") !== -1 || h.indexOf("ชื่องาน") !== -1) colMap.product = c + 1;
+      else if (h.indexOf("sow") !== -1 || h.indexOf("type") !== -1) colMap.sow = c + 1;
+      else if (h.indexOf("post date") !== -1 || h.indexOf("วันโพสต์") !== -1 || h.indexOf("วันปล่อย") !== -1) colMap.postDate = c + 1;
+      else if (h.indexOf("post time") !== -1 || h.indexOf("เวลา") !== -1) colMap.postTime = c + 1;
+      else if (h.indexOf("storyline") !== -1 || h.indexOf("script") !== -1 || h.indexOf("สคริปต์") !== -1) colMap.storyline = c + 1;
+      else if (h.indexOf("roll a") !== -1 || h.indexOf("shooting") !== -1 || h.indexOf("ถ่ายทำ") !== -1) colMap.rollA = c + 1;
+      else if (h.indexOf("roll b") !== -1 || h.indexOf("ins") !== -1 || h.indexOf("ภาพแทรก") !== -1) colMap.rollB = c + 1;
+      else if (h.indexOf("ตัดต่อ") !== -1 || (h.indexOf("edit") !== -1 && h.indexOf("draft") === -1)) colMap.edit = c + 1;
+      else if (h.indexOf("draft") !== -1 || h.indexOf("caption") !== -1) colMap.draft = c + 1;
+      else if (h.indexOf("ปก") !== -1 || h.indexOf("cover") !== -1 || h.indexOf("thumbnail") !== -1) colMap.cover = c + 1;
+      else if (h.indexOf("finish") !== -1 || h.indexOf("all process") !== -1) colMap.finish = c + 1;
+    }
+  }
+
+  // Column A: Product / ชื่อโปรเจค
+  if (productName) sheet.getRange(targetRow, colMap.product).setValue(productName);
   
-  // Column B (2): Type of SOW
-  if (task.sow) sheet.getRange(targetRow, 2).setValue(task.sow);
+  // Column B: Type of SOW
+  if (task.sow) sheet.getRange(targetRow, colMap.sow).setValue(task.sow);
   
-  // Column C (3): Post Date (วันปล่อยงาน ON❗️)
+  // Column C: Post Date (วันปล่อยงาน ON❗️)
   var postDateVal = task.postDate || task.deadline;
   if (postDateVal) {
-    sheet.getRange(targetRow, 3).setValue(formatThaiSheetDate(postDateVal));
+    sheet.getRange(targetRow, colMap.postDate).setValue(formatThaiSheetDate(postDateVal));
   }
   
-  // Column D (4): Post Time (เวลาที่โพสต์คลิป)
+  // Column D: Post Time (เวลาที่โพสต์คลิป)
   var postTimeVal = task.startTime || task.postTime;
   if (postTimeVal) {
-    sheet.getRange(targetRow, 4).setValue(formatSheetTime(postTimeVal));
+    sheet.getRange(targetRow, colMap.postTime).setValue(formatSheetTime(postTimeVal));
   }
 
-  // Column J (10): Storyline ส่ง (วันส่งงานของ เขียนบทสคริปต์ Script)
+  // Column J: Storyline ส่ง (วันส่งงานของ เขียนบทสคริปต์ Script)
   var storylineVal = task.storylineDate || task.scriptDate;
   if (storylineVal) {
-    sheet.getRange(targetRow, 10).setValue(formatThaiSheetDate(storylineVal));
+    sheet.getRange(targetRow, colMap.storyline).setValue(formatThaiSheetDate(storylineVal));
   }
 
-  // Column M (13): ถ่าย Roll A (วันถ่ายทำ Shooting❗️ Roll A)
+  // Column M: ถ่าย Roll A (วันถ่ายทำ Shooting❗️ Roll A)
   var rollAVal = task.rollA;
   if (rollAVal) {
-    sheet.getRange(targetRow, 13).setValue(formatThaiSheetDate(rollAVal));
+    sheet.getRange(targetRow, colMap.rollA).setValue(formatThaiSheetDate(rollAVal));
   }
 
-  // Column N (14): ถ่าย Roll B (วันถ่ายภาพแทรก ins / B-Roll: วันเริ่ม - วันสุดท้าย)
+  // Column N: ถ่าย Roll B (วันถ่ายภาพแทรก ins / B-Roll: วันเริ่ม - วันสุดท้าย)
   var rollBVal = task.rollB;
   if (rollBVal) {
-    sheet.getRange(targetRow, 14).setValue(formatThaiSheetDate(rollBVal));
+    sheet.getRange(targetRow, colMap.rollB).setValue(formatThaiSheetDate(rollBVal));
   }
 
-  // Column P (16): ตัดต่อ (วันที่ของตัดต่อคลิป Edit: วันเริ่ม - วันสุดท้าย)
+  // Column P: ตัดต่อ (วันที่ของตัดต่อคลิป Edit: วันเริ่ม - วันสุดท้าย)
   var editVal = task.editDate;
   if (editVal) {
-    sheet.getRange(targetRow, 16).setValue(formatThaiSheetDate(editVal));
+    sheet.getRange(targetRow, colMap.edit).setValue(formatThaiSheetDate(editVal));
   }
 
-  // Column Q (17): ส่ง Draft+caption (วันสุดท้ายที่ส่งงานของตัดต่อคลิป Edit)
+  // Column Q: ส่ง Draft+caption (วันสุดท้ายที่ส่งงานของตัดต่อคลิป Edit)
   var draftVal = task.draftDate || task.editEndDate;
   if (draftVal) {
-    sheet.getRange(targetRow, 17).setValue(formatThaiSheetDate(draftVal));
+    sheet.getRange(targetRow, colMap.draft).setValue(formatThaiSheetDate(draftVal));
   }
 
-  // Column R (18): ปกงาน (ออกแบบภาพปก / ปกคลิป)
+  // Column R: ปกงาน (ออกแบบภาพปก / ปกคลิป)
   var coverVal = task.coverDate;
   if (coverVal) {
-    sheet.getRange(targetRow, 18).setValue(formatThaiSheetDate(coverVal));
+    sheet.getRange(targetRow, colMap.cover).setValue(formatThaiSheetDate(coverVal));
   }
 
-  // Column S (19): All Process Finish
+  // Column S: All Process Finish
   var finishVal = task.finishDate || postDateVal;
   if (finishVal) {
-    sheet.getRange(targetRow, 19).setValue(formatThaiSheetDate(finishVal));
+    sheet.getRange(targetRow, colMap.finish).setValue(formatThaiSheetDate(finishVal));
   }
 
   // Single task fallback
@@ -6102,20 +6150,20 @@ function upsertSingleTask(sheet, data, task) {
   var thaiDate = formatThaiSheetDate(rawDate);
 
   if ((opts.indexOf("เขียนสคริปต์") !== -1 || opts.indexOf("Script") !== -1) && !storylineVal) {
-    sheet.getRange(targetRow, 10).setValue(thaiDate);
+    sheet.getRange(targetRow, colMap.storyline).setValue(thaiDate);
   }
   if (opts.indexOf("Roll A") !== -1 && !rollAVal) {
-    sheet.getRange(targetRow, 13).setValue(thaiDate);
+    sheet.getRange(targetRow, colMap.rollA).setValue(thaiDate);
   }
   if (opts.indexOf("ins") !== -1 && !rollBVal) {
-    sheet.getRange(targetRow, 14).setValue(thaiDate);
+    sheet.getRange(targetRow, colMap.rollB).setValue(thaiDate);
   }
   if ((opts.indexOf("ตัดต่อ") !== -1 || opts.indexOf("Edit") !== -1) && !editVal) {
-    sheet.getRange(targetRow, 16).setValue(thaiDate);
-    if (!draftVal) sheet.getRange(targetRow, 17).setValue(thaiDate);
+    sheet.getRange(targetRow, colMap.edit).setValue(thaiDate);
+    if (!draftVal) sheet.getRange(targetRow, colMap.draft).setValue(thaiDate);
   }
   if ((opts.indexOf("ปกคลิป") !== -1 || opts.indexOf("กราฟฟิก") !== -1 || opts.indexOf("Photo Album") !== -1) && !coverVal) {
-    sheet.getRange(targetRow, 18).setValue(thaiDate);
+    sheet.getRange(targetRow, colMap.cover).setValue(thaiDate);
   }
 
   return { rowIndex: targetRow, product: productName, updated: true };
