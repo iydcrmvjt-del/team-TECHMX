@@ -2054,7 +2054,11 @@
         }
 
         let videoFormat = t.videoFormat || t.video_format || t.workFormat || t.work_format;
-        if (!videoFormat) {
+        // If it's a cover / thumbnail task, normalize its format directly to graphic
+        if ((Array.isArray(t.options) && (t.options.includes('ปกคลิป') || t.options.includes('Photo Album'))) ||
+            (typeof t.title === 'string' && (t.title.includes('(ปกคลิป)') || t.title.includes('(Photo Album)')))) {
+          videoFormat = 'graphic';
+        } else if (!videoFormat) {
           if (typeof t.title === 'string' && (t.title.toLowerCase().includes('graphic') || t.title.includes('กราฟฟิก') || t.title.includes('Thumbnail') || t.title.includes('ปก') || t.title.includes('Album') || t.title.includes('อัลบั้ม'))) {
             videoFormat = 'graphic';
           } else if ((Array.isArray(t.options) && t.options.includes('Short')) || 
@@ -2321,7 +2325,7 @@
           { id: 'Roll A', name: 'วันถ่ายทำ Shooting❗️ (Roll A)', desc: 'วันถ่ายทำหลัก บันทึกชื่อ Shooting❗️ [ชื่อโปรเจกต์]', icon: '🎬', defaultAssignees: ['france', 'rang'], deltaStart: -6, deltaEnd: -6 },
           { id: 'ins', name: 'ถ่ายภาพแทรก (ins / B-Roll)', desc: 'ถ่าย Footage เจาะดีเทลสินค้า', icon: '📹', defaultAssignees: ['eyeta'], deltaStart: -5, deltaEnd: -5 },
           { id: 'Edit', name: 'ตัดต่อคลิป (Edit)', desc: 'ลำดับภาพ ใส่อนิเมชัน ปรับสีและเสียง', icon: '✂️', defaultAssignees: ['aun'], deltaStart: -4, deltaEnd: -2 },
-          { id: 'ปกคลิป', name: 'ออกแบบภาพปก (Thumbnail)', desc: 'จัดทำรูปภาพหน้าปก YouTube 1920x1080', icon: '🖼️', defaultAssignees: ['tanya'], deltaStart: -3, deltaEnd: -1 },
+          { id: 'ปกคลิป', name: 'ออกแบบภาพปก (Thumbnail)', desc: 'จัดทำรูปภาพหน้าปก YouTube (จัดเป็นงาน Graphic 🎨)', icon: '🖼️', defaultAssignees: ['tanya'], deltaStart: -3, deltaEnd: -1, format: 'graphic' },
           { id: 'ปล่อยงาน', name: 'วันปล่อยงาน ON❗️ (Launch)', desc: 'วันเผยแพร่คลิปจริง บันทึกชื่อ ON❗️ [ชื่อโปรเจกต์]', icon: '🚀', defaultAssignees: ['non'], deltaStart: 0, deltaEnd: 0, defaultTime: '19:00' }
         ],
         'short': [
@@ -6225,6 +6229,7 @@ function doGet(e) {
               name: tmpl.name,
               desc: tmpl.desc,
               icon: tmpl.icon,
+              format: tmpl.format || (tmpl.id === 'ปกคลิป' || tmpl.id === 'Photo Album' ? 'graphic' : currentModalFormat),
               enabled: true,
               assigneeIds: [...tmpl.defaultAssignees],
               startDate: formatDateLocal(dStart),
@@ -6262,7 +6267,10 @@ function doGet(e) {
                       <span class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold shrink-0">${stage.icon}</span>
                     </label>
                     <div>
-                      <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">${idx + 1}. ${stage.name}</div>
+                      <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-1.5 flex-wrap">
+                        <span>${idx + 1}. ${stage.name}</span>
+                        ${(stage.id === 'ปกคลิป' || stage.id === 'Photo Album' || stage.format === 'graphic') ? '<span class="text-[9.5px] px-1.5 py-0.5 rounded-md font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">🎨 Graphic</span>' : ''}
+                      </div>
                       <div class="text-[10.5px] text-slate-500 dark:text-slate-400">${stage.desc}</div>
                     </div>
                   </div>
@@ -8394,6 +8402,10 @@ switchUser: (newUserId) => {
               stageTitle = title.startsWith('ON❗️') ? title : `ON❗️ ${title}`;
             }
 
+            const isGraphicStage = (st.id === 'ปกคลิป' || st.id === 'Photo Album' || st.format === 'graphic' || (typeof GRAPHIC_TASK_OPTIONS !== 'undefined' && GRAPHIC_TASK_OPTIONS.includes(st.id)));
+            const stageFormat = isGraphicStage ? 'graphic' : currentModalFormat;
+            const stageColor = isGraphicStage ? 'green' : (modalSelectedColor || 'blue');
+
             return normalizeTask({
               id: 'task-' + Date.now() + '-' + idx,
               projectId: projectId,
@@ -8403,7 +8415,7 @@ switchUser: (newUserId) => {
               note: note,
               description: `${conf.name}${note ? ' (' + note + ')' : ''}`,
               assigneeIds: (st.assigneeIds && st.assigneeIds.length > 0) ? st.assigneeIds : ['non'],
-              color: modalSelectedColor || 'blue',
+              color: stageColor,
               date: st.startDate || launchDate,
               deadline: st.endDate || launchDate,
               isAllDay: !isPublishStage,
@@ -8411,8 +8423,8 @@ switchUser: (newUserId) => {
               endTime: '',
               status: statusVal,
               priority: priorityVal,
-              videoFormat: currentModalFormat,
-              workFormat: currentModalFormat,
+              videoFormat: stageFormat,
+              workFormat: stageFormat,
               sheetRow: sheetRowVal ? parseInt(sheetRowVal, 10) : null,
               sheetId: SPREADSHEET_ID
             }, idx);
