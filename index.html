@@ -488,8 +488,87 @@
               </div>
             </div>
           </div>
+
+          <!-- Button below the 3 choices: สร้างโปรเจกต์ (Production Pipeline) -->
+          <div class="pt-2 border-t border-purple-200/60 dark:border-purple-800/60">
+            <button type="button" id="btnToggleProjectMode" onclick="window.appActions.toggleProjectPipelineMode()" class="w-full py-2.5 px-3.5 rounded-xl border-2 border-dashed border-indigo-400/80 dark:border-indigo-600/80 hover:border-indigo-500 bg-white/90 dark:bg-slate-900/90 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 transition cursor-pointer flex items-center justify-between text-xs sm:text-sm font-bold shadow-2xs group">
+              <div class="flex items-center space-x-2.5">
+                <span id="projectModeButtonIcon" class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm group-hover:scale-110 transition shrink-0">✨</span>
+                <div class="text-left">
+                  <div class="text-indigo-700 dark:text-indigo-200 font-bold flex items-center gap-1.5">
+                    <span id="projectModeButtonTitle">สร้างโปรเจกต์</span>
+                    <span id="projectModeButtonBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700">Production Pipeline</span>
+                  </div>
+                  <div id="projectModeButtonSubtitle" class="text-[10.5px] font-normal text-slate-500 dark:text-slate-400">แยกสเต็ป Script, Roll A, ins, Edit, ปกคลิป พร้อมวันเริ่ม-ส่งแยกคน</div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-1.5 text-xs text-indigo-600 dark:text-indigo-400 shrink-0">
+                <span id="projectModeActionText" class="text-[11px] font-bold">เปิดโหมดโปรเจกต์</span>
+                <span id="projectModeActionIcon" class="transition transform group-hover:translate-x-1">➔</span>
+              </div>
+            </button>
+          </div>
         </div>
 
+        <!-- PROJECT PIPELINE SECTION (Visible when isProjectMode is true) -->
+        <div id="projectPipelineSection" class="hidden space-y-4">
+          <!-- Launch Date & Automation Helper Banner -->
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/40 border-2 border-indigo-500/40 space-y-3 shadow-inner">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div class="flex items-center space-x-2.5">
+                <span class="text-2xl shrink-0">🚀</span>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                    <span>วันและเวลาปล่อยคลิปจริง (Target Launch)</span>
+                    <span class="text-[10px] font-normal px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">เป้าหมายส่งมอบงาน</span>
+                  </h4>
+                  <p class="text-[11px] text-slate-400">กำหนดวันและเวลาปล่อยคลิป จากนั้นระบบจะช่วยคำนวณวันเริ่ม-วันส่งของแต่ละขั้นตอนถอยหลังให้อัตโนมัติ</p>
+                </div>
+              </div>
+              <button type="button" onclick="window.appActions.autoCalculatePipelineDates()" class="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-xs shadow-md shadow-amber-500/20 transition cursor-pointer flex items-center space-x-1.5 shrink-0">
+                <span>⚡</span>
+                <span>คำนวณวันถอยหลังอัตโนมัติ</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-indigo-500/20">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-300 mb-1">
+                  🏁 วันปล่อยคลิป / เผยแพร่งาน <span class="text-rose-400">*</span>
+                </label>
+                <input type="date" id="projTargetLaunchDate" onchange="window.appActions.onProjectTargetLaunchDateChange()" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-900/90 border border-indigo-500/50 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-300 mb-1">
+                  ⏰ เวลาโพสต์คลิป (Target Time)
+                </label>
+                <input type="time" id="projTargetLaunchTime" value="19:00" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-900/90 border border-indigo-500/50 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline Stage Rows Builder -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-1.5">
+                  <span>⛓️</span>
+                  <span>กำหนดขั้นตอนย่อย & ผู้รับผิดชอบ (Production Steps)</span>
+                </label>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">ระบุผู้รับผิดชอบ วันเริ่มทำ (🚩) และวันส่งงาน (🏁) แยกรายคนในแต่ละสเต็ป</p>
+              </div>
+              <span id="projSelectedStagesCountBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">0 ขั้นตอน</span>
+            </div>
+
+            <!-- Dynamic stage cards rendered here -->
+            <div id="projectPipelineStagesGrid" class="space-y-2.5">
+              <!-- Rendered dynamically by renderProjectPipelineStages() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SINGLE TASK SECTIONS (Hidden when isProjectMode is true) -->
+        <div id="singleTaskSectionsContainer" class="space-y-4">
         <!-- Description / Task Options (Multi-select) -->
         <div>
           <div class="flex items-center justify-between mb-2">
@@ -504,12 +583,6 @@
           </div>
           <div id="optionsPillGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <!-- Rendered dynamically -->
-          </div>
-          <div class="mt-3">
-            <label class="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-              📝 รายละเอียดเนื้อหางาน / บรีฟงาน / ลิงก์ส่งงาน (เช่น Google Drive, YouTube, Frame.io, Figma):
-            </label>
-            <textarea id="formNote" rows="4" placeholder="ระบุรายละเอียดบรีฟงานเพิ่มเติม โน้ตกำกับ หรือแปะลิงก์ Google Drive / Frame.io / Figma สำหรับส่งงาน (พิมพ์ได้หลายบรรทัด แสดงผลครบถ้วนไม่ถูกตัดคำ)..." class="w-full px-4 py-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition leading-relaxed min-h-[110px]"></textarea>
           </div>
         </div>
 
@@ -606,6 +679,15 @@
             </div>
           </div>
         </div>
+        </div> <!-- End of singleTaskSectionsContainer -->
+
+        <!-- Shared Note / Brief for both Single Task and Project -->
+        <div class="mt-3">
+          <label class="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+            📝 รายละเอียดเนื้อหางาน / บรีฟงาน / ลิงก์ส่งงาน (เช่น Google Drive, YouTube, Frame.io, Figma):
+          </label>
+          <textarea id="formNote" rows="3" placeholder="ระบุรายละเอียดบรีฟงานเพิ่มเติม โน้ตกำกับ หรือแปะลิงก์ Google Drive / Frame.io / Figma สำหรับส่งงาน (พิมพ์ได้หลายบรรทัด แสดงผลครบถ้วนไม่ถูกตัดคำ)..." class="w-full px-4 py-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition leading-relaxed min-h-[90px]"></textarea>
+        </div>
 
         <!-- Google Sheets Process Bar Sync Checkbox -->
         <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80">
@@ -642,11 +724,11 @@
           <button type="button" id="btnCancelModal" class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
             ยกเลิก
           </button>
-          <button type="submit" class="relative group flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 px-5 sm:px-7 py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl shadow-[0_8px_20px_-3px_rgba(147,51,234,0.55),0_4px_10px_-2px_rgba(168,85,247,0.35)] ring-2 ring-purple-300/40 active:scale-95 transition-all overflow-hidden cursor-pointer">
+          <button type="submit" id="btnSubmitTaskModal" class="relative group flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 px-5 sm:px-7 py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl shadow-[0_8px_20px_-3px_rgba(147,51,234,0.55),0_4px_10px_-2px_rgba(168,85,247,0.35)] ring-2 ring-purple-300/40 active:scale-95 transition-all overflow-hidden cursor-pointer">
             <span class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></span>
             <span class="relative z-10 flex items-center space-x-1.5 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
-              <span>💾</span>
-              <span>บันทึกข้อมูลงาน</span>
+              <span id="btnSubmitTaskIcon">💾</span>
+              <span id="btnSubmitTaskLabel">บันทึกข้อมูลงาน</span>
             </span>
           </button>
         </div>
@@ -2067,6 +2149,8 @@
           archivedAt: t.archivedAt || (t.archived ? (t.updatedAt || new Date().toISOString()) : null),
           videoFormat: videoFormat,
           workFormat: videoFormat,
+          projectId: t.projectId || t.project_id || null,
+          projectTitle: t.projectTitle || t.project_title || null,
           sheetRow: t.sheetRow !== undefined ? t.sheetRow : (t.sheet_row !== undefined ? t.sheet_row : null),
           sheetId: t.sheetId || t.sheet_id || null,
           sow: t.sow || null
@@ -2227,6 +2311,30 @@
       let modalSelectedColor = 'blue';
       let modalSelectedOptions = ['Roll A'];
       let currentModalFormat = 'long';
+      let isProjectMode = false;
+      let currentProjectStages = [];
+
+      const PIPELINE_TEMPLATES = {
+        'long': [
+          { id: 'Script', name: 'เขียนบทสคริปต์ (Script)', desc: 'วางโครงเรื่อง เขียนสคริปต์ฉบับสมบูรณ์', icon: '📝', defaultAssignees: ['non'], deltaStart: -9, deltaEnd: -7 },
+          { id: 'Roll A', name: 'ถ่ายทำหลัก (Roll A)', desc: 'บันทึกภาพพิธีกร/กล้องหลักในสตูดิโอ', icon: '🎬', defaultAssignees: ['france', 'rang'], deltaStart: -6, deltaEnd: -6 },
+          { id: 'ins', name: 'ถ่ายภาพแทรก (ins / B-Roll)', desc: 'ถ่าย Footage เจาะดีเทลสินค้า', icon: '📹', defaultAssignees: ['eyeta'], deltaStart: -5, deltaEnd: -5 },
+          { id: 'Edit', name: 'ตัดต่อคลิป (Edit)', desc: 'ลำดับภาพ ใส่อนิเมชัน ปรับสีและเสียง', icon: '✂️', defaultAssignees: ['aun'], deltaStart: -4, deltaEnd: -2 },
+          { id: 'ปกคลิป', name: 'ออกแบบภาพปก (Thumbnail)', desc: 'จัดทำรูปภาพหน้าปก YouTube 1920x1080', icon: '🖼️', defaultAssignees: ['tanya'], deltaStart: -3, deltaEnd: -1 },
+          { id: 'ปล่อยงาน', name: 'ตรวจความเรียบร้อย & ปล่อยงาน (Launch)', desc: 'อัปโหลด ตั้งค่าโพสต์ และเผยแพร่คลิป', icon: '🚀', defaultAssignees: ['non'], deltaStart: 0, deltaEnd: 0, defaultTime: '19:00' }
+        ],
+        'short': [
+          { id: 'Script', name: 'เขียนบทคลิปสั้น (Script)', desc: 'คิด Hook 3 วินาทีแรกและเนื้อเรื่องสั้น', icon: '📝', defaultAssignees: ['non'], deltaStart: -5, deltaEnd: -4 },
+          { id: 'Roll A', name: 'ถ่ายทำคลิปสั้น (Roll A)', desc: 'ถ่ายแนวตั้ง 9:16 ด้วยมือถือ/กล้องหลัก', icon: '🎬', defaultAssignees: ['france', 'rang'], deltaStart: -3, deltaEnd: -3 },
+          { id: 'ins', name: 'ถ่าย Footage แทรก (ins)', desc: 'ถ่ายภาพเจาะประกอบความเร็วสูง', icon: '📹', defaultAssignees: ['eyeta'], deltaStart: -3, deltaEnd: -3 },
+          { id: 'Edit', name: 'ตัดต่อและใส่ซับ (Edit)', desc: 'ตัดต่อ Pace กระชับ ใส่ Subtitle เคลื่อนไหว', icon: '✂️', defaultAssignees: ['aun'], deltaStart: -2, deltaEnd: -1 },
+          { id: 'ปล่อยงาน', name: 'ปล่อยคลิปสั้น (Launch)', desc: 'โพสต์ลง TikTok, Reels, Shorts', icon: '🚀', defaultAssignees: ['non'], deltaStart: 0, deltaEnd: 0, defaultTime: '19:00' }
+        ],
+        'graphic': [
+          { id: 'ปกคลิป', name: 'ออกแบบปกคลิป (Cover Design)', desc: 'ออกแบบ Key Visual และ Thumbnail', icon: '🖼️', defaultAssignees: ['tanya'], deltaStart: -3, deltaEnd: -1 },
+          { id: 'Photo Album', name: 'จัดทำ Photo Album ภาพนิ่ง', desc: 'คัดเลือกและแต่งโทนภาพ จัดวางอัลบั้ม', icon: '📸', defaultAssignees: ['tanya', 'non'], deltaStart: -2, deltaEnd: 0 }
+        ]
+      };
 
       // Local storage persistence
       const saveTasksLocalOnly = () => {
@@ -5213,6 +5321,9 @@ const renderTaskCard = (task, isManager) => {
         renderModalOptions();
         renderModalAssignees();
         renderColorPicker();
+        if (typeof window.appActions.updateProjectModeUI === 'function') {
+          window.appActions.updateProjectModeUI(false);
+        }
         const formScrollBody = document.querySelector('#taskForm > .overflow-y-auto');
         if (formScrollBody) formScrollBody.scrollTop = 0;
         document.getElementById('taskModal').classList.remove('hidden');
@@ -5262,6 +5373,50 @@ const renderTaskCard = (task, isManager) => {
           }
         }
 
+        let projectStepperHtml = '';
+        if (task.projectId) {
+          const sisterTasks = tasks.filter(t => t.projectId === task.projectId && !t.archived);
+          if (sisterTasks.length > 0) {
+            const doneCount = sisterTasks.filter(st => st.status === 'done').length;
+            projectStepperHtml = `
+              <!-- Project Overview Stepper -->
+              <div class="p-3 sm:p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/80 via-purple-50/50 to-blue-50/80 dark:from-indigo-950/60 dark:via-purple-950/40 dark:to-blue-950/60 border border-indigo-200 dark:border-indigo-800 space-y-2.5 shadow-xs">
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center space-x-1.5 font-bold text-indigo-900 dark:text-indigo-200">
+                    <span>🎬</span>
+                    <span>โปรเจกต์: ${escapeHtml(task.projectTitle || task.title)}</span>
+                  </div>
+                  <span class="text-[10.5px] px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-700">
+                    ขั้นตอนความคืบหน้า: ${doneCount}/${sisterTasks.length}
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                  ${sisterTasks.map(st => {
+                    const isCur = st.id === task.id;
+                    const isDone = st.status === 'done';
+                    const opt = (st.options && st.options[0]) || '';
+                    const conf = TASK_OPTIONS_CONFIG[opt] || { icon: '🏷️', name: opt };
+                    const assigneesStr = (st.assigneeIds || []).map(id => {
+                      const m = TEAM_MEMBERS.find(tm => tm.id === id);
+                      return m ? m.name : id;
+                    }).join(', ');
+                    return `
+                      <div onclick="window.appActions.openTaskDetails('${st.id}')" class="p-2 rounded-lg border transition cursor-pointer select-none ${isCur ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-2 ring-indigo-300 dark:ring-indigo-700 font-bold' : isDone ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'}">
+                        <div class="flex items-center justify-between">
+                          <span class="truncate flex items-center space-x-1"><span>${conf.icon}</span><span>${conf.name}</span></span>
+                          <span class="text-[10px]">${isDone ? '✓' : isCur ? '⚡' : '⏳'}</span>
+                        </div>
+                        <div class="text-[10px] truncate opacity-90 mt-0.5">${assigneesStr}</div>
+                        <div class="text-[9.5px] opacity-75 font-mono mt-0.5">${formatThaiDate(st.date) || st.date} ➔ ${formatThaiDate(st.deadline) || st.deadline}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          }
+        }
+
         content.innerHTML = `
           <!-- 1. Color tag, Status & Priority -->
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -5286,6 +5441,8 @@ ${renderWorkFormatBadge(task.videoFormat || task.workFormat)}
               ${priorityBadge}
             </div>
           </div>
+
+          ${projectStepperHtml}
 
           <!-- 2. Task Title -->
           <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200/80 dark:border-slate-700/80 border-l-4 ${colConf.borderL}">
@@ -5974,6 +6131,240 @@ function doGet(e) {
             modalSelectedOptions = [validOptions[0]];
           }
           renderModalOptions();
+          if (isProjectMode) {
+            window.appActions.initProjectStagesForCurrentFormat();
+          }
+        },
+
+        toggleProjectPipelineMode: (forceState) => {
+          const next = forceState !== undefined ? forceState : !isProjectMode;
+          window.appActions.updateProjectModeUI(next);
+        },
+
+        updateProjectModeUI: (active) => {
+          isProjectMode = active;
+          const btn = document.getElementById('btnToggleProjectMode');
+          const icon = document.getElementById('projectModeButtonIcon');
+          const title = document.getElementById('projectModeButtonTitle');
+          const badge = document.getElementById('projectModeButtonBadge');
+          const subtitle = document.getElementById('projectModeButtonSubtitle');
+          const actionText = document.getElementById('projectModeActionText');
+          const actionIcon = document.getElementById('projectModeActionIcon');
+          const singleSec = document.getElementById('singleTaskSectionsContainer');
+          const projSec = document.getElementById('projectPipelineSection');
+          const submitIcon = document.getElementById('btnSubmitTaskIcon');
+          const submitLabel = document.getElementById('btnSubmitTaskLabel');
+
+          if (active) {
+            if (btn) {
+              btn.className = "w-full py-2.5 px-3.5 rounded-xl border-2 border-indigo-500 bg-gradient-to-r from-indigo-50 via-purple-50/50 to-blue-50 dark:from-indigo-950/80 dark:via-purple-950/60 dark:to-blue-950/80 text-indigo-900 dark:text-indigo-200 transition cursor-pointer flex items-center justify-between text-xs sm:text-sm font-bold shadow-md ring-2 ring-indigo-400/30";
+            }
+            if (icon) {
+              icon.textContent = "🎬";
+              icon.className = "w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm shadow-xs shrink-0";
+            }
+            if (title) title.textContent = "โหมด: สร้างโปรเจกต์ (Production Pipeline)";
+            if (badge) {
+              badge.textContent = "เปิดใช้งานอยู่ ✓";
+              badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800";
+            }
+            if (subtitle) subtitle.textContent = "กำลังสร้างงานหลายสเต็ป พร้อมวันเริ่ม-วันส่งแยกรายคน";
+            if (actionText) actionText.textContent = "✕ สลับกลับงานเดี่ยว";
+            if (actionIcon) actionIcon.textContent = "";
+            if (singleSec) singleSec.classList.add('hidden');
+            if (projSec) projSec.classList.remove('hidden');
+            if (submitIcon) submitIcon.textContent = "🚀";
+            if (submitLabel) submitLabel.textContent = "สร้างโปรเจกต์และกระจายคิวงานให้ทีม";
+
+            // Init project launch date if empty
+            const launchInput = document.getElementById('projTargetLaunchDate');
+            if (launchInput && !launchInput.value) {
+              launchInput.value = (document.getElementById('formDeadline') && document.getElementById('formDeadline').value) || getTodayStr(7);
+            }
+            window.appActions.initProjectStagesForCurrentFormat();
+          } else {
+            if (btn) {
+              btn.className = "w-full py-2.5 px-3.5 rounded-xl border-2 border-dashed border-indigo-400/80 dark:border-indigo-600/80 hover:border-indigo-500 bg-white/90 dark:bg-slate-900/90 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 transition cursor-pointer flex items-center justify-between text-xs sm:text-sm font-bold shadow-2xs group";
+            }
+            if (icon) {
+              icon.textContent = "✨";
+              icon.className = "w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm group-hover:scale-110 transition shrink-0";
+            }
+            if (title) title.textContent = "สร้างโปรเจกต์";
+            if (badge) {
+              badge.textContent = "Production Pipeline";
+              badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700";
+            }
+            if (subtitle) subtitle.textContent = "แยกสเต็ป Script, Roll A, ins, Edit, ปกคลิป พร้อมวันเริ่ม-ส่งแยกคน";
+            if (actionText) actionText.textContent = "เปิดโหมดโปรเจกต์";
+            if (actionIcon) actionIcon.textContent = "➔";
+            if (singleSec) singleSec.classList.remove('hidden');
+            if (projSec) projSec.classList.add('hidden');
+            if (submitIcon) submitIcon.textContent = "💾";
+            if (submitLabel) submitLabel.textContent = "บันทึกข้อมูลงาน";
+          }
+        },
+
+        initProjectStagesForCurrentFormat: () => {
+          const template = PIPELINE_TEMPLATES[currentModalFormat] || PIPELINE_TEMPLATES['long'];
+          const launchDateStr = (document.getElementById('projTargetLaunchDate') && document.getElementById('projTargetLaunchDate').value) 
+            ? document.getElementById('projTargetLaunchDate').value 
+            : getTodayStr(7);
+          const launchDateObj = parseDateLocal(launchDateStr) || new Date();
+
+          currentProjectStages = template.map(tmpl => {
+            const dStart = new Date(launchDateObj);
+            dStart.setDate(dStart.getDate() + tmpl.deltaStart);
+            const dEnd = new Date(launchDateObj);
+            dEnd.setDate(dEnd.getDate() + tmpl.deltaEnd);
+
+            return {
+              id: tmpl.id,
+              name: tmpl.name,
+              desc: tmpl.desc,
+              icon: tmpl.icon,
+              enabled: true,
+              assigneeIds: [...tmpl.defaultAssignees],
+              startDate: formatDateLocal(dStart),
+              endDate: formatDateLocal(dEnd),
+              startTime: tmpl.defaultTime || ''
+            };
+          });
+          window.appActions.renderProjectPipelineStages();
+        },
+
+        renderProjectPipelineStages: () => {
+          const grid = document.getElementById('projectPipelineStagesGrid');
+          if (!grid) return;
+
+          const badge = document.getElementById('projSelectedStagesCountBadge');
+          const enabledCount = currentProjectStages.filter(s => s.enabled).length;
+          if (badge) badge.textContent = `${enabledCount}/${currentProjectStages.length} ขั้นตอน`;
+
+          grid.innerHTML = currentProjectStages.map((stage, idx) => {
+            const dStart = parseDateLocal(stage.startDate);
+            const dEnd = parseDateLocal(stage.endDate);
+            let durationDays = 1;
+            if (dStart && dEnd) {
+              durationDays = Math.max(1, Math.round((dEnd - dStart) / (1000 * 60 * 60 * 24)) + 1);
+            }
+
+            return `
+              <div class="p-3 sm:p-3.5 rounded-xl border transition ${stage.enabled ? 'bg-slate-50 dark:bg-slate-800/90 border-indigo-300 dark:border-indigo-700/80 shadow-xs' : 'bg-slate-100/50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-60'} space-y-2.5">
+                
+                <!-- Top Row: Enable Toggle & Stage Name & Members -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="flex items-center space-x-2.5">
+                    <label class="cursor-pointer flex items-center space-x-2 select-none">
+                      <input type="checkbox" onchange="window.appActions.toggleProjectStage('${stage.id}')" ${stage.enabled ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                      <span class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold shrink-0">${stage.icon}</span>
+                    </label>
+                    <div>
+                      <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">${idx + 1}. ${stage.name}</div>
+                      <div class="text-[10.5px] text-slate-500 dark:text-slate-400">${stage.desc}</div>
+                    </div>
+                  </div>
+
+                  <!-- Team Member Selector Pills for this specific stage -->
+                  <div class="flex items-center space-x-1 flex-wrap gap-y-1">
+                    <span class="text-[10.5px] font-semibold text-slate-400 mr-1">ผู้รับผิดชอบ:</span>
+                    ${TEAM_MEMBERS.map(m => {
+                      const isAssigned = stage.assigneeIds.includes(m.id);
+                      return `
+                        <button type="button" onclick="window.appActions.toggleProjectStageAssignee('${stage.id}', '${m.id}')" class="px-2 py-0.5 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${isAssigned ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs font-bold' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'}">
+                          <span>${m.avatar}</span> <span>${m.name}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <!-- Date Pickers Row: Start Date (🚩) to Due Date (🏁) -->
+                <div class="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                    <span class="text-slate-500 dark:text-slate-400 font-semibold text-[11px] flex items-center space-x-1">
+                      <span>🚩</span>
+                      <span>วันเริ่มทำ:</span>
+                    </span>
+                    <input type="date" value="${stage.startDate}" onchange="window.appActions.onProjectStageDateChange('${stage.id}', 'start', this.value)" class="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg text-xs font-mono font-medium focus:ring-1 focus:ring-indigo-500">
+                    
+                    <span class="text-slate-400 font-bold px-1">➔</span>
+                    
+                    <span class="text-amber-600 dark:text-amber-400 font-semibold text-[11px] flex items-center space-x-1">
+                      <span>🏁</span>
+                      <span>วันส่งงาน:</span>
+                    </span>
+                    <input type="date" value="${stage.endDate}" onchange="window.appActions.onProjectStageDateChange('${stage.id}', 'end', this.value)" class="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-amber-300 dark:border-amber-700/80 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-amber-500">
+                  </div>
+
+                  <div class="flex items-center space-x-1.5">
+                    <span class="text-[10.5px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border border-slate-200 dark:border-slate-700">
+                      รวม ${durationDays} วัน
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            `;
+          }).join('');
+        },
+
+        toggleProjectStage: (stageId) => {
+          const st = currentProjectStages.find(s => s.id === stageId);
+          if (st) {
+            st.enabled = !st.enabled;
+            window.appActions.renderProjectPipelineStages();
+          }
+        },
+
+        toggleProjectStageAssignee: (stageId, memberId) => {
+          const st = currentProjectStages.find(s => s.id === stageId);
+          if (st) {
+            if (st.assigneeIds.includes(memberId)) {
+              if (st.assigneeIds.length === 1) {
+                alert('แต่ละขั้นตอนต้องมีผู้รับผิดชอบอย่างน้อย 1 คน');
+                return;
+              }
+              st.assigneeIds = st.assigneeIds.filter(id => id !== memberId);
+            } else {
+              st.assigneeIds.push(memberId);
+            }
+            window.appActions.renderProjectPipelineStages();
+          }
+        },
+
+        onProjectStageDateChange: (stageId, field, val) => {
+          const st = currentProjectStages.find(s => s.id === stageId);
+          if (st) {
+            if (field === 'start') st.startDate = val;
+            if (field === 'end') st.endDate = val;
+            window.appActions.renderProjectPipelineStages();
+          }
+        },
+
+        autoCalculatePipelineDates: () => {
+          const launchInput = document.getElementById('projTargetLaunchDate');
+          const launchDateStr = launchInput ? launchInput.value : getTodayStr(7);
+          const launchDateObj = parseDateLocal(launchDateStr) || new Date();
+          const template = PIPELINE_TEMPLATES[currentModalFormat] || PIPELINE_TEMPLATES['long'];
+
+          currentProjectStages.forEach(st => {
+            const tmpl = template.find(t => t.id === st.id);
+            if (tmpl) {
+              const dStart = new Date(launchDateObj);
+              dStart.setDate(dStart.getDate() + tmpl.deltaStart);
+              const dEnd = new Date(launchDateObj);
+              dEnd.setDate(dEnd.getDate() + tmpl.deltaEnd);
+              st.startDate = formatDateLocal(dStart);
+              st.endDate = formatDateLocal(dEnd);
+            }
+          });
+          window.appActions.renderProjectPipelineStages();
+          showToast('ช่วยคำนวณวันเริ่มทำ (🚩) และวันส่งงาน (🏁) ถอยหลังให้เรียบร้อยแล้ว ⚡', 'success');
+        },
+
+        onProjectTargetLaunchDateChange: () => {
+          window.appActions.autoCalculatePipelineDates();
         },
 
         setCalendarVideoFormatFilter: (fmt) => {
@@ -7968,6 +8359,71 @@ switchUser: (newUserId) => {
         e.preventDefault();
         const title = document.getElementById('formTitle').value.trim();
         if (!title) { alert('กรุณากรอกชื่องาน'); return; }
+
+        if (isProjectMode) {
+          const enabledStages = currentProjectStages.filter(s => s.enabled);
+          if (enabledStages.length === 0) {
+            alert('กรุณาเลือกอย่างน้อย 1 ขั้นตอนในโปรเจกต์');
+            return;
+          }
+
+          const note = (document.getElementById('formNote') ? document.getElementById('formNote').value.trim() : '');
+          const launchDate = (document.getElementById('projTargetLaunchDate') && document.getElementById('projTargetLaunchDate').value)
+            ? document.getElementById('projTargetLaunchDate').value
+            : getTodayStr(7);
+          const launchTime = (document.getElementById('projTargetLaunchTime') && document.getElementById('projTargetLaunchTime').value)
+            ? document.getElementById('projTargetLaunchTime').value
+            : '19:00';
+
+          const sheetRowInput = document.getElementById('formSheetRow');
+          const sheetRowVal = sheetRowInput ? sheetRowInput.value.trim() : '';
+          const syncToSheet = document.getElementById('formSyncToSheet') ? document.getElementById('formSyncToSheet').checked : false;
+          const statusVal = document.getElementById('formStatus').value || 'todo';
+          const priorityVal = document.getElementById('formPriority').value || 'normal';
+
+          const projectId = 'proj-' + Date.now();
+          const newTasks = enabledStages.map((st, idx) => {
+            const conf = TASK_OPTIONS_CONFIG[st.id] || { name: st.id, icon: '🏷️' };
+            const isPublishStage = st.id === 'ปล่อยงาน';
+            return normalizeTask({
+              id: 'task-' + Date.now() + '-' + idx,
+              projectId: projectId,
+              projectTitle: title,
+              title: `${title} (${conf.name})`,
+              options: [st.id],
+              note: note,
+              description: `${conf.name}${note ? ' (' + note + ')' : ''}`,
+              assigneeIds: (st.assigneeIds && st.assigneeIds.length > 0) ? st.assigneeIds : ['non'],
+              color: modalSelectedColor || 'blue',
+              date: st.startDate || launchDate,
+              deadline: st.endDate || launchDate,
+              isAllDay: !isPublishStage,
+              startTime: isPublishStage ? launchTime : '',
+              endTime: '',
+              status: statusVal,
+              priority: priorityVal,
+              videoFormat: currentModalFormat,
+              workFormat: currentModalFormat,
+              sheetRow: sheetRowVal ? parseInt(sheetRowVal, 10) : null,
+              sheetId: SPREADSHEET_ID
+            }, idx);
+          });
+
+          tasks.unshift(...newTasks);
+          saveTasks(null, 'bulk');
+          closeModal();
+          renderApp();
+          showToast(`สร้างโปรเจกต์ "${title}" เรียบร้อยแล้ว! กระจายงานเข้าปฏิทินของทีม ${newTasks.length} ขั้นตอน 🚀`, 'success');
+
+          if (newTasks.length > 0) {
+            notifyLarkTaskCreated(newTasks[0]);
+          }
+          if (syncToSheet || googleSheetsConfig.autoSync) {
+            newTasks.forEach(t => window.appActions.pushSingleTaskToGoogleSheets(t));
+          }
+          return;
+        }
+
         if (modalSelectedAssignees.length === 0) { alert('กรุณาเลือกผู้รับผิดชอบงานอย่างน้อย 1 คน'); return; }
 
         const taskId = document.getElementById('formTaskId').value;
