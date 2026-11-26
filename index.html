@@ -494,7 +494,7 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">
-              🎬 ลักษณะ / ประเภทงาน <span class="text-indigo-600 dark:text-indigo-400 font-medium">(เลือกได้หลายตัวเลือก: <span id="optionsCountBadge">0</span> รายการ)</span>
+              📋 ลักษณะงาน <span id="modalOptionsFormatHint" class="text-xs font-normal text-slate-500 dark:text-slate-400"></span> <span class="text-indigo-600 dark:text-indigo-400 font-medium">(เลือกได้หลายตัวเลือก: <span id="optionsCountBadge">0</span> รายการ)</span>
             </label>
             <div class="text-xs space-x-2 text-indigo-600 dark:text-indigo-400 font-medium">
               <button type="button" id="btnSelectAllOptions" class="hover:underline cursor-pointer">เลือกทั้งหมด</button>
@@ -502,7 +502,7 @@
               <button type="button" id="btnClearOptions" class="hover:underline text-slate-500 dark:text-slate-400 cursor-pointer">ล้างค่า</button>
             </div>
           </div>
-          <div id="optionsPillGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div id="optionsPillGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <!-- Rendered dynamically -->
           </div>
           <div class="mt-3">
@@ -1532,17 +1532,32 @@
         'lime', 'cyan', 'fuchsia', 'coral', 'brown'
       ];
 
-      // 8 Task Options (Roll A, ins, ตัดต่อ, Short, เขียนสคริปต์, กราฟฟิก, ปล่อยงาน, แก้งาน)
+      // Task Options Config & Lists:
+      // Video Format (Long Form / Short): Roll A, ins, Script, Edit, ปล่อยงาน, แก้งาน
+      // Graphic Format: ปกคลิป, Photo Album
       const TASK_OPTIONS_CONFIG = {
         'Roll A': { name: 'Roll A', icon: '🎬', bg: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800' },
         'ins': { name: 'ins', icon: '📹', bg: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800' },
-        'เขียนสคริปต์': { name: 'เขียนสคริปต์', icon: '📝', bg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' },
-        'ตัดต่อ': { name: 'ตัดต่อ', icon: '✂️', bg: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' },
-        'กราฟฟิก': { name: 'กราฟฟิก', icon: '🎨', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800' },
+        'Script': { name: 'Script', icon: '📝', bg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' },
+        'Edit': { name: 'Edit', icon: '✂️', bg: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' },
         'ปล่อยงาน': { name: 'ปล่อยงาน', icon: '🚀', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800' },
-        'แก้งาน': { name: 'แก้งาน', icon: '🛠️', bg: 'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800' }
+        'แก้งาน': { name: 'แก้งาน', icon: '🛠️', bg: 'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800' },
+        'ปกคลิป': { name: 'ปกคลิป', icon: '🖼️', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800' },
+        'Photo Album': { name: 'Photo Album', icon: '📸', bg: 'bg-cyan-50 text-cyan-800 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800' },
+        // Compatibility Aliases for older tasks & reports
+        'เขียนสคริปต์': { name: 'Script', icon: '📝', bg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' },
+        'ตัดต่อ': { name: 'Edit', icon: '✂️', bg: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' },
+        'กราฟฟิก': { name: 'ปกคลิป', icon: '🖼️', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800' }
       };
-      const TASK_OPTIONS_LIST = ['Roll A', 'ins', 'เขียนสคริปต์', 'ตัดต่อ', 'กราฟฟิก', 'ปล่อยงาน', 'แก้งาน'];
+
+      const VIDEO_TASK_OPTIONS = ['Roll A', 'ins', 'Script', 'Edit', 'ปล่อยงาน', 'แก้งาน'];
+      const GRAPHIC_TASK_OPTIONS = ['ปกคลิป', 'Photo Album'];
+      const ALL_TASK_OPTIONS = [...VIDEO_TASK_OPTIONS, ...GRAPHIC_TASK_OPTIONS];
+      const TASK_OPTIONS_LIST = ALL_TASK_OPTIONS;
+
+      const getTaskOptionsForFormat = (fmt) => {
+        return fmt === 'graphic' ? GRAPHIC_TASK_OPTIONS : VIDEO_TASK_OPTIONS;
+      };
 
       // Priority ordering (ด่วน -> ปกติ -> ไม่รีบ)
       const PRIORITY_ORDER = {
@@ -1956,50 +1971,9 @@
           color = COLOR_KEYS[idx % COLOR_KEYS.length] || 'blue';
         }
 
-        // Handle options (Roll A, ins, ตัดต่อ, Short, เขียนสคริปต์, กราฟฟิก, ปล่อยงาน, แก้งาน)
-        let options = [];
-        if (Array.isArray(t.options)) {
-          options = t.options.filter(o => TASK_OPTIONS_LIST.includes(o));
-        } else if (Array.isArray(t.description)) {
-          options = t.description.filter(o => TASK_OPTIONS_LIST.includes(o));
-        } else if (typeof t.description === 'string' && t.description) {
-          TASK_OPTIONS_LIST.forEach(opt => {
-            if (t.description.includes(opt)) options.push(opt);
-          });
-        }
-        if (typeof t.title === 'string' && t.title.includes('ตัดต่อ') && !options.includes('ตัดต่อ')) {
-          options.push('ตัดต่อ');
-        }
-        if (typeof t.title === 'string' && t.title.includes('แก้งาน') && !options.includes('แก้งาน')) {
-          options.push('แก้งาน');
-        }
-        if (options.length === 0) {
-          const defaultCombos = [
-            ['Roll A', 'ins'],
-            ['เขียนสคริปต์'],
-            ['ตัดต่อ'],
-            ['กราฟฟิก'],
-            ['Roll A', 'เขียนสคริปต์'],
-            ['ตัดต่อ', 'กราฟฟิก'],
-            ['ins', 'ตัดต่อ'],
-            ['ตัดต่อ', 'ปล่อยงาน']
-          ];
-          options = defaultCombos[idx % defaultCombos.length];
-        }
-
-        const note = (typeof t.note === 'string') 
-          ? t.note 
-          : ((typeof t.description === 'string' && !TASK_OPTIONS_LIST.some(opt => t.description.includes(opt))) ? t.description : '');
-
-        const isAllDay = (t.isAllDay !== undefined)
-          ? Boolean(t.isAllDay)
-          : ((t.is_all_day !== undefined) ? Boolean(t.is_all_day) : true);
-        const startTime = (typeof t.startTime === 'string') ? t.startTime : ((typeof t.start_time === 'string') ? t.start_time : '');
-        const endTime = (typeof t.endTime === 'string') ? t.endTime : ((typeof t.end_time === 'string') ? t.end_time : '');
-
-                let videoFormat = t.videoFormat || t.video_format || t.workFormat || t.work_format;
+        let videoFormat = t.videoFormat || t.video_format || t.workFormat || t.work_format;
         if (!videoFormat) {
-          if (typeof t.title === 'string' && (t.title.toLowerCase().includes('graphic') || t.title.includes('กราฟฟิก') || t.title.includes('Thumbnail') || t.title.includes('ปก'))) {
+          if (typeof t.title === 'string' && (t.title.toLowerCase().includes('graphic') || t.title.includes('กราฟฟิก') || t.title.includes('Thumbnail') || t.title.includes('ปก') || t.title.includes('Album') || t.title.includes('อัลบั้ม'))) {
             videoFormat = 'graphic';
           } else if ((Array.isArray(t.options) && t.options.includes('Short')) || 
               (typeof t.title === 'string' && (t.title.toLowerCase().includes('short') || t.title.includes('คลิปสั้น')))) {
@@ -2008,6 +1982,71 @@
             videoFormat = 'long';
           }
         }
+
+        // Handle options based on format:
+        // Long Form / Short: Roll A, ins, Script, Edit, ปล่อยงาน, แก้งาน
+        // Graphic: ปกคลิป, Photo Album
+        const allowedOptions = getTaskOptionsForFormat(videoFormat);
+        let options = [];
+        const rawOpts = Array.isArray(t.options) 
+          ? t.options 
+          : (Array.isArray(t.description) 
+              ? t.description 
+              : (typeof t.description === 'string' ? t.description.split(',').map(s => s.trim()) : []));
+        
+        rawOpts.forEach(o => {
+          let mapped = o;
+          if (o === 'เขียนสคริปต์') mapped = 'Script';
+          else if (o === 'ตัดต่อ') mapped = 'Edit';
+          else if (o === 'กราฟฟิก') mapped = (videoFormat === 'graphic' ? 'ปกคลิป' : 'Edit');
+          if (allowedOptions.includes(mapped) && !options.includes(mapped)) {
+            options.push(mapped);
+          }
+        });
+
+        if (typeof t.title === 'string') {
+          if (videoFormat === 'graphic') {
+            if ((t.title.includes('Photo Album') || t.title.includes('อัลบั้ม')) && !options.includes('Photo Album')) {
+              options.push('Photo Album');
+            }
+            if ((t.title.includes('ปก') || t.title.includes('Thumbnail') || t.title.includes('กราฟฟิก')) && !options.includes('ปกคลิป')) {
+              options.push('ปกคลิป');
+            }
+          } else {
+            if (t.title.includes('ตัดต่อ') && !options.includes('Edit')) options.push('Edit');
+            if (t.title.includes('สคริปต์') && !options.includes('Script')) options.push('Script');
+            if (t.title.includes('Roll A') && !options.includes('Roll A')) options.push('Roll A');
+            if (t.title.includes('ins') && !options.includes('ins')) options.push('ins');
+            if (t.title.includes('แก้งาน') && !options.includes('แก้งาน')) options.push('แก้งาน');
+          }
+        }
+
+        if (options.length === 0) {
+          if (videoFormat === 'graphic') {
+            options = ['ปกคลิป'];
+          } else {
+            const defaultCombos = [
+              ['Roll A', 'ins'],
+              ['Script'],
+              ['Edit'],
+              ['Edit', 'ปล่อยงาน'],
+              ['Roll A'],
+              ['ins'],
+              ['แก้งาน', 'Edit']
+            ];
+            options = defaultCombos[idx % defaultCombos.length];
+          }
+        }
+
+        const note = (typeof t.note === 'string') 
+          ? t.note 
+          : ((typeof t.description === 'string' && !ALL_TASK_OPTIONS.some(opt => t.description.includes(opt))) ? t.description : '');
+
+        const isAllDay = (t.isAllDay !== undefined)
+          ? Boolean(t.isAllDay)
+          : ((t.is_all_day !== undefined) ? Boolean(t.is_all_day) : true);
+        const startTime = (typeof t.startTime === 'string') ? t.startTime : ((typeof t.start_time === 'string') ? t.start_time : '');
+        const endTime = (typeof t.endTime === 'string') ? t.endTime : ((typeof t.end_time === 'string') ? t.end_time : '');
 
         return {
           id: t.id || 'task-' + Date.now(),
@@ -2027,6 +2066,7 @@
           archived: t.archived === true || t.archived === 1 || t.status === 'archived',
           archivedAt: t.archivedAt || (t.archived ? (t.updatedAt || new Date().toISOString()) : null),
           videoFormat: videoFormat,
+          workFormat: videoFormat,
           sheetRow: t.sheetRow !== undefined ? t.sheetRow : (t.sheet_row !== undefined ? t.sheet_row : null),
           sheetId: t.sheetId || t.sheet_id || null,
           sow: t.sow || null
@@ -2034,19 +2074,19 @@
       };
 
       const INITIAL_TASKS = [
-        { id: 'task-1', title: 'ถ่ายทำคลิปรีวิว iPhone 16 Pro Max', options: ['Roll A', 'ins'], note: 'สตูดิโอ A • https://drive.google.com/drive/folders/sample-iphone16', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['non', 'france'], priority: 'high', color: 'blue' },
-        { id: 'task-2', title: 'เขียนสคริปต์คลิปท่องเที่ยวเชียงใหม่ EP.12', options: ['เขียนสคริปต์'], note: 'ส่งดราฟต์แรกให้รีวิว https://docs.google.com/document/d/sample-script', date: getTodayStr(-1), deadline: getTodayStr(0), status: 'todo', assigneeIds: ['non', 'tanya'], priority: 'normal', color: 'purple' },
-        { id: 'task-3', title: 'ตัดต่อคลิปสั้นไฮไลต์ TikTok & Reels', videoFormat: 'short', options: ['ตัดต่อ', 'กราฟฟิก'], note: 'เน้นช่วงต้นคลิป 3 วิแรก https://app.frame.io/projects/sample-tiktok', date: getTodayStr(-4), deadline: getTodayStr(-1), status: 'in-progress', assigneeIds: ['aun', 'rang'], priority: 'high', color: 'coral' },
-        { id: 'task-4', title: 'ออกแบบภาพ Thumbnail และ Motion Graphics', options: ['กราฟฟิก'], note: 'ขนาด 1920x1080 https://www.figma.com/file/sample-thumbnail', date: getTodayStr(-2), deadline: getTodayStr(1), status: 'done', assigneeIds: ['aun'], priority: 'high', color: 'green' },
-        { id: 'task-5', title: 'ถ่าย Ins บรรยากาศงานแถลงข่าวเปิดตัว', options: ['ins', 'Roll A'], note: 'เก็บบรรยากาศผู้ร่วมงาน', date: getTodayStr(-2), deadline: getTodayStr(3), status: 'in-progress', assigneeIds: ['eyeta', 'france'], priority: 'normal', color: 'rose' },
-        { id: 'task-6', title: 'ตรวจเช็กความเรียบร้อยและปล่อยงานคลิปสัมภาษณ์', options: ['ปล่อยงาน', 'ตัดต่อ'], note: 'อัปโหลดขึ้น YouTube แล้ว https://youtu.be/sample-interview', date: getTodayStr(0), deadline: getTodayStr(0), status: 'done', assigneeIds: ['eyeta'], priority: 'normal', color: 'teal' },
-        { id: 'task-7', title: 'เขียนสคริปต์ Tie-in สปอนเซอร์แคมเปญ 11.11', options: ['เขียนสคริปต์'], note: 'สคริปต์ผ่านแล้ว พร้อมถ่าย https://docs.google.com/document/d/sample-sponsor', date: getTodayStr(-5), deadline: getTodayStr(-2), status: 'done', assigneeIds: ['rang', 'aun'], priority: 'high', color: 'red' },
+        { id: 'task-1', title: 'ถ่ายทำคลิปรีวิว iPhone 16 Pro Max', videoFormat: 'long', options: ['Roll A', 'ins'], note: 'สตูดิโอ A • https://drive.google.com/drive/folders/sample-iphone16', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['non', 'france'], priority: 'high', color: 'blue' },
+        { id: 'task-2', title: 'เขียนสคริปต์คลิปท่องเที่ยวเชียงใหม่ EP.12', videoFormat: 'long', options: ['Script'], note: 'ส่งดราฟต์แรกให้รีวิว https://docs.google.com/document/d/sample-script', date: getTodayStr(-1), deadline: getTodayStr(0), status: 'todo', assigneeIds: ['non', 'tanya'], priority: 'normal', color: 'purple' },
+        { id: 'task-3', title: 'ตัดต่อคลิปสั้นไฮไลต์ TikTok & Reels', videoFormat: 'short', options: ['Edit'], note: 'เน้นช่วงต้นคลิป 3 วิแรก https://app.frame.io/projects/sample-tiktok', date: getTodayStr(-4), deadline: getTodayStr(-1), status: 'in-progress', assigneeIds: ['aun', 'rang'], priority: 'high', color: 'coral' },
+        { id: 'task-4', title: 'ออกแบบภาพปกคลิป YouTube Cover Design', videoFormat: 'graphic', options: ['ปกคลิป'], note: 'ขนาด 1920x1080 https://www.figma.com/file/sample-thumbnail', date: getTodayStr(-2), deadline: getTodayStr(1), status: 'done', assigneeIds: ['aun'], priority: 'high', color: 'green' },
+        { id: 'task-5', title: 'ถ่าย Ins บรรยากาศงานแถลงข่าวเปิดตัว', videoFormat: 'long', options: ['ins', 'Roll A'], note: 'เก็บบรรยากาศผู้ร่วมงาน', date: getTodayStr(-2), deadline: getTodayStr(3), status: 'in-progress', assigneeIds: ['eyeta', 'france'], priority: 'normal', color: 'rose' },
+        { id: 'task-6', title: 'ตรวจเช็กความเรียบร้อยและปล่อยงานคลิปสัมภาษณ์', videoFormat: 'long', options: ['Edit', 'ปล่อยงาน'], note: 'อัปโหลดขึ้น YouTube แล้ว https://youtu.be/sample-interview', date: getTodayStr(0), deadline: getTodayStr(0), status: 'done', assigneeIds: ['eyeta'], priority: 'normal', color: 'teal' },
+        { id: 'task-7', title: 'เขียนสคริปต์ Tie-in สปอนเซอร์แคมเปญ 11.11', videoFormat: 'long', options: ['Script'], note: 'สคริปต์ผ่านแล้ว พร้อมถ่าย https://docs.google.com/document/d/sample-sponsor', date: getTodayStr(-5), deadline: getTodayStr(-2), status: 'done', assigneeIds: ['rang', 'aun'], priority: 'high', color: 'red' },
         { id: 'task-8', title: 'บันทึกภาพ Roll A ช่วงคุยประเด็นข่าวไอที', videoFormat: 'long', options: ['Roll A'], note: 'กล้องหลัก 4K 60fps', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'done', assigneeIds: ['rang'], priority: 'normal', color: 'indigo' },
-        { id: 'task-9', title: 'ทำกราฟฟิก Intro และ Transition รายการ', videoFormat: 'long', options: ['กราฟฟิก'], note: 'ธีมสีใหม่ https://www.canva.com/design/sample-intro', date: getTodayStr(-2), deadline: getTodayStr(4), status: 'todo', assigneeIds: ['tanya'], priority: 'normal', color: 'yellow' },
-        { id: 'task-10', title: 'ถ่ายทำ Footage Ins ประกอบบทวิเคราะห์', options: ['ins'], note: 'ภาพ B-Roll สินค้า https://www.dropbox.com/sh/sample-broll', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['tanya', 'non'], priority: 'low', color: 'cyan' },
-        { id: 'task-11', title: 'ตัดต่อและปล่อยงานคลิป Short รายวัน', videoFormat: 'short', options: ['ตัดต่อ', 'ปล่อยงาน'], note: 'ความยาวไม่เกิน 60 วิ https://drive.google.com/drive/folders/sample-shorts', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'in-progress', assigneeIds: ['france'], priority: 'high', color: 'fuchsia' },
-        { id: 'task-12', title: 'ตรวจสีเกรดดิ้งและตัดต่อคลิปยาวฉบับเต็ม', options: ['Roll A', 'ตัดต่อ', 'ปล่อยงาน'], note: 'Export ProRes 422 https://drive.google.com/drive/folders/sample-master', date: getTodayStr(-4), deadline: getTodayStr(5), status: 'todo', assigneeIds: ['france', 'non'], priority: 'low', color: 'lime' },
-        { id: 'task-13', title: 'แก้งานตัดต่อคลิปและเสียงรอบที่ 1 ตามฟีดแบ็กลูกค้า', options: ['แก้งาน', 'ตัดต่อ'], note: 'แก้เสียงบรรยายและปรับคัลเลอร์เกรด https://app.frame.io/projects/sample-revision', date: getTodayStr(-1), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['aun', 'france'], priority: 'high', color: 'brown' }
+        { id: 'task-9', title: 'จัดทำ Photo Album ภาพนิ่งเปิดตัวสินค้า 10 รูป', videoFormat: 'graphic', options: ['Photo Album'], note: 'คุมโทนสีภาพและจัดเรียงหน้า https://www.canva.com/design/sample-album', date: getTodayStr(-2), deadline: getTodayStr(4), status: 'todo', assigneeIds: ['tanya'], priority: 'normal', color: 'yellow' },
+        { id: 'task-10', title: 'ถ่ายทำ Footage Ins ประกอบบทวิเคราะห์', videoFormat: 'long', options: ['ins'], note: 'ภาพ B-Roll สินค้า https://www.dropbox.com/sh/sample-broll', date: getTodayStr(-3), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['tanya', 'non'], priority: 'low', color: 'cyan' },
+        { id: 'task-11', title: 'ตัดต่อและปล่อยงานคลิป Short รายวัน', videoFormat: 'short', options: ['Edit', 'ปล่อยงาน'], note: 'ความยาวไม่เกิน 60 วิ https://drive.google.com/drive/folders/sample-shorts', date: getTodayStr(-1), deadline: getTodayStr(1), status: 'in-progress', assigneeIds: ['france'], priority: 'high', color: 'fuchsia' },
+        { id: 'task-12', title: 'ตรวจสีเกรดดิ้งและตัดต่อคลิปยาวฉบับเต็ม', videoFormat: 'long', options: ['Roll A', 'Edit', 'ปล่อยงาน'], note: 'Export ProRes 422 https://drive.google.com/drive/folders/sample-master', date: getTodayStr(-4), deadline: getTodayStr(5), status: 'todo', assigneeIds: ['france', 'non'], priority: 'low', color: 'lime' },
+        { id: 'task-13', title: 'แก้งานตัดต่อคลิปและเสียงรอบที่ 1 ตามฟีดแบ็กลูกค้า', videoFormat: 'long', options: ['แก้งาน', 'Edit'], note: 'แก้เสียงบรรยายและปรับคัลเลอร์เกรด https://app.frame.io/projects/sample-revision', date: getTodayStr(-1), deadline: getTodayStr(2), status: 'in-progress', assigneeIds: ['aun', 'france'], priority: 'high', color: 'brown' }
       ];
 
       // 2. Application State
@@ -2186,6 +2226,7 @@
       let modalSelectedAssignees = ['non'];
       let modalSelectedColor = 'blue';
       let modalSelectedOptions = ['Roll A'];
+      let currentModalFormat = 'long';
 
       // Local storage persistence
       const saveTasksLocalOnly = () => {
@@ -4524,7 +4565,7 @@ const renderTaskCard = (task, isManager) => {
                 <button type="button" onclick="window.appActions.resetCalendarTypeFilter()" class="shrink-0 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition cursor-pointer select-none ${currentSelectedTypes.length === 0 ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white border-purple-500 shadow-[0_2px_10px_rgba(147,51,234,0.35)] ring-1 ring-purple-300/40' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
                   ${currentSelectedTypes.length === 0 ? `ทุกประเภท (${taskList.length})` : `🔄 แสดงทุกประเภท (${taskList.length})`}
                 </button>
-                ${TASK_OPTIONS_LIST.map(opt => {
+                ${(calendarVideoFormatFilter === 'graphic' ? GRAPHIC_TASK_OPTIONS : (calendarVideoFormatFilter === 'long' || calendarVideoFormatFilter === 'short' ? VIDEO_TASK_OPTIONS : ALL_TASK_OPTIONS)).map(opt => {
                   const conf = TASK_OPTIONS_CONFIG[opt] || { name: opt, icon: '🏷️' };
                   const count = taskList.filter(t => Array.isArray(t.options) && t.options.includes(opt)).length;
                   const isSelected = currentSelectedTypes.includes(opt);
@@ -4982,11 +5023,27 @@ const renderTaskCard = (task, isManager) => {
       const renderModalOptions = () => {
         const grid = document.getElementById('optionsPillGrid');
         if (!grid) return;
-        grid.innerHTML = TASK_OPTIONS_LIST.map(opt => {
+        const currentOptions = getTaskOptionsForFormat(currentModalFormat);
+        grid.className = currentModalFormat === 'graphic'
+          ? "grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-md"
+          : "grid grid-cols-2 sm:grid-cols-3 gap-2.5";
+
+        const hintEl = document.getElementById('modalOptionsFormatHint');
+        if (hintEl) {
+          if (currentModalFormat === 'graphic') {
+            hintEl.textContent = '• สำหรับ Graphic 🎨 (ปกคลิป, Photo Album)';
+          } else if (currentModalFormat === 'short') {
+            hintEl.textContent = '• สำหรับ Short 📱 (Roll A, ins, Script, Edit, ปล่อยงาน, แก้งาน)';
+          } else {
+            hintEl.textContent = '• สำหรับ Long Form 🎬 (Roll A, ins, Script, Edit, ปล่อยงาน, แก้งาน)';
+          }
+        }
+
+        grid.innerHTML = currentOptions.map(opt => {
           const conf = TASK_OPTIONS_CONFIG[opt] || { name: opt, icon: '🏷️' };
           const isSelected = modalSelectedOptions.includes(opt);
           return `
-            <button type="button" onclick="window.appActions.toggleModalOption('${opt}')" class="flex items-center space-x-2 p-2.5 sm:p-3 rounded-xl border text-xs sm:text-sm font-semibold transition cursor-pointer select-none ${isSelected ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-500 dark:border-indigo-400 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-500/20 shadow-xs' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}">
+            <button type="button" onclick="window.appActions.toggleModalOption('${opt}')" class="flex items-center space-x-2 p-2.5 sm:p-3 rounded-xl border text-xs sm:text-sm font-semibold transition cursor-pointer select-none ${isSelected ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-500 dark:border-indigo-400 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-500/20 shadow-xs font-bold' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}">
               <span class="text-lg shrink-0">${conf.icon}</span>
               <span class="flex-1 text-left whitespace-normal break-words leading-tight">${conf.name}</span>
               <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold border transition shrink-0 ${isSelected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-slate-900 text-transparent border-slate-300 dark:border-slate-600'}">✓</span>
@@ -5068,6 +5125,7 @@ const renderTaskCard = (task, isManager) => {
         const vFormat = (task && (task.videoFormat || task.workFormat)) 
           ? (task.videoFormat || task.workFormat) 
           : ((task && Array.isArray(task.options) && task.options.includes('Short')) ? 'short' : 'long');
+        currentModalFormat = vFormat;
         if (typeof window.appActions.updateVideoFormatUI === 'function') {
           window.appActions.updateVideoFormatUI(vFormat);
         }
@@ -5108,10 +5166,19 @@ const renderTaskCard = (task, isManager) => {
         updateHolidayNotice(document.getElementById('formDate'), document.getElementById('formDateHolidayNotice'));
         updateHolidayNotice(document.getElementById('formDeadline'), document.getElementById('formDeadlineHolidayNotice'));
 
-        if (task && Array.isArray(task.options)) {
-          modalSelectedOptions = [...task.options];
+        const validOptions = getTaskOptionsForFormat(vFormat);
+        if (task && Array.isArray(task.options) && task.options.length > 0) {
+          modalSelectedOptions = task.options.map(o => {
+            if (o === 'เขียนสคริปต์') return 'Script';
+            if (o === 'ตัดต่อ') return 'Edit';
+            if (o === 'กราฟฟิก') return (vFormat === 'graphic' ? 'ปกคลิป' : 'Edit');
+            return o;
+          }).filter(o => validOptions.includes(o));
+          if (modalSelectedOptions.length === 0) {
+            modalSelectedOptions = [validOptions[0]];
+          }
         } else {
-          modalSelectedOptions = ['Roll A'];
+          modalSelectedOptions = [validOptions[0]];
         }
 
         if (task && task.assigneeIds && task.assigneeIds.length > 0) {
@@ -5878,11 +5945,28 @@ function doGet(e) {
         },
 
         onVideoFormatChange: (format) => {
+          currentModalFormat = format;
           window.appActions.updateVideoFormatUI(format);
+          const validOptions = getTaskOptionsForFormat(format);
+          modalSelectedOptions = modalSelectedOptions.filter(o => validOptions.includes(o));
+          if (modalSelectedOptions.length === 0) {
+            modalSelectedOptions = [validOptions[0]];
+          }
+          renderModalOptions();
         },
 
         setCalendarVideoFormatFilter: (fmt) => {
           calendarVideoFormatFilter = fmt || 'all';
+          const validFilterOptions = (calendarVideoFormatFilter === 'graphic')
+            ? GRAPHIC_TASK_OPTIONS
+            : (calendarVideoFormatFilter === 'long' || calendarVideoFormatFilter === 'short')
+              ? VIDEO_TASK_OPTIONS
+              : ALL_TASK_OPTIONS;
+          if (currentUserId === 'manager') {
+            managerCalendarSelectedTypes = managerCalendarSelectedTypes.filter(o => validFilterOptions.includes(o));
+          } else {
+            memberCalendarSelectedTypes[currentUserId] = (memberCalendarSelectedTypes[currentUserId] || []).filter(o => validFilterOptions.includes(o));
+          }
           renderApp();
         },
 
@@ -6294,7 +6378,8 @@ function doGet(e) {
           } else {
             cur.push(optType);
           }
-          if (cur.length === TASK_OPTIONS_LIST.length) {
+          const maxLen = (calendarVideoFormatFilter === 'graphic' ? GRAPHIC_TASK_OPTIONS : (calendarVideoFormatFilter === 'long' || calendarVideoFormatFilter === 'short' ? VIDEO_TASK_OPTIONS : ALL_TASK_OPTIONS)).length;
+          if (cur.length >= maxLen) {
             cur = [];
           }
           if (isManager) {
@@ -7834,7 +7919,7 @@ switchUser: (newUserId) => {
       const btnSelectAllOptions = document.getElementById('btnSelectAllOptions');
       if (btnSelectAllOptions) {
         btnSelectAllOptions.onclick = () => {
-          modalSelectedOptions = [...TASK_OPTIONS_LIST];
+          modalSelectedOptions = [...getTaskOptionsForFormat(currentModalFormat)];
           renderModalOptions();
         };
       }
