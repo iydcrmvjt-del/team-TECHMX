@@ -2862,6 +2862,35 @@
         }
       };
 
+      const checkAndTriggerCronFallback = async () => {
+        if (!window.location.protocol.startsWith('http')) return;
+        const now = new Date();
+        const day = now.getDay(); // 0 = Sun, 6 = Sat
+        if (day === 0 || day === 6) return; // Mon-Fri only
+
+        const hour = now.getHours();
+        let targetType = null;
+        if (hour >= 9 && hour < 14) {
+          targetType = 'morning';
+        } else if (hour >= 18 && hour < 22) {
+          targetType = 'evening';
+        }
+        if (!targetType) return;
+
+        // Session debounce: ensure at most one check per session per day
+        const dateKey = now.toISOString().split('T')[0];
+        const sessionKey = `tf_cron_checked_${targetType}_${dateKey}`;
+        if (sessionStorage.getItem(sessionKey)) return;
+        sessionStorage.setItem(sessionKey, '1');
+
+        try {
+          const endpoint = targetType === 'evening'
+            ? '/api/lark-trigger-evening?auto=1'
+            : '/api/lark-trigger-cron?type=morning&auto=1';
+          await fetch(endpoint, { method: 'POST' });
+        } catch(e) {}
+      };
+
       const initCloudSync = async (isManual = false) => {
         if (!window.location.protocol.startsWith('http')) {
           updateCloudStatusUI('offline', null, 'เปิดผ่าน local file:// ข้อมูลจะบันทึกลงใน Local Storage');
@@ -2913,6 +2942,7 @@
                 updateCloudStatusUI('connected', null, `เชื่อมต่อ Cloudflare D1 สำเร็จ (${tasks.length} งาน)`);
                 syncDailyOrderFromCloud();
                 syncLeavesFromCloud();
+                checkAndTriggerCronFallback();
                 if (isManual) {
                   showToast(`ซิงค์ข้อมูลกับ Cloudflare D1 สำเร็จแล้ว (${tasks.length} งาน) ☁️`, 'success');
                 }
@@ -9608,6 +9638,7 @@ switchUser: (newUserId) => {
       updateLeaveBadge();
       initCloudSync(false);
       syncLeavesFromCloud();
+      checkAndTriggerCronFallback();
     })();
   </script>
 </body>
